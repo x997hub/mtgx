@@ -6,9 +6,12 @@ import { Navigate } from "react-router-dom";
 
 export default function LoginPage() {
   const { t } = useTranslation(["common"]);
-  const { loginWithGoogle, isAuthenticated, isLoading } = useAuth();
+  const { loginWithGoogle, isAuthenticated, isLoading, profile } = useAuth();
 
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  // If authenticated and has profile, go to feed; if no profile, go to onboarding
+  if (isAuthenticated) {
+    return <Navigate to={profile ? "/" : "/onboarding"} replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface p-4">

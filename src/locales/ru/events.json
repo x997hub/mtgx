@@ -46,5 +46,6 @@
   "create_quick_meetup": "Создать быструю встречу",
   "event_created": "Событие успешно создано",
   "select_venue": "Выберите площадку",
-  "select_format": "Выберите формат"
+  "select_format": "Выберите формат",
+  "organized_by": "от {{name}}"
 }

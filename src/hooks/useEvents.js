@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFilterStore } from "@/store/filterStore";
@@ -10,7 +11,7 @@ export function useEvents() {
         queryFn: async ({ pageParam = 0 }) => {
             let query = supabase
                 .from("events")
-                .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name)")
+                .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name), rsvps(count)")
                 .eq("status", "active")
                 .gte("starts_at", new Date().toISOString())
                 .order("starts_at", { ascending: true })
@@ -70,6 +71,27 @@ export function useEvent(eventId) {
     });
 }
 export function useEventRsvps(eventId) {
+    const queryClient = useQueryClient();
+    // Supabase Realtime subscription for live attendee count updates
+    useEffect(() => {
+        if (!eventId)
+            return;
+        const channel = supabase
+            .channel(`rsvps:${eventId}`)
+            .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "rsvps",
+            filter: `event_id=eq.${eventId}`,
+        }, () => {
+            // Invalidate the query to refetch attendee list
+            queryClient.invalidateQueries({ queryKey: ["rsvps", eventId] });
+        })
+            .subscribe();
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [eventId, queryClient]);
     return useQuery({
         queryKey: ["rsvps", eventId],
         queryFn: async () => {

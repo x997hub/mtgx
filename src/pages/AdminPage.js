@@ -35,7 +35,7 @@ function ReportTab() {
                 .select("*")
                 .order("report_date", { ascending: false })
                 .limit(1)
-                .single();
+                .maybeSingle();
             if (error)
                 throw error;
             return data;
@@ -51,8 +51,10 @@ function ReportTab() {
         return _jsx("p", { className: "p-4 text-text-secondary", children: t("common:no_reports") });
     }
     const payload = report.payload;
-    const metrics = Object.entries(payload);
-    return (_jsxs("div", { className: "space-y-3 mt-4", children: [_jsxs("p", { className: "text-xs text-text-secondary", children: ["Report date: ", new Date(report.report_date).toLocaleDateString()] }), _jsx("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: metrics.map(([key, value]) => (_jsxs(Card, { className: "bg-surface-card border-surface-hover", children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm text-text-secondary", children: key }) }), _jsx(CardContent, { children: _jsx("p", { className: "text-2xl font-bold text-accent", children: value }) })] }, key))) })] }));
+    return (_jsxs("div", { className: "space-y-4 mt-4", children: [_jsx("p", { className: "text-xs text-text-secondary", children: t("common:report_date", { date: new Date(report.report_date).toLocaleDateString() }) }), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: [_jsx(MetricCard, { label: t("common:new_users", "New users"), value: payload.new_users }), _jsx(MetricCard, { label: t("common:events_created", "Events created"), value: `${payload.events_created?.big ?? 0} big / ${payload.events_created?.quick ?? 0} quick` }), _jsx(MetricCard, { label: t("events:rsvp", "RSVPs"), value: `${payload.rsvps_today?.going ?? 0} / ${payload.rsvps_today?.maybe ?? 0} / ${payload.rsvps_today?.not_going ?? 0}`, subtitle: `${t("events:going")} / ${t("events:maybe")} / ${t("events:not_going")}` }), _jsx(MetricCard, { label: t("common:lfg_signals", "LFG signals"), value: payload.lfg_signals }), _jsx(MetricCard, { label: t("common:active_lfg", "Active LFG now"), value: payload.active_lfg_now }), payload.cancellations && (_jsx(MetricCard, { label: t("common:cancellations", "Cancellations"), value: `${payload.cancellations.total} (${payload.cancellations.late_24h} late)` }))] }), payload.low_reliability_users && payload.low_reliability_users.length > 0 && (_jsxs(Card, { className: "bg-surface-card border-surface-hover", children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm text-red-400", children: t("common:low_reliability", "Low reliability players") }) }), _jsx(CardContent, { children: _jsx("div", { className: "space-y-2", children: payload.low_reliability_users.map((u) => (_jsxs("div", { className: "flex items-center justify-between text-sm", children: [_jsx("span", { className: "text-text-primary", children: u.display_name }), _jsxs(Badge, { className: "bg-red-700/20 text-red-400 border-none", children: [(u.score * 100).toFixed(0), "%"] })] }, u.user_id))) }) })] }))] }));
+}
+function MetricCard({ label, value, subtitle }) {
+    return (_jsxs(Card, { className: "bg-surface-card border-surface-hover", children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm text-text-secondary", children: label }) }), _jsxs(CardContent, { children: [_jsx("p", { className: "text-2xl font-bold text-accent", children: value }), subtitle && _jsx("p", { className: "text-xs text-text-secondary mt-1", children: subtitle })] })] }));
 }
 function UsersTab() {
     const { t } = useTranslation(["common", "events"]);
@@ -88,7 +90,9 @@ function UsersTab() {
     if (isError) {
         return _jsx("p", { className: "p-4 text-red-400", children: t("common:error_occurred") });
     }
-    return (_jsx("div", { className: "space-y-2 mt-4", children: profiles?.map((user) => (_jsx(Card, { className: "bg-surface-card border-surface-hover", children: _jsxs(CardContent, { className: "flex items-center justify-between p-4", children: [_jsxs("div", { children: [_jsx("p", { className: "font-medium text-text-primary", children: user.display_name }), _jsx("p", { className: "text-sm text-text-secondary", children: user.city })] }), _jsxs(Select, { value: user.role, onValueChange: (role) => updateRoleMutation.mutate({ userId: user.id, role: role }), children: [_jsx(SelectTrigger, { className: "w-[130px]", children: _jsx(SelectValue, {}) }), _jsx(SelectContent, { children: ROLES.map((role) => (_jsx(SelectItem, { value: role, children: role }, role))) })] })] }) }, user.id))) }));
+    return (_jsx("div", { className: "space-y-2 mt-4", children: profiles?.map((user) => (_jsx(Card, { className: "bg-surface-card border-surface-hover", children: _jsxs(CardContent, { className: "flex items-center justify-between p-4", children: [_jsxs("div", { children: [_jsx("p", { className: "font-medium text-text-primary", children: user.display_name }), _jsxs("div", { className: "flex items-center gap-2 text-sm text-text-secondary", children: [_jsx("span", { children: user.city }), user.reliability_score != null && user.reliability_score < 1 && (_jsxs(Badge, { className: `border-none text-xs ${user.reliability_score < 0.5
+                                            ? "bg-red-700/20 text-red-400"
+                                            : "bg-amber-700/20 text-amber-400"}`, children: [t("profile:reliability_score", "Reliability"), ": ", (user.reliability_score * 100).toFixed(0), "%"] }))] })] }), _jsxs(Select, { value: user.role, onValueChange: (role) => updateRoleMutation.mutate({ userId: user.id, role: role }), children: [_jsx(SelectTrigger, { className: "w-[130px]", children: _jsx(SelectValue, {}) }), _jsx(SelectContent, { children: ROLES.map((role) => (_jsx(SelectItem, { value: role, children: role }, role))) })] })] }) }, user.id))) }));
 }
 function EventsTab() {
     const { t } = useTranslation(["common", "events"]);
@@ -97,7 +101,7 @@ function EventsTab() {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("events")
-                .select("*")
+                .select("*, profiles!events_organizer_id_fkey(display_name)")
                 .order("starts_at", { ascending: false })
                 .limit(50);
             if (error)

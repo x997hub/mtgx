@@ -10,13 +10,15 @@ import { CityBadge } from "@/components/shared/CityBadge";
 import { SubscribeButton } from "@/components/shared/SubscribeButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { EventCard } from "@/components/events/EventCard";
-import type { Venue, Event } from "@/types/database.types";
+import type { Venue, VenuePhoto, Event } from "@/types/database.types";
 import { MapPin, Clock, Users, Phone, Calendar } from "lucide-react";
+
+const VENUE_IMAGES_BUCKET = "venue-images";
 
 export default function VenuePage() {
   const { t } = useTranslation("venue");
   const { t: tc } = useTranslation("common");
-  const { venueId } = useParams<{ venueId: string }>();
+  const { id: venueId } = useParams<{ id: string }>();
 
   const venueQuery = useQuery({
     queryKey: ["venue", venueId],
@@ -54,6 +56,26 @@ export default function VenuePage() {
     enabled: !!venueId,
   });
 
+  const photosQuery = useQuery({
+    queryKey: ["venue-photos", venueId],
+    queryFn: async () => {
+      if (!venueId) return [];
+      const { data, error } = await supabase
+        .from("venue_photos")
+        .select("*")
+        .eq("venue_id", venueId)
+        .order("is_primary", { ascending: false });
+      if (error) throw error;
+      return data as VenuePhoto[];
+    },
+    enabled: !!venueId,
+  });
+
+  const primaryPhoto = photosQuery.data?.find((p) => p.is_primary) ?? photosQuery.data?.[0];
+  const primaryPhotoUrl = primaryPhoto
+    ? supabase.storage.from(VENUE_IMAGES_BUCKET).getPublicUrl(primaryPhoto.storage_path).data.publicUrl
+    : null;
+
   if (venueQuery.isLoading) {
     return (
       <div className="min-h-screen bg-surface p-4 space-y-4">
@@ -85,6 +107,17 @@ export default function VenuePage() {
   return (
     <div className="min-h-screen bg-surface text-text-primary">
       <div className="mx-auto max-w-lg space-y-4 p-4">
+        {/* Photo */}
+        {primaryPhotoUrl && (
+          <div className="aspect-video w-full overflow-hidden rounded-xl bg-[#16213e]">
+            <img
+              src={primaryPhotoUrl}
+              alt={venue.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
+
         {/* Header */}
         <Card>
           <CardContent className="p-6">

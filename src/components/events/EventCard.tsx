@@ -4,20 +4,17 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
-import type { Database } from "@/types/database.types";
-
-type Event = Database["public"]["Tables"]["events"]["Row"];
+import type { EventWithRelations } from "@/hooks/useEvents";
 
 interface EventCardProps {
-  event: Event & {
-    venues?: { name: string; city: string } | null;
-    profiles?: { display_name: string } | null;
-  };
-  rsvpCount?: number;
+  event: EventWithRelations;
 }
 
-export function EventCard({ event, rsvpCount }: EventCardProps) {
+export function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation("events");
+
+  const goingCount = event.rsvps?.[0]?.count ?? 0;
+  const spotsLeft = event.max_players != null ? event.max_players - goingCount : null;
 
   const date = new Date(event.starts_at);
   const timeStr = date.toLocaleDateString(undefined, {
@@ -56,9 +53,16 @@ export function EventCard({ event, rsvpCount }: EventCardProps) {
                 )}
               </div>
             </div>
-            <div className="flex flex-col items-center text-sm text-gray-400">
+            <div className="flex flex-col items-center gap-0.5 text-sm text-gray-400">
               <Users className="h-4 w-4" />
-              <span>{rsvpCount ?? 0}</span>
+              <span>{goingCount}</span>
+              {spotsLeft != null && (
+                <span className={`text-xs ${spotsLeft <= 0 ? "text-red-400" : "text-gray-500"}`}>
+                  {spotsLeft <= 0
+                    ? t("event_full")
+                    : t("spots_left", { count: spotsLeft })}
+                </span>
+              )}
             </div>
           </div>
         </CardContent>

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,41 +22,63 @@ const STATUS_COLORS: Record<RsvpStatus, string> = {
   not_going: "bg-gray-600",
 };
 
+const STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going"];
+
 export function AttendeeList({ attendees }: AttendeeListProps) {
   const { t } = useTranslation("events");
 
-  const sorted = [...attendees].sort((a, b) => {
-    const order: Record<RsvpStatus, number> = { going: 0, maybe: 1, not_going: 2 };
-    return order[a.status] - order[b.status];
-  });
+  const grouped = useMemo(() => {
+    const groups: Record<RsvpStatus, Attendee[]> = {
+      going: [],
+      maybe: [],
+      not_going: [],
+    };
+    for (const a of attendees) {
+      groups[a.status]?.push(a);
+    }
+    return groups;
+  }, [attendees]);
+
+  const goingCount = grouped.going.length;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <h3 className="text-sm font-medium text-gray-300">
-        {t("attendees")} ({attendees.filter((a) => a.status === "going").length})
+        {t("attendees")} ({goingCount})
       </h3>
-      <ul className="space-y-1">
-        {sorted.map((attendee) => (
-          <li
-            key={attendee.user_id}
-            className="flex items-center gap-3 rounded-lg px-2 py-1.5"
-          >
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs">
-                {attendee.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <span className="flex-1 text-sm text-gray-200">
-              {attendee.profiles?.display_name || "Unknown"}
-            </span>
-            <Badge
-              className={`border-none text-white ${STATUS_COLORS[attendee.status]}`}
-            >
-              {t(attendee.status)}
-            </Badge>
-          </li>
-        ))}
-      </ul>
+      {STATUS_ORDER.map((status) => {
+        const group = grouped[status];
+        if (group.length === 0) return null;
+        return (
+          <div key={status} className="space-y-1">
+            <div className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+              {t(status)} ({group.length})
+            </div>
+            <ul className="space-y-1">
+              {group.map((attendee) => (
+                <li
+                  key={attendee.user_id}
+                  className="flex items-center gap-3 rounded-lg px-2 py-1.5"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="text-xs">
+                      {attendee.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="flex-1 text-sm text-gray-200">
+                    {attendee.profiles?.display_name || "Unknown"}
+                  </span>
+                  <Badge
+                    className={`border-none text-white ${STATUS_COLORS[attendee.status]}`}
+                  >
+                    {t(attendee.status)}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }

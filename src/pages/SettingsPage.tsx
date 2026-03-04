@@ -6,7 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Bell, BellOff, LogOut, Trash2 } from "lucide-react";
+import { Globe, Bell, BellOff, LogOut, Trash2, User, MapPin, Layers } from "lucide-react";
+import type { SubscriptionTarget } from "@/types/database.types";
+
+const TARGET_TYPE_ICONS: Record<SubscriptionTarget, typeof User> = {
+  organizer: User,
+  venue: MapPin,
+  format_city: Layers,
+};
+
+function getSubscriptionLabel(sub: { target_type: SubscriptionTarget; target_id: string | null; format: string | null; city: string | null }): string {
+  switch (sub.target_type) {
+    case "format_city":
+      return `${sub.format ?? "?"} — ${sub.city ?? "?"}`;
+    case "organizer":
+      return sub.target_id ? `ID: ${sub.target_id.slice(0, 8)}...` : "Unknown";
+    case "venue":
+      return sub.target_id ? `ID: ${sub.target_id.slice(0, 8)}...` : "Unknown";
+    default:
+      return String(sub.target_id ?? "");
+  }
+}
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation(["common", "profile"]);
@@ -98,26 +118,28 @@ export default function SettingsPage() {
             <p className="text-sm text-text-secondary">{t("common:no_subscriptions", "No subscriptions yet")}</p>
           ) : (
             <ul className="space-y-2">
-              {subscriptions.map((sub) => (
-                <li key={sub.id} className="flex items-center justify-between rounded-lg bg-surface p-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{sub.target_type}</Badge>
-                    <span className="text-sm text-text-secondary">
-                      {sub.target_type === "format_city"
-                        ? `${sub.format} — ${sub.city}`
-                        : sub.target_id}
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => unsubscribe(sub.id)}
-                    className="min-h-[44px] min-w-[44px] text-red-400 hover:text-red-300"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </li>
-              ))}
+              {subscriptions.map((sub) => {
+                const Icon = TARGET_TYPE_ICONS[sub.target_type] ?? Bell;
+                return (
+                  <li key={sub.id} className="flex items-center justify-between rounded-lg bg-surface p-3">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 text-text-secondary" />
+                      <Badge variant="outline">{sub.target_type}</Badge>
+                      <span className="text-sm text-text-secondary">
+                        {getSubscriptionLabel(sub)}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => unsubscribe(sub.id)}
+                      className="min-h-[44px] min-w-[44px] text-red-400 hover:text-red-300"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardContent>

@@ -1,9 +1,16 @@
+import { useEffect } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFilterStore } from "@/store/filterStore";
 import type { Database } from "@/types/database.types";
 
 type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+
+export type EventWithRelations = Database["public"]["Tables"]["events"]["Row"] & {
+  venues?: { name: string; city: string } | null;
+  profiles?: { display_name: string } | null;
+  rsvps?: { count: number }[];
+};
 
 const PAGE_SIZE = 20;
 
@@ -16,7 +23,7 @@ export function useEvents() {
     queryFn: async ({ pageParam = 0 }) => {
       let query = supabase
         .from("events")
-        .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name)" as "*")
+        .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name), rsvps(count)" as "*")
         .eq("status", "active")
         .gte("starts_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
@@ -27,10 +34,7 @@ export function useEvents() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as unknown as (Database["public"]["Tables"]["events"]["Row"] & {
-        venues?: { name: string; city: string } | null;
-        profiles?: { display_name: string } | null;
-      })[];
+      return data as unknown as EventWithRelations[];
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
@@ -84,6 +88,34 @@ export function useEvent(eventId: string) {
 }
 
 export function useEventRsvps(eventId: string) {
+  const queryClient = useQueryClient();
+
+  // Supabase Realtime subscription for live attendee count updates
+  useEffect(() => {
+    if (!eventId) return;
+
+    const channel = supabase
+      .channel(`rsvps:${eventId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rsvps",
+          filter: `event_id=eq.${eventId}`,
+        },
+        () => {
+          // Invalidate the query to refetch attendee list
+          queryClient.invalidateQueries({ queryKey: ["rsvps", eventId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventId, queryClient]);
+
   return useQuery({
     queryKey: ["rsvps", eventId],
     queryFn: async () => {

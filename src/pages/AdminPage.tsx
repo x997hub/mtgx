@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
-import type { UserRole, EventStatus } from "@/types/database.types";
+import type { Database, UserRole, EventStatus } from "@/types/database.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -78,6 +78,18 @@ export default function AdminPage() {
   );
 }
 
+interface DailyReportPayload {
+  date: string;
+  new_users: number;
+  events_created: { big: number; quick: number };
+  rsvps_today: { going: number; maybe: number; not_going: number };
+  lfg_signals: number;
+  active_lfg_now: number;
+  low_reliability_users: { user_id: string; display_name: string; score: number }[];
+  events_below_minimum?: { event_id: string; title: string; starts_at: string; rsvp_count: number; min: number }[];
+  cancellations?: { total: number; late_24h: number };
+}
+
 function ReportTab() {
   const { t } = useTranslation(["common", "events"]);
   const { data: report, isLoading, isError } = useQuery({
@@ -88,7 +100,7 @@ function ReportTab() {
         .select("*")
         .order("report_date", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -112,27 +124,73 @@ function ReportTab() {
     return <p className="p-4 text-text-secondary">{t("common:no_reports")}</p>;
   }
 
-  const payload = report.payload as Record<string, number>;
-  const metrics = Object.entries(payload);
+  const payload = report.payload as unknown as DailyReportPayload;
 
   return (
-    <div className="space-y-3 mt-4">
+    <div className="space-y-4 mt-4">
       <p className="text-xs text-text-secondary">
-        Report date: {new Date(report.report_date).toLocaleDateString()}
+        {t("common:report_date", { date: new Date(report.report_date).toLocaleDateString() })}
       </p>
+
+      {/* Summary metrics */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {metrics.map(([key, value]) => (
-          <Card key={key} className="bg-surface-card border-surface-hover">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-text-secondary">{key}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-accent">{value}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <MetricCard label={t("common:new_users", "New users")} value={payload.new_users} />
+        <MetricCard
+          label={t("common:events_created", "Events created")}
+          value={`${payload.events_created?.big ?? 0} big / ${payload.events_created?.quick ?? 0} quick`}
+        />
+        <MetricCard
+          label={t("events:rsvp", "RSVPs")}
+          value={`${payload.rsvps_today?.going ?? 0} / ${payload.rsvps_today?.maybe ?? 0} / ${payload.rsvps_today?.not_going ?? 0}`}
+          subtitle={`${t("events:going")} / ${t("events:maybe")} / ${t("events:not_going")}`}
+        />
+        <MetricCard label={t("common:lfg_signals", "LFG signals")} value={payload.lfg_signals} />
+        <MetricCard label={t("common:active_lfg", "Active LFG now")} value={payload.active_lfg_now} />
+        {payload.cancellations && (
+          <MetricCard
+            label={t("common:cancellations", "Cancellations")}
+            value={`${payload.cancellations.total} (${payload.cancellations.late_24h} late)`}
+          />
+        )}
       </div>
+
+      {/* Low reliability users */}
+      {payload.low_reliability_users && payload.low_reliability_users.length > 0 && (
+        <Card className="bg-surface-card border-surface-hover">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-red-400">
+              {t("common:low_reliability", "Low reliability players")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {payload.low_reliability_users.map((u) => (
+                <div key={u.user_id} className="flex items-center justify-between text-sm">
+                  <span className="text-text-primary">{u.display_name}</span>
+                  <Badge className="bg-red-700/20 text-red-400 border-none">
+                    {(u.score * 100).toFixed(0)}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
+  );
+}
+
+function MetricCard({ label, value, subtitle }: { label: string; value: string | number; subtitle?: string }) {
+  return (
+    <Card className="bg-surface-card border-surface-hover">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-text-secondary">{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-2xl font-bold text-accent">{value}</p>
+        {subtitle && <p className="text-xs text-text-secondary mt-1">{subtitle}</p>}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -186,7 +244,20 @@ function UsersTab() {
           <CardContent className="flex items-center justify-between p-4">
             <div>
               <p className="font-medium text-text-primary">{user.display_name}</p>
-              <p className="text-sm text-text-secondary">{user.city}</p>
+              <div className="flex items-center gap-2 text-sm text-text-secondary">
+                <span>{user.city}</span>
+                {user.reliability_score != null && user.reliability_score < 1 && (
+                  <Badge
+                    className={`border-none text-xs ${
+                      user.reliability_score < 0.5
+                        ? "bg-red-700/20 text-red-400"
+                        : "bg-amber-700/20 text-amber-400"
+                    }`}
+                  >
+                    {t("profile:reliability_score", "Reliability")}: {(user.reliability_score * 100).toFixed(0)}%
+                  </Badge>
+                )}
+              </div>
             </div>
             <Select
               value={user.role}
@@ -219,11 +290,13 @@ function EventsTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("*")
+        .select("*, profiles!events_organizer_id_fkey(display_name)" as "*")
         .order("starts_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      return data;
+      return data as unknown as (Database["public"]["Tables"]["events"]["Row"] & {
+        profiles?: { display_name: string } | null;
+      })[];
     },
   });
 
@@ -245,7 +318,7 @@ function EventsTab() {
     <div className="space-y-2 mt-4">
       {events?.map((evt) => {
         const title = evt.title || `Quick ${evt.format}`;
-        const organizer = (evt as any).profiles?.display_name;
+        const organizer = evt.profiles?.display_name;
 
         return (
           <Card key={evt.id} className="bg-surface-card border-surface-hover">

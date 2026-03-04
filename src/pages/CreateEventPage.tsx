@@ -33,6 +33,7 @@ export default function CreateEventPage() {
                 ? {
                     title: cloneFrom.title as string,
                     format: cloneFrom.format as MtgFormat,
+                    city: cloneFrom.city as string,
                     venue_id: cloneFrom.venue_id as string,
                     min_players: cloneFrom.min_players as number,
                     max_players: cloneFrom.max_players as number,
@@ -41,9 +42,20 @@ export default function CreateEventPage() {
                   }
                 : undefined
             }
+            clonedFrom={cloneFrom?.id as string | undefined}
           />
         ) : (
-          <QuickMeetupForm />
+          <QuickMeetupForm
+            defaultValues={
+              cloneFrom
+                ? {
+                    format: cloneFrom.format as MtgFormat,
+                    city: cloneFrom.city as string,
+                    min_players: cloneFrom.min_players as number,
+                  }
+                : undefined
+            }
+          />
         )}
       </div>
     </FormLayout>

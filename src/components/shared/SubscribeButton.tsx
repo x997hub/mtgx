@@ -5,26 +5,43 @@ import { useSubscription } from "@/hooks/useSubscription";
 import type { Database } from "@/types/database.types";
 
 type SubscriptionTarget = Database["public"]["Enums"]["subscription_target"];
+type MtgFormat = Database["public"]["Enums"]["mtg_format"];
 
 interface SubscribeButtonProps {
   targetType: SubscriptionTarget;
+  /** Required for organizer / venue targets */
   targetId?: string;
+  /** Required for format_city target */
+  format?: MtgFormat;
+  /** Required for format_city target */
+  city?: string;
   className?: string;
 }
 
-export function SubscribeButton({ targetType, targetId, className }: SubscribeButtonProps) {
+export function SubscribeButton({
+  targetType,
+  targetId,
+  format,
+  city,
+  className,
+}: SubscribeButtonProps) {
   const { t } = useTranslation();
   const { subscriptions, subscribe, unsubscribe, isSubscribing } = useSubscription();
 
-  const existing = subscriptions.find(
-    (s) => s.target_type === targetType && s.target_id === (targetId ?? null)
-  );
+  // Match subscription: for format_city we match on format+city; for others on target_id
+  const existing = subscriptions.find((s) => {
+    if (s.target_type !== targetType) return false;
+    if (targetType === "format_city") {
+      return s.format === (format ?? null) && s.city === (city ?? null);
+    }
+    return s.target_id === (targetId ?? null);
+  });
 
   const handleClick = () => {
     if (existing) {
       unsubscribe(existing.id);
     } else {
-      subscribe({ targetType, targetId });
+      subscribe({ targetType, targetId, format, city });
     }
   };
 

@@ -32,5 +32,10 @@
   "role_player": "Player",
   "role_organizer": "Organizer",
   "role_club_owner": "Club Owner",
-  "role_admin": "Admin"
+  "role_admin": "Admin",
+  "language": "Language",
+  "push_not_supported": "Push notifications not supported in this browser",
+  "push_enabled": "Push notifications enabled",
+  "push_denied": "Push notifications blocked by browser",
+  "push_enable": "Enable Push Notifications"
 }

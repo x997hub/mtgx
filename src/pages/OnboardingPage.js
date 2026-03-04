@@ -14,9 +14,13 @@ import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
 export default function OnboardingPage() {
     const { t } = useTranslation(["profile", "common", "events"]);
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const { updateProfile, updateAvailability, isUpdating } = useProfile();
+    const { user, profile: existingProfile } = useAuth();
+    const { upsertProfile, updateAvailability, isUpdating } = useProfile();
     const { subscribe } = useSubscription();
+    // If user already has a profile, redirect to feed
+    if (existingProfile) {
+        navigate("/", { replace: true });
+    }
     const [step, setStep] = useState(0);
     const [city, setCity] = useState("");
     const [formats, setFormats] = useState([]);
@@ -31,8 +35,17 @@ export default function OnboardingPage() {
     const handleSaveProfile = async () => {
         if (!user)
             return;
+        const displayName = user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email?.split("@")[0] ||
+            "Player";
         try {
-            await updateProfile({ city, formats });
+            await upsertProfile({
+                id: user.id,
+                display_name: displayName,
+                city,
+                formats,
+            });
             toast({ title: t("profile:profile_saved") });
         }
         catch {

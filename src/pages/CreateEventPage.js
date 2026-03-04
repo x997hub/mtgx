@@ -16,11 +16,18 @@ export default function CreateEventPage() {
                         ? {
                             title: cloneFrom.title,
                             format: cloneFrom.format,
+                            city: cloneFrom.city,
                             venue_id: cloneFrom.venue_id,
                             min_players: cloneFrom.min_players,
                             max_players: cloneFrom.max_players,
                             fee_text: cloneFrom.fee_text,
                             description: cloneFrom.description,
                         }
-                        : undefined })) : (_jsx(QuickMeetupForm, {}))] }) }));
+                        : undefined, clonedFrom: cloneFrom?.id })) : (_jsx(QuickMeetupForm, { defaultValues: cloneFrom
+                        ? {
+                            format: cloneFrom.format,
+                            city: cloneFrom.city,
+                            min_players: cloneFrom.min_players,
+                        }
+                        : undefined }))] }) }));
 }

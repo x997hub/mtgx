@@ -2,14 +2,17 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
+import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
 import { EventFormFields } from "@/components/events/EventFormFields";
-export function BigEventForm({ defaultValues }) {
+export function BigEventForm({ defaultValues, clonedFrom }) {
     const { t } = useTranslation("events");
     const navigate = useNavigate();
     const { createEvent, isCreating } = useEvents();
@@ -17,12 +20,24 @@ export function BigEventForm({ defaultValues }) {
     const [title, setTitle] = useState(defaultValues?.title ?? "");
     const [format, setFormat] = useState(defaultValues?.format ?? "pauper");
     const [startsAt, setStartsAt] = useState("");
-    const [venueId] = useState(defaultValues?.venue_id ?? "");
-    const [city, setCity] = useState("");
+    const [venueId, setVenueId] = useState(defaultValues?.venue_id ?? "");
+    const [city, setCity] = useState(defaultValues?.city ?? "");
     const [minPlayers, setMinPlayers] = useState(defaultValues?.min_players ?? 4);
     const [maxPlayers, setMaxPlayers] = useState(defaultValues?.max_players ?? 16);
     const [feeText, setFeeText] = useState(defaultValues?.fee_text ?? "");
     const [description, setDescription] = useState(defaultValues?.description ?? "");
+    const { data: venues } = useQuery({
+        queryKey: ["venues", city],
+        queryFn: async () => {
+            let query = supabase.from("venues").select("id, name, city");
+            if (city)
+                query = query.eq("city", city);
+            const { data, error } = await query.order("name");
+            if (error)
+                throw error;
+            return data;
+        },
+    });
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!user)
@@ -40,6 +55,7 @@ export function BigEventForm({ defaultValues }) {
                 max_players: maxPlayers,
                 fee_text: feeText || null,
                 description: description || null,
+                cloned_from: clonedFrom ?? null,
             });
             toast({ title: t("event_created") });
             navigate("/");
@@ -48,5 +64,5 @@ export function BigEventForm({ defaultValues }) {
             toast({ title: t("common:error"), variant: "destructive" });
         }
     };
-    return (_jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [_jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "title", children: t("event_title") }), _jsx(Input, { id: "title", value: title, onChange: (e) => setTitle(e.target.value), required: true })] }), _jsx(EventFormFields, { format: format, onFormatChange: setFormat, city: city, onCityChange: setCity, startsAt: startsAt, onStartsAtChange: setStartsAt, minPlayers: minPlayers, onMinPlayersChange: setMinPlayers }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "max_players", children: t("max_players") }), _jsx(Input, { id: "max_players", type: "number", min: 2, value: maxPlayers, onChange: (e) => setMaxPlayers(Number(e.target.value)) })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "fee", children: t("fee") }), _jsx(Input, { id: "fee", value: feeText, onChange: (e) => setFeeText(e.target.value) })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "description", children: t("description") }), _jsx("textarea", { id: "description", value: description, onChange: (e) => setDescription(e.target.value), rows: 3, className: "flex w-full rounded-md border border-gray-600 bg-[#1a1a2e] px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#e94560]" })] }), _jsx(Button, { type: "submit", className: "w-full min-h-[44px]", disabled: isCreating, children: isCreating ? t("common:loading") : t("create_big_event") })] }));
+    return (_jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [_jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "title", children: t("event_title") }), _jsx(Input, { id: "title", value: title, onChange: (e) => setTitle(e.target.value), required: true })] }), _jsx(EventFormFields, { format: format, onFormatChange: setFormat, city: city, onCityChange: setCity, startsAt: startsAt, onStartsAtChange: setStartsAt, minPlayers: minPlayers, onMinPlayersChange: setMinPlayers }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { children: t("venue") }), _jsxs(Select, { value: venueId || "none", onValueChange: (v) => setVenueId(v === "none" ? "" : v), children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, { placeholder: t("select_venue") }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "none", children: "--" }), venues?.map((v) => (_jsxs(SelectItem, { value: v.id, children: [v.name, " (", v.city, ")"] }, v.id)))] })] })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "max_players", children: t("max_players") }), _jsx(Input, { id: "max_players", type: "number", min: 2, value: maxPlayers, onChange: (e) => setMaxPlayers(Number(e.target.value)) })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "fee", children: t("fee") }), _jsx(Input, { id: "fee", value: feeText, onChange: (e) => setFeeText(e.target.value) })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { htmlFor: "description", children: t("description") }), _jsx("textarea", { id: "description", value: description, onChange: (e) => setDescription(e.target.value), rows: 3, className: "flex w-full rounded-md border border-gray-600 bg-[#1a1a2e] px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#e94560]" })] }), _jsx(Button, { type: "submit", className: "w-full min-h-[44px]", disabled: isCreating, children: isCreating ? t("common:loading") : t("create_big_event") })] }));
 }

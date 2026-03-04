@@ -12,7 +12,7 @@ import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DAYS, SLOTS } from "@/lib/constants";
-import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability } from "@/types/database.types";
+import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
 import { Pencil, Shield, Bell } from "lucide-react";
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
@@ -85,14 +85,21 @@ const ROLE_LABELS: Record<string, string> = {
   admin: "role_admin",
 };
 
+const RELIABILITY_VIEWER_ROLES: UserRole[] = ["organizer", "club_owner", "admin"];
+
 export default function ProfilePage() {
   const { t } = useTranslation("profile");
   const { t: tc } = useTranslation("common");
   const { userId } = useParams<{ userId?: string }>();
-  const { user } = useAuth();
+  const { user, profile: viewerProfile } = useAuth();
   const isOwn = !userId || userId === user?.id;
   const { profile, availability, isLoading } = useProfile(isOwn ? undefined : userId);
   const { subscriptions } = useSubscription();
+
+  // Reliability score is visible to organizers, club_owners, and admins
+  const canSeeReliability =
+    viewerProfile != null &&
+    RELIABILITY_VIEWER_ROLES.includes(viewerProfile.role);
 
   if (isLoading) {
     return (
@@ -149,15 +156,15 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Reliability score for organizers */}
-        {(profile.role === "organizer" || profile.role === "club_owner") && (
+        {/* Reliability score (visible to organizers/admins) */}
+        {canSeeReliability && (
           <Card>
             <CardContent className="flex items-center gap-3 p-4">
               <Shield className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-sm text-gray-400">{t("reliability_score")}</p>
                 <p className="text-lg font-semibold text-gray-100">
-                  {profile.reliability_score}%
+                  {((profile.reliability_score ?? 1) * 100).toFixed(0)}%
                 </p>
               </div>
             </CardContent>

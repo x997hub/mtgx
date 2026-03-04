@@ -46,5 +46,6 @@
   "create_quick_meetup": "Create Quick Meetup",
   "event_created": "Event created successfully",
   "select_venue": "Select venue",
-  "select_format": "Select format"
+  "select_format": "Select format",
+  "organized_by": "by {{name}}"
 }

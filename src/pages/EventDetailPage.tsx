@@ -17,7 +17,7 @@ import type { RsvpStatus } from "@/types/database.types";
 
 export default function EventDetailPage() {
   const { t } = useTranslation(["events", "common"]);
-  const { eventId } = useParams<{ eventId: string }>();
+  const { id: eventId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
@@ -180,7 +180,7 @@ export default function EventDetailPage() {
 
           {event.profiles && (
             <div className="text-xs text-text-secondary">
-              by {event.profiles.display_name}
+              {t("events:organized_by", { name: event.profiles.display_name })}
             </div>
           )}
         </CardContent>
@@ -201,7 +201,7 @@ export default function EventDetailPage() {
             size="sm"
             className="gap-2"
             onClick={() =>
-              navigate("/events/create", {
+              navigate("/events/new", {
                 state: { cloneFrom: event },
               })
             }

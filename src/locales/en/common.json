@@ -45,5 +45,16 @@
   "try_again": "Try again",
   "page_not_found": "Page not found",
   "go_home": "Go to home",
-  "push_description": "Get notified about new events, reminders, and updates."
+  "push_description": "Get notified about new events, reminders, and updates.",
+  "report": "Report",
+  "users": "Users",
+  "report_date": "Report date: {{date}}",
+  "new_users": "New users",
+  "events_created": "Events created",
+  "lfg_signals": "LFG signals",
+  "active_lfg": "Active LFG now",
+  "cancellations": "Cancellations",
+  "low_reliability": "Low reliability players",
+  "subscriptions": "Subscriptions",
+  "no_subscriptions": "No subscriptions yet"
 }

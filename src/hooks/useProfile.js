@@ -59,6 +59,28 @@ export function useProfile(userId) {
             queryClient.invalidateQueries({ queryKey: ["profile", uid] });
         },
     });
+    const upsertProfileMutation = useMutation({
+        mutationFn: async (profileData) => {
+            if (!currentUser)
+                throw new Error("Not authenticated");
+            const { data, error } = await supabase
+                .from("profiles")
+                .upsert(profileData, { onConflict: "id" })
+                .select()
+                .single();
+            if (error)
+                throw error;
+            return data;
+        },
+        onSettled: (data, error) => {
+            const uid = useAuthStore.getState().user?.id;
+            if (!error && data) {
+                queryClient.setQueryData(["profile", uid], data);
+                useAuthStore.getState().setProfile(data);
+            }
+            queryClient.invalidateQueries({ queryKey: ["profile", uid] });
+        },
+    });
     const updateAvailabilityMutation = useMutation({
         mutationFn: async (slots) => {
             if (!currentUser)
@@ -86,7 +108,10 @@ export function useProfile(userId) {
         availability: availabilityQuery.data ?? [],
         isLoading: profileQuery.isLoading,
         updateProfile: updateProfileMutation.mutateAsync,
+        upsertProfile: upsertProfileMutation.mutateAsync,
         updateAvailability: updateAvailabilityMutation.mutateAsync,
-        isUpdating: updateProfileMutation.isPending || updateAvailabilityMutation.isPending,
+        isUpdating: updateProfileMutation.isPending ||
+            upsertProfileMutation.isPending ||
+            updateAvailabilityMutation.isPending,
     };
 }

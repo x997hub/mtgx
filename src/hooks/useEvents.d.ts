@@ -1,59 +1,20 @@
+import type { Database } from "@/types/database.types";
+export type EventWithRelations = Database["public"]["Tables"]["events"]["Row"] & {
+    venues?: {
+        name: string;
+        city: string;
+    } | null;
+    profiles?: {
+        display_name: string;
+    } | null;
+    rsvps?: {
+        count: number;
+    }[];
+};
 export declare function useEvents(): {
-    events: ({
-        id: string;
-        organizer_id: string;
-        venue_id: string | null;
-        type: import("@/types/database.types").EventType;
-        title: string | null;
-        format: import("@/types/database.types").MtgFormat;
-        city: string;
-        starts_at: string;
-        duration_min: number | null;
-        min_players: number;
-        max_players: number | null;
-        fee_text: string | null;
-        description: string | null;
-        status: import("@/types/database.types").EventStatus;
-        cloned_from: string | null;
-        expires_at: string | null;
-        created_at: string;
-    } & {
-        venues?: {
-            name: string;
-            city: string;
-        } | null;
-        profiles?: {
-            display_name: string;
-        } | null;
-    })[];
+    events: EventWithRelations[];
     isLoading: boolean;
-    fetchNextPage: (options?: import("@tanstack/query-core").FetchNextPageOptions) => Promise<import("@tanstack/query-core").InfiniteQueryObserverResult<import("@tanstack/query-core").InfiniteData<({
-        id: string;
-        organizer_id: string;
-        venue_id: string | null;
-        type: import("@/types/database.types").EventType;
-        title: string | null;
-        format: import("@/types/database.types").MtgFormat;
-        city: string;
-        starts_at: string;
-        duration_min: number | null;
-        min_players: number;
-        max_players: number | null;
-        fee_text: string | null;
-        description: string | null;
-        status: import("@/types/database.types").EventStatus;
-        cloned_from: string | null;
-        expires_at: string | null;
-        created_at: string;
-    } & {
-        venues?: {
-            name: string;
-            city: string;
-        } | null;
-        profiles?: {
-            display_name: string;
-        } | null;
-    })[], unknown>, Error>>;
+    fetchNextPage: (options?: import("@tanstack/query-core").FetchNextPageOptions) => Promise<import("@tanstack/query-core").InfiniteQueryObserverResult<import("@tanstack/query-core").InfiniteData<EventWithRelations[], unknown>, Error>>;
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
     createEvent: import("@tanstack/react-query").UseMutateAsyncFunction<{

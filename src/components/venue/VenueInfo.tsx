@@ -20,10 +20,17 @@ export function VenueInfo({ venue }: VenueInfoProps) {
           <span>{venue.address}</span>
         </div>
 
-        {venue.hours && (
+        {venue.hours && typeof venue.hours === "object" && Object.keys(venue.hours).length > 0 && (
           <div className="flex items-start gap-2 text-sm text-gray-300">
             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
-            <span>{typeof venue.hours === "string" ? venue.hours : JSON.stringify(venue.hours)}</span>
+            <div className="space-y-0.5">
+              {Object.entries(venue.hours).map(([day, time]) => (
+                <div key={day} className="flex gap-2">
+                  <span className="text-gray-400 min-w-[50px]">{day}</span>
+                  <span>{time}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -34,10 +41,17 @@ export function VenueInfo({ venue }: VenueInfoProps) {
           </div>
         )}
 
-        {venue.contacts && (
+        {venue.contacts && typeof venue.contacts === "object" && Object.keys(venue.contacts).length > 0 && (
           <div className="flex items-start gap-2 text-sm text-gray-300">
             <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
-            <span>{typeof venue.contacts === "string" ? venue.contacts : JSON.stringify(venue.contacts)}</span>
+            <div className="space-y-0.5">
+              {Object.entries(venue.contacts).map(([label, value]) => (
+                <div key={label} className="flex gap-2">
+                  <span className="text-gray-400">{label}:</span>
+                  <span>{value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

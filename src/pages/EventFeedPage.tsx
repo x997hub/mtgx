@@ -12,9 +12,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EventCard } from "@/components/events/EventCard";
+import { LFGBanner } from "@/components/events/LFGBanner";
+import { LFGToggleButton } from "@/components/events/LFGToggleButton";
+import { LFGSignalList } from "@/components/events/LFGSignalList";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FAB } from "@/components/shared/FAB";
 import { useEvents } from "@/hooks/useEvents";
+import { useAuthStore } from "@/store/authStore";
 import { useFilterStore } from "@/store/filterStore";
 import { FORMATS, CITIES } from "@/lib/constants";
 import type { MtgFormat } from "@/types/database.types";
@@ -22,6 +26,7 @@ import type { MtgFormat } from "@/types/database.types";
 export default function EventFeedPage() {
   const { t } = useTranslation(["events", "common"]);
   const navigate = useNavigate();
+  const profile = useAuthStore((s) => s.profile);
   const { format, city, setFormat, setCity } = useFilterStore();
   const { events, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
@@ -99,8 +104,12 @@ export default function EventFeedPage() {
         )}
       </div>
 
-      {/* LFG Banner */}
-      {/* TODO: integrate with LFG hook when available */}
+      {/* LFG Banner + Toggle + Signals */}
+      <LFGBanner />
+      <div className="flex items-center gap-2">
+        <LFGToggleButton />
+      </div>
+      <LFGSignalList city={profile?.city ?? undefined} />
 
       {/* Events grid */}
       {isLoading ? (
@@ -118,7 +127,7 @@ export default function EventFeedPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {events.map((event) => (
-            <EventCard key={event.id} event={event as any} />
+            <EventCard key={event.id} event={event} />
           ))}
           {/* Infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-1" />
@@ -132,7 +141,7 @@ export default function EventFeedPage() {
       )}
 
       {/* FAB for LFG */}
-      <FAB onClick={() => navigate("/events/create")}>
+      <FAB onClick={() => navigate("/events/new")}>
         <CalendarPlus className="h-5 w-5 mr-2" />
         {t("common:create")}
       </FAB>

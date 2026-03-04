@@ -1,0 +1,126 @@
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/authStore";
+/**
+ * Hook for Looking-For-Game (LFG) functionality.
+ * - Query current user's active signal
+ * - Query all active signals in a city
+ * - Activate / deactivate signal
+ * - Realtime subscription for live signal updates
+ */
+export function useLFG(city) {
+    const queryClient = useQueryClient();
+    const user = useAuthStore((s) => s.user);
+    // Current user's active LFG signal
+    const mySignalQuery = useQuery({
+        queryKey: ["lfg-my", user?.id],
+        queryFn: async () => {
+            if (!user)
+                return null;
+            const { data, error } = await supabase
+                .from("looking_for_game")
+                .select("*")
+                .eq("user_id", user.id)
+                .gt("expires_at", new Date().toISOString())
+                .maybeSingle();
+            if (error)
+                throw error;
+            return data;
+        },
+        enabled: !!user,
+        refetchInterval: 60000, // Re-check expiry
+    });
+    // All active signals in the given city
+    const signalsQuery = useQuery({
+        queryKey: ["lfg-signals", city],
+        queryFn: async () => {
+            if (!city)
+                return [];
+            const { data, error } = await supabase
+                .from("looking_for_game")
+                .select("*, profiles(display_name)")
+                .eq("city", city)
+                .gt("expires_at", new Date().toISOString())
+                .order("created_at", { ascending: false });
+            if (error)
+                throw error;
+            return (data ?? []);
+        },
+        enabled: !!city,
+        refetchInterval: 30000,
+    });
+    // Realtime subscription for LFG signals
+    useEffect(() => {
+        if (!city)
+            return;
+        const channel = supabase
+            .channel(`lfg:${city}`)
+            .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "looking_for_game",
+        }, () => {
+            queryClient.invalidateQueries({ queryKey: ["lfg-signals", city] });
+            queryClient.invalidateQueries({ queryKey: ["lfg-count", city] });
+        })
+            .subscribe();
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [city, queryClient]);
+    // Activate LFG signal (upsert — one signal per user via UNIQUE constraint)
+    const activateMutation = useMutation({
+        mutationFn: async ({ city: signalCity, formats }) => {
+            if (!user)
+                throw new Error("Not authenticated");
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            const { data, error } = await supabase
+                .from("looking_for_game")
+                .upsert({
+                user_id: user.id,
+                city: signalCity,
+                formats,
+                expires_at: expiresAt,
+            }, { onConflict: "user_id" })
+                .select()
+                .single();
+            if (error)
+                throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["lfg-my"] });
+            queryClient.invalidateQueries({ queryKey: ["lfg-signals"] });
+            queryClient.invalidateQueries({ queryKey: ["lfg-count"] });
+        },
+    });
+    // Deactivate (delete) LFG signal
+    const deactivateMutation = useMutation({
+        mutationFn: async () => {
+            if (!user)
+                throw new Error("Not authenticated");
+            const { error } = await supabase
+                .from("looking_for_game")
+                .delete()
+                .eq("user_id", user.id);
+            if (error)
+                throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["lfg-my"] });
+            queryClient.invalidateQueries({ queryKey: ["lfg-signals"] });
+            queryClient.invalidateQueries({ queryKey: ["lfg-count"] });
+        },
+    });
+    return {
+        mySignal: mySignalQuery.data ?? null,
+        isMySignalLoading: mySignalQuery.isLoading,
+        signals: signalsQuery.data ?? [],
+        isSignalsLoading: signalsQuery.isLoading,
+        activate: activateMutation.mutate,
+        deactivate: deactivateMutation.mutate,
+        isActivating: activateMutation.isPending,
+        isDeactivating: deactivateMutation.isPending,
+    };
+}

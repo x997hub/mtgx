@@ -32,5 +32,10 @@
   "role_player": "Игрок",
   "role_organizer": "Организатор",
   "role_club_owner": "Владелец клуба",
-  "role_admin": "Администратор"
+  "role_admin": "Администратор",
+  "language": "Язык",
+  "push_not_supported": "Push-уведомления не поддерживаются в этом браузере",
+  "push_enabled": "Push-уведомления включены",
+  "push_denied": "Push-уведомления заблокированы браузером",
+  "push_enable": "Включить Push-уведомления"
 }

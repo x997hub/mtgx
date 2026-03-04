@@ -21,13 +21,28 @@ export function useRSVP() {
             await queryClient.cancelQueries({ queryKey: ["rsvps", eventId] });
             const previous = queryClient.getQueryData(["rsvps", eventId]);
             const userId = user?.id;
+            if (!userId)
+                return { previous };
             queryClient.setQueryData(["rsvps", eventId], (old) => {
                 if (!Array.isArray(old))
                     return old;
-                return old.map((r) => {
-                    const item = r;
-                    return item.user_id === userId ? { ...item, status } : item;
-                });
+                const existing = old.find((r) => r.user_id === userId);
+                if (existing) {
+                    return old.map((r) => {
+                        const item = r;
+                        return item.user_id === userId ? { ...item, status } : item;
+                    });
+                }
+                // First-time RSVP: append new entry
+                return [
+                    ...old,
+                    {
+                        user_id: userId,
+                        event_id: eventId,
+                        status,
+                        profiles: { display_name: user?.user_metadata?.full_name ?? "You" },
+                    },
+                ];
             });
             return { previous };
         },

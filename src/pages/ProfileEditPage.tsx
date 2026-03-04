@@ -98,10 +98,8 @@ export default function ProfileEditPage() {
       const slots: AvailabilityInsert[] = [];
       for (const day of DAYS) {
         for (const slot of SLOTS) {
-          const level = grid[`${day}-${slot}`];
-          if (level && level !== "unavailable") {
-            slots.push({ user_id: user.id, day, slot, level });
-          }
+          const level = grid[`${day}-${slot}`] ?? "unavailable";
+          slots.push({ user_id: user.id, day, slot, level });
         }
       }
       await updateAvailability(slots);
