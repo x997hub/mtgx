@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,17 +25,20 @@ export default function OnboardingPage() {
   const { upsertProfile, updateAvailability, isUpdating } = useProfile();
   const { subscribe } = useSubscription();
 
-  // If user already has a profile, redirect to feed
-  if (existingProfile) {
-    navigate("/", { replace: true });
-  }
+  // Track that onboarding is in progress so we don't redirect prematurely
+  const [onboardingStarted, setOnboardingStarted] = useState(false);
+
+  useEffect(() => {
+    // Only redirect if profile already existed BEFORE onboarding started
+    if (existingProfile && !onboardingStarted) {
+      navigate("/", { replace: true });
+    }
+  }, [existingProfile, onboardingStarted, navigate]);
 
   const [step, setStep] = useState(0);
   const [city, setCity] = useState("");
   const [formats, setFormats] = useState<MtgFormat[]>([]);
-  const [availability, setAvailability] = useState<
-    Record<string, boolean>
-  >({});
+  const [availability, setAvailability] = useState<Record<string, boolean>>({});
 
   const toggleFormat = (format: MtgFormat) => {
     setFormats((prev) =>
@@ -50,6 +53,7 @@ export default function OnboardingPage() {
 
   const handleSaveProfile = async () => {
     if (!user) return;
+    setOnboardingStarted(true);
     const displayName =
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
@@ -59,10 +63,9 @@ export default function OnboardingPage() {
       await upsertProfile({
         id: user.id,
         display_name: displayName,
-        city,
-        formats,
+        city: city || "Unknown",
+        ...(formats.length > 0 ? { formats } : {}),
       });
-      toast({ title: t("profile:profile_saved") });
     } catch {
       toast({ title: t("common:error"), variant: "destructive" });
     }
@@ -84,35 +87,45 @@ export default function OnboardingPage() {
   };
 
   const handleNext = async () => {
-    if (step === 0 && city) {
-      await handleSaveProfile();
+    if (step === 0) {
+      if (city) await handleSaveProfile();
       setStep(1);
-    } else if (step === 1 && formats.length > 0) {
-      await handleSaveProfile();
+    } else if (step === 1) {
+      if (formats.length > 0) await handleSaveProfile();
       setStep(2);
     } else if (step === 2) {
       await handleSaveAvailability();
       setStep(3);
     } else if (step === 3) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   };
 
-  const handleSkipAvailability = async () => {
-    setStep(3);
+  const handleSkip = () => {
+    if (step === 0) {
+      setOnboardingStarted(true);
+      setStep(1);
+    } else if (step === 1) {
+      setStep(2);
+    } else if (step === 2) {
+      setStep(3);
+    } else if (step === 3) {
+      navigate("/", { replace: true });
+    }
   };
 
-  const handleSubscribeAndFinish = async () => {
+  const handleFinish = async () => {
+    // Create profile if it wasn't created yet (all steps skipped)
+    if (!onboardingStarted && user) {
+      await handleSaveProfile();
+    }
+    // Subscribe to selected formats in city
     if (city && formats.length > 0) {
       for (const format of formats) {
-        subscribe({
-          targetType: "format_city",
-          format,
-          city,
-        });
+        subscribe({ targetType: "format_city", format, city });
       }
     }
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   const totalSteps = 4;
@@ -204,7 +217,7 @@ export default function OnboardingPage() {
                               : "bg-surface border-surface-hover text-text-secondary hover:bg-surface-hover"
                           }`}
                         >
-                          {isActive ? "+" : "-"}
+                          {isActive ? "✓" : ""}
                         </button>
                       );
                     })}
@@ -218,9 +231,9 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-4">
               <p className="text-sm text-text-secondary text-center">
-                {t("profile:onboarding_subscribe")}
+                {t("profile:onboarding_subscribe_description", "Subscribe to get notified about events matching your interests")}
               </p>
-              {city && formats.length > 0 && (
+              {city && formats.length > 0 ? (
                 <div className="space-y-2">
                   {formats.map((format) => (
                     <div
@@ -228,7 +241,7 @@ export default function OnboardingPage() {
                       className="flex items-center justify-between rounded-lg border border-surface-hover px-4 py-3"
                     >
                       <span className="text-text-primary text-sm">
-                        {t(`events:${format}`)} in {city}
+                        {t(`events:${format}`)} — {city}
                       </span>
                       <Badge variant="outline" className="text-accent border-accent">
                         {t("common:subscribe")}
@@ -236,39 +249,38 @@ export default function OnboardingPage() {
                     </div>
                   ))}
                 </div>
+              ) : (
+                <p className="text-sm text-text-secondary text-center">
+                  {t("profile:onboarding_no_subs", "You can set up subscriptions later in Settings")}
+                </p>
               )}
             </div>
           )}
 
           {/* Navigation buttons */}
           <div className="flex gap-3">
-            {step === 2 && (
-              <Button
-                variant="outline"
-                onClick={handleSkipAvailability}
-                className="flex-1 min-h-[44px] border-surface-hover text-text-secondary"
-              >
-                {t("common:skip")}
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              onClick={handleSkip}
+              className="flex-1 min-h-[44px] border-surface-hover text-text-secondary"
+            >
+              {t("common:skip")}
+            </Button>
             {step < 3 ? (
               <Button
                 onClick={handleNext}
-                disabled={
-                  isUpdating ||
-                  (step === 0 && !city) ||
-                  (step === 1 && formats.length === 0)
-                }
+                disabled={isUpdating}
                 className="flex-1 min-h-[44px]"
               >
                 {isUpdating ? t("common:loading") : t("common:next")}
               </Button>
             ) : (
               <Button
-                onClick={handleSubscribeAndFinish}
+                onClick={handleFinish}
+                disabled={isUpdating}
                 className="flex-1 min-h-[44px]"
               >
-                {t("common:done")}
+                {isUpdating ? t("common:loading") : t("common:done")}
               </Button>
             )}
           </div>
