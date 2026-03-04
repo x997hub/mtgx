@@ -12,22 +12,32 @@
   <body>
     <div id="root"></div>
     <script>
-      // One-time: nuke old service workers and stale caches, then reload
-      if (navigator.serviceWorker && !window.__swCleaned) {
+      // Nuke old service workers and caches
+      if (navigator.serviceWorker) {
         navigator.serviceWorker.getRegistrations().then(function(regs) {
-          if (regs.length > 0) {
-            Promise.all(regs.map(function(r) { return r.unregister(); }))
-              .then(function() { return caches.keys(); })
-              .then(function(names) {
-                return Promise.all(names.map(function(n) { return caches.delete(n); }));
-              })
-              .then(function() {
-                window.__swCleaned = true;
-                location.reload();
-              });
-          }
+          regs.forEach(function(r) { r.unregister(); });
+        });
+        caches.keys().then(function(names) {
+          names.forEach(function(n) { caches.delete(n); });
         });
       }
+      // Auto-reload once on chunk load failure (stale deploy)
+      window.addEventListener('error', function(e) {
+        if (e.message && e.message.indexOf('dynamically imported module') !== -1) {
+          if (!sessionStorage.getItem('chunk_reload')) {
+            sessionStorage.setItem('chunk_reload', '1');
+            location.reload();
+          }
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e.reason && e.reason.message && e.reason.message.indexOf('dynamically imported module') !== -1) {
+          if (!sessionStorage.getItem('chunk_reload')) {
+            sessionStorage.setItem('chunk_reload', '1');
+            location.reload();
+          }
+        }
+      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
