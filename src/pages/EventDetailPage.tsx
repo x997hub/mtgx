@@ -150,7 +150,7 @@ export default function EventDetailPage() {
             <Users className="h-4 w-4 flex-shrink-0" />
             <span className="text-sm">
               {event.min_players}
-              {event.max_players ? `–${event.max_players}` : "+"} {t("events:min_players").toLowerCase()}
+              {event.max_players ? `–${event.max_players}` : "+"} {t("events:players", "players")}
               {spotsLeft !== null && spotsLeft > 0 && (
                 <span className="text-accent ml-2">
                   ({t("events:spots_left", { count: spotsLeft })})

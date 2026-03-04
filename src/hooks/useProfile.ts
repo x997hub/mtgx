@@ -87,17 +87,16 @@ export function useProfile(userId?: string) {
   const updateAvailabilityMutation = useMutation({
     mutationFn: async (slots: AvailabilityInsert[]) => {
       if (!currentUser) throw new Error("Not authenticated");
-      // Delete existing and re-insert
-      const { error: deleteError } = await supabase
-        .from("availability")
-        .delete()
-        .eq("user_id", currentUser.id);
-      if (deleteError) throw deleteError;
-
-      if (slots.length > 0) {
-        const { error: insertError } = await supabase.from("availability").insert(slots);
-        if (insertError) throw insertError;
-      }
+      // Use transactional RPC to avoid data loss if insert fails after delete
+      const { error } = await supabase.rpc("update_user_availability", {
+        p_user_id: currentUser.id,
+        p_slots: slots.map((s) => ({
+          day: s.day,
+          slot: s.slot,
+          level: s.level ?? "available",
+        })),
+      });
+      if (error) throw error;
     },
     onSettled: () => {
       const uid = useAuthStore.getState().user?.id;

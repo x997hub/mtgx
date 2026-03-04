@@ -30,6 +30,10 @@ export function QuickMeetupForm({ defaultValues }: QuickMeetupFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!city) {
+      toast({ title: t("city_required", "City is required"), variant: "destructive" });
+      return;
+    }
 
     const startsAtDate = new Date(startsAt);
 

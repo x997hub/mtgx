@@ -4,9 +4,12 @@ import { queryClient } from "@/lib/queryClient";
 import { router } from "@/router";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { useAuthListener } from "@/hooks/useAuth";
 import "@/i18n";
 
 export function App() {
+  useAuthListener();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>

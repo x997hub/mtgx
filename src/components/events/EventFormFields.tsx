@@ -58,9 +58,9 @@ export function EventFormFields({
       </div>
 
       <div className="space-y-2">
-        <Label>{t("city")}</Label>
-        <Select value={city} onValueChange={onCityChange}>
-          <SelectTrigger>
+        <Label>{t("city")} *</Label>
+        <Select value={city} onValueChange={onCityChange} required>
+          <SelectTrigger data-invalid={!city || undefined}>
             <SelectValue placeholder={t("city")} />
           </SelectTrigger>
           <SelectContent>
@@ -71,6 +71,9 @@ export function EventFormFields({
             ))}
           </SelectContent>
         </Select>
+        {!city && (
+          <p className="text-xs text-red-400">{t("city_required", "City is required")}</p>
+        )}
       </div>
 
       <div className="space-y-2">

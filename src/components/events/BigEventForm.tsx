@@ -64,6 +64,10 @@ export function BigEventForm({ defaultValues, clonedFrom }: BigEventFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!city) {
+      toast({ title: t("city_required", "City is required"), variant: "destructive" });
+      return;
+    }
 
     try {
       await createEvent({

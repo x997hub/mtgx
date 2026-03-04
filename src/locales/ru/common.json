@@ -56,5 +56,7 @@
   "cancellations": "Отмены",
   "low_reliability": "Ненадёжные игроки",
   "subscriptions": "Подписки",
-  "no_subscriptions": "Подписок пока нет"
+  "no_subscriptions": "Подписок пока нет",
+  "app_tagline": "Находи MTG-игры. Заполняй столы.",
+  "login_google": "Войти через Google"
 }

@@ -37,5 +37,7 @@
   "push_not_supported": "Push notifications not supported in this browser",
   "push_enabled": "Push notifications enabled",
   "push_denied": "Push notifications blocked by browser",
-  "push_enable": "Enable Push Notifications"
+  "push_enable": "Enable Push Notifications",
+  "onboarding_subscribe_description": "Subscribe to get notified about events matching your interests",
+  "onboarding_no_subs": "You can set up subscriptions later in Settings"
 }

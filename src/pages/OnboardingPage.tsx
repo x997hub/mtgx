@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ export default function OnboardingPage() {
 
   // Track that onboarding is in progress so we don't redirect prematurely
   const [onboardingStarted, setOnboardingStarted] = useState(false);
+  // BUG-2: Prevent double-clicks on Next/Finish
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // Only redirect if profile already existed BEFORE onboarding started
@@ -51,6 +53,7 @@ export default function OnboardingPage() {
     setAvailability((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // BUG-3: handleSaveProfile now re-throws on failure so callers can react
   const handleSaveProfile = async () => {
     if (!user) return;
     setOnboardingStarted(true);
@@ -66,8 +69,9 @@ export default function OnboardingPage() {
         city: city || "Unknown",
         ...(formats.length > 0 ? { formats } : {}),
       });
-    } catch {
+    } catch (err) {
       toast({ title: t("common:error"), variant: "destructive" });
+      throw err;
     }
   };
 
@@ -81,23 +85,34 @@ export default function OnboardingPage() {
       });
     try {
       await updateAvailability(slots);
-    } catch {
+    } catch (err) {
       toast({ title: t("common:error"), variant: "destructive" });
+      throw err;
     }
   };
 
+  // BUG-2: Guard with isSaving to prevent double-clicks
+  // BUG-3: Don't advance step if save fails
   const handleNext = async () => {
-    if (step === 0) {
-      if (city) await handleSaveProfile();
-      setStep(1);
-    } else if (step === 1) {
-      if (formats.length > 0) await handleSaveProfile();
-      setStep(2);
-    } else if (step === 2) {
-      await handleSaveAvailability();
-      setStep(3);
-    } else if (step === 3) {
-      navigate("/", { replace: true });
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      if (step === 0) {
+        if (city) await handleSaveProfile();
+        setStep(1);
+      } else if (step === 1) {
+        if (formats.length > 0) await handleSaveProfile();
+        setStep(2);
+      } else if (step === 2) {
+        await handleSaveAvailability();
+        setStep(3);
+      } else if (step === 3) {
+        navigate("/", { replace: true });
+      }
+    } catch {
+      // Save failed -- don't advance step (toast already shown)
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -114,22 +129,32 @@ export default function OnboardingPage() {
     }
   };
 
+  // BUG-10: Check !existingProfile instead of !onboardingStarted
   const handleFinish = async () => {
-    // Create profile if it wasn't created yet (all steps skipped)
-    if (!onboardingStarted && user) {
-      await handleSaveProfile();
-    }
-    // Subscribe to selected formats in city
-    if (city && formats.length > 0) {
-      for (const format of formats) {
-        subscribe({ targetType: "format_city", format, city });
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      // Create profile if it wasn't created yet (all steps skipped)
+      if (!existingProfile && user) {
+        await handleSaveProfile();
       }
+      // Subscribe to selected formats in city
+      if (city && formats.length > 0) {
+        for (const format of formats) {
+          subscribe({ targetType: "format_city", format, city });
+        }
+      }
+      navigate("/", { replace: true });
+    } catch {
+      // Save failed -- toast already shown
+    } finally {
+      setIsSaving(false);
     }
-    navigate("/", { replace: true });
   };
 
   const totalSteps = 4;
   const progress = ((step + 1) / totalSteps) * 100;
+  const busy = isUpdating || isSaving;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface p-4">
@@ -198,9 +223,10 @@ export default function OnboardingPage() {
                     {t(`profile:${slot}_slot`)}
                   </div>
                 ))}
+                {/* BUG-7: Add key on Fragment */}
                 {DAYS.map((day) => (
-                  <>
-                    <div key={`label-${day}`} className="text-sm text-text-secondary font-medium pr-2">
+                  <Fragment key={day}>
+                    <div className="text-sm text-text-secondary font-medium pr-2">
                       {t(`profile:${day}`)}
                     </div>
                     {SLOTS.map((slot) => {
@@ -217,11 +243,11 @@ export default function OnboardingPage() {
                               : "bg-surface border-surface-hover text-text-secondary hover:bg-surface-hover"
                           }`}
                         >
-                          {isActive ? "✓" : ""}
+                          {isActive ? "\u2713" : ""}
                         </button>
                       );
                     })}
-                  </>
+                  </Fragment>
                 ))}
               </div>
             </div>
@@ -269,18 +295,18 @@ export default function OnboardingPage() {
             {step < 3 ? (
               <Button
                 onClick={handleNext}
-                disabled={isUpdating}
+                disabled={busy}
                 className="flex-1 min-h-[44px]"
               >
-                {isUpdating ? t("common:loading") : t("common:next")}
+                {busy ? t("common:loading") : t("common:next")}
               </Button>
             ) : (
               <Button
                 onClick={handleFinish}
-                disabled={isUpdating}
+                disabled={busy}
                 className="flex-1 min-h-[44px]"
               >
-                {isUpdating ? t("common:loading") : t("common:done")}
+                {busy ? t("common:loading") : t("common:done")}
               </Button>
             )}
           </div>

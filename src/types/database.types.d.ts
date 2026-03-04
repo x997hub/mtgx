@@ -437,6 +437,13 @@ export interface Database {
                     user_id: string;
                 }[];
             };
+            update_user_availability: {
+                Args: {
+                    p_user_id: string;
+                    p_slots: Record<string, unknown>[];
+                };
+                Returns: undefined;
+            };
         };
         Enums: {
             user_role: UserRole;

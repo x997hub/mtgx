@@ -56,5 +56,7 @@
   "cancellations": "Cancellations",
   "low_reliability": "Low reliability players",
   "subscriptions": "Subscriptions",
-  "no_subscriptions": "No subscriptions yet"
+  "no_subscriptions": "No subscriptions yet",
+  "app_tagline": "Find MTG games. Fill tables.",
+  "login_google": "Sign in with Google"
 }

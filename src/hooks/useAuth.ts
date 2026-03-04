@@ -1,20 +1,24 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
 
-export function useAuth() {
-  const { session, user, profile, isLoading, profileChecked, isAuthenticated, setSession, setProfile, setLoading, reset } =
-    useAuthStore();
+/** Module-level flag to prevent duplicate auth listeners across component instances */
+let listenerInitialized = false;
 
-  const listenerFiredRef = useRef(false);
+/**
+ * Sets up the Supabase auth listener exactly once (module-level guard).
+ * Call this hook in a single top-level component (e.g. App.tsx or ProtectedRoute).
+ */
+export function useAuthListener() {
+  const { setSession, setProfile, setLoading, reset } = useAuthStore();
 
   useEffect(() => {
-    listenerFiredRef.current = false;
+    if (listenerInitialized) return;
+    listenerInitialized = true;
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      listenerFiredRef.current = true;
       setSession(session);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -35,19 +39,20 @@ export function useAuth() {
         setLoading(false);
         return;
       }
-      if (!listenerFiredRef.current) {
-        setSession(session);
-        if (session?.user) {
-          fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
+      setSession(session);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
       }
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+      listenerInitialized = false;
+    };
+  }, [setSession, setProfile, setLoading]);
 
   async function fetchProfile(userId: string) {
     try {
@@ -68,6 +73,15 @@ export function useAuth() {
       setProfile(null);
     }
   }
+}
+
+/**
+ * Lightweight hook that reads auth state from the store and provides login/logout functions.
+ * Does NOT register any auth listeners -- call useAuthListener() once in a top-level component.
+ */
+export function useAuth() {
+  const { session, user, profile, isLoading, profileChecked, isAuthenticated, reset } =
+    useAuthStore();
 
   async function loginWithGoogle() {
     await supabase.auth.signInWithOAuth({
