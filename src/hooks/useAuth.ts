@@ -55,11 +55,12 @@ export function useAuth() {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
       if (error) {
         console.error("Failed to fetch profile:", error);
         return;
       }
+      // data is null when profile doesn't exist yet (new user)
       setProfile(data);
     } catch (err) {
       console.error("Failed to fetch profile:", err);

@@ -36,13 +36,16 @@ export function useSubscription() {
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("subscriptions")
-        .insert({
-          user_id: user.id,
-          target_type: targetType,
-          target_id: targetId ?? null,
-          format: format ?? null,
-          city: city ?? null,
-        })
+        .upsert(
+          {
+            user_id: user.id,
+            target_type: targetType,
+            target_id: targetId ?? null,
+            format: format ?? null,
+            city: city ?? null,
+          },
+          { onConflict: "user_id,target_type,target_id,format,city" }
+        )
         .select()
         .single();
       if (error) throw error;
