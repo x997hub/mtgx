@@ -1,299 +1,583 @@
-# MTGx — Product Roadmap
+# MTGx — Product Roadmap v2
 
-> Результат Expert Panel: 4 эксперта (Product Manager, UX Designer, Backend Engineer, Community/Growth Expert), 5 раундов дебатов.
-> Полный лог: `Expert Panel/logs/2026-03-05-mtgx-product-roadmap.md`
-
----
-
-## Корневая проблема
-
-**Дефицит доверия.** Игроки не знают, придут ли другие → не идут → ивенты проваливаются → экосистема умирает. MTGx должен создавать **социальное давление** ("Саша идёт → значит, пойду и я"), а не просто показывать список ивентов.
+**Фокус:** максимум полезного функционала. Каждая фича отвечает на вопрос "почему пользователь вернётся завтра?"
 
 ---
 
-## Phase 1 — Trust Infrastructure (10-12 дней)
+## Принципы
 
-**Цель:** Превратить MTGx из "календаря ивентов" в "движок обязательств". Создать ground truth по посещаемости.
+**Для игроков — бесплатно, просто, интересно.** Мотивация через XP и ачивки, не через наказания.
 
-### 1.1 rsvp_with_lock (FOR UPDATE SKIP LOCKED)
-**Приоритет:** P0 — блокирует всё остальное
+**Монетизация — только через магазины.** Freemium B2B.
 
-**Аргументация:** Текущий код mtgx-api содержит fallback с комментарием "susceptible to TOCTOU race condition". При 10+ одновременных RSVP на популярный ивент возможен overbooking. Без атомарного lock все фичи по reliability и waitlist — на песке.
+**Симбиоз с WhatsApp.** Плагин, не замена. Каждая фича усиливает WhatsApp-шеринг.
 
-**Преимущества:**
-- Исключает фантомные записи и overbooking
-- Позволяет безопасно строить waitlist поверх
-- Даёт основу для двухфазного подтверждения в Phase 2
-
-**Реализация:** `SELECT ... FOR UPDATE SKIP LOCKED` в RPC-функции. 2 дня.
-
-### 1.2 QR Check-in
-**Приоритет:** P0
-
-**Аргументация:** Без ground truth по посещаемости reliability score, XP, аналитика — всё шум. QR check-in — единственный способ отличить "записался и пришёл" от "записался и не пришёл". Также служит валидацией density: если за 60 дней нет 15 уникальных check-in'ов в городе, социальные фичи бессмысленны.
-
-**Преимущества:**
-- Данные для reliability score (уже в схеме)
-- Валидация плотности аудитории
-- Основа для XP-системы в будущем
-- Магазины получают реальную статистику посещаемости
-
-**Реализация:**
-- `events`: добавить `qr_token UUID`, `checkin_enabled BOOL`
-- `rsvps`: добавить `checked_in_at TIMESTAMPTZ`
-- RPC `checkin_by_qr(token, user_id)` — атомарный, idempotent
-- Edge Function `generate_qr` — подписанный токен, TTL 24h
-- 2 дня.
-
-### 1.3 «Иду сегодня» — One-Tap Availability Signal
-**Приоритет:** P1
-
-**Аргументация:** **Единственная фича, создающая триггер открыть приложение.** Объединяет идеи "Bat Signal" (UX), LFG broadcast (Community) и "Fill My Pod" (PM). Ephemeral (2h TTL) — создаёт urgency (MTG-флейвор: "flash" механика). Когда 3+ игроков откликнулись — подсказка "Создать ивент?"
-
-**Преимущества:**
-- Заменяет 45-минутный WhatsApp-тред одним тапом
-- Социальное давление: "Женя свободен → надо идти"
-- Ephemeral = нет спама, нет мёртвых сигналов
-- Прямой конкурент поведению "кто свободен?" в чатах
-
-**Реализация:**
-- Новая таблица `lfg_signals(user_id, city, format, expires_at)`
-- Push-уведомления игрокам в том же городе/формате
-- CTA на русском: «Иду сегодня» / «Свободен»
-- 2 дня.
-
-### 1.4 Stamp Card (Simple Retention Hook)
-**Приоритет:** P2
-
-**Аргументация:** Полная XP-система (6-8 дней) преждевременна — нет данных, что геймификация работает в этом сообществе. Stamp Card (10 ивентов = бейдж) — 1 день, культурно понятен (лояльность через карты), валидирует аппетит к геймификации до инвестиций.
-
-**Преимущества:**
-- 1 день разработки вместо 6-8
-- Нет новых таблиц — regular VIEW поверх RSVPs
-- Видимый прогресс на профиле
-- Данные для решения о полной XP-системе
-
-**Важно:** НЕ materialized view (блокировка на Free tier). Обычный VIEW + index на `(user_id, event_id)`.
-
-### 1.5 Draft Autosave + Conflict Modal
-**Приоритет:** P2
-
-**Аргументация:** Ивенты создаются в местах со слабым WiFi. Потеря черновика = rage quit. Conflict modal ("Найдена более новая версия с телефона. Использовать?") — сигнал доверия к продукту.
-
-**Преимущества:**
-- Предотвращает потерю данных при обрыве связи
-- Решает multi-tab проблему (телефон + ноутбук)
-- Индикатор "Сохранено / Синхронизируется" — UX-доверие
-
-**Реализация:** Сохранение в БД с debounce 2-3 сек. BroadcastChannel API для multi-tab (с fallback для Safari iOS). 1-2 дня.
-
-### 1.6 Error State UX Pass
-**Приоритет:** P1
-
-**Аргументация:** Каждая фича спроектирована для happy path, ни одна — для ошибок. В шумном зале на турнире непонятная модалка = потерянный пользователь навсегда.
-
-**Преимущества:**
-- Предотвращает "silent retention killer"
-- QR-сбой, конфликт draft, network error — всё покрыто
-- 2 дня, но предотвращает churn на месяцы
-
-### 1.7 "Founder" Badge (Cold Start Incentive)
-**Приоритет:** P3
-
-**Аргументация:** Первые 50 QR check-in'ов получают эксклюзивный бейдж. Создаёт urgency и early-adopter pride. Не требует XP-системы — просто counter + badge на профиле.
-
-**Phase 1 метрики успеха:**
-| Метрика | Target |
-|---------|--------|
-| Race condition на RSVP | 0 |
-| Ивенты с QR check-in | 60%+ |
-| «Иду сегодня» → посещение | 20%+ конверсия |
-| Уникальные check-in'ы / город / 60 дней | ≥15 |
-| Store-партнёры в Gush Dan | 3-5 |
-| Draft completion rate | 90%+ |
+**Каждая фича = причина вернуться.** Если фича не отвечает на "почему пользователь откроет приложение завтра?" — она не нужна.
 
 ---
 
-## Phase 2 — Organizer Power + Validation (месяц 2-3)
+## Техдолг (сделать первым, 2-3 дня)
 
-**Условие входа:** 15 уникальных QR check-in'ов в хотя бы 1 городе за 60 дней.
+Без этого новые фичи будут на гнилом фундаменте.
 
-### 2.1 Intent Tags на ивенты
-**Аргументация:** Решает вопрос "какая это игра?" до того, как его зададут в WhatsApp. 5 фиксированных тегов: Casual / Competitive / Deck Testing / Draft / Teaching. Pill chips на карточке ивента.
+### rsvp_with_lock
+Текущий код имеет race condition (TOCTOU). `FOR UPDATE SKIP LOCKED` в SECURITY DEFINER RPC. Без этого waitlist, двухфазная запись и любая логика поверх RSVP — ненадёжны.
 
-**Преимущества:** Уменьшает pre-event переписку в WhatsApp. Помогает игрокам фильтровать по стилю игры. Effort: 0.5 дня (TEXT[] + GIN index).
+```sql
+CREATE OR REPLACE FUNCTION rsvp_with_lock(
+  p_event_id UUID, p_user_id UUID, p_status rsvp_status
+) RETURNS rsvps LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp AS $$
+DECLARE v_event events%ROWTYPE; v_count INT; v_rsvp rsvps%ROWTYPE;
+BEGIN
+  SELECT * INTO v_event FROM events WHERE id = p_event_id FOR UPDATE SKIP LOCKED;
+  IF v_event IS NULL THEN RAISE EXCEPTION 'event_locked'; END IF;
+  IF v_event.status NOT IN ('active','confirmed') THEN
+    RAISE EXCEPTION 'event_not_active'; END IF;
+  IF p_status = 'going' AND v_event.max_players IS NOT NULL THEN
+    SELECT COUNT(*) INTO v_count FROM rsvps
+      WHERE event_id = p_event_id AND status = 'going';
+    IF v_count >= v_event.max_players THEN
+      RAISE EXCEPTION 'event_full'; END IF;
+  END IF;
+  INSERT INTO rsvps(event_id, user_id, status)
+    VALUES (p_event_id, p_user_id, p_status)
+    ON CONFLICT (event_id, user_id) DO UPDATE SET status = EXCLUDED.status
+    RETURNING * INTO v_rsvp;
+  RETURN v_rsvp;
+END;$$;
+```
 
-### 2.2 Two-Phase Signup (с A/B тестом)
-**Аргументация:** "Заинтересован" → push за 24ч → "Подтверждаю". Решает ghost problem для организаторов. **Обязательно A/B тестировать** — риск снижения общего числа RSVP (UX Designer concern, Round 1).
+### Enum расширение
+Добавить `pending_confirm`, `waitlist` в `rsvp_status` сразу. ALTER TYPE в PostgreSQL необратим — дешевле сделать сейчас, чем пересоздавать таблицу потом.
 
-**Преимущества:** Организатор знает реальное число участников за 24ч. Сокращает no-show rate. Подтверждённые — цветные аватары, неподтверждённые — серые (social proof).
+```sql
+ALTER TYPE rsvp_status ADD VALUE IF NOT EXISTS 'pending_confirm';
+ALTER TYPE rsvp_status ADD VALUE IF NOT EXISTS 'waitlist';
+```
 
-### 2.3 Auto-Cancel at min_players
-**Аргументация:** 3ч до старта, если минимум не набран → auto-cancel + push всем + one-tap "Перенести". Не-карательный фрейминг: "Не набрался кворум" вместо "Вы провалились."
+### supabase gen types
+Заменить ручные типы на автогенерацию: `"types:gen": "supabase gen types typescript --linked > src/types/database.types.ts"`. Запускать после каждой миграции.
 
-**Преимущества:** Предотвращает "поехал зря". Даёт организатору инструмент вместо неловкого отменного сообщения.
-
-### 2.4 Waitlist (FIFO)
-**Аргументация:** Позиция видна: "Вы #2 в очереди." При открытии места — push с 30-минутным окном и кнопкой "Занять место". Нужен отдельный RPC `promote_from_waitlist` с атомарным UPDATE.
-
-**Преимущества:** FOMO-механика (social proof: "Ивент заполнен!"). Игроки делятся полными ивентами → вирусный рост. Конверсия waitlist→confirmed target: 75%.
-
-### 2.5 Proxy Policy Toggle
-**Аргументация:** 3 варианта: No Proxies / Partial (N карт) / Full Proxy. Убирает главный аргумент pre-event WhatsApp-дискуссий. Иконка на карточке ивента.
-
-**Преимущества:** Effort: 0.5 дня (BOOLEAN). Устраняет policy mismatch — частый source of frustration.
-
-### 2.6 Table Language Flag
-**Аргументация:** RU / EN / HE / Mixed — флаги стран на карточке. Вирусный коэффициент MEDIUM-HIGH (Community Expert): русскоязычный игрок, нашедший "русский стол", расскажет всем знакомым.
-
-**Преимущества:** Решает реальную боль Israel-specific. Acquisition channel для русскоязычного сегмента. Effort: 0.5 дня (TEXT column).
-
-### 2.7 Recap Card (Shareable Post-Event Image)
-**Аргументация:** После закрытия ивента — shareable card: "Friday Draft at [Store] — 8 players, Format: Duskmourn." Генерация client-side (html2canvas + crossOrigin="anonymous"). MTGx watermark = earned media.
-
-**Преимущества:** Каждый share виден 50-200 людям. Бесплатный маркетинг. Игроки УЖЕ делают это в WhatsApp, мы даём красивый формат.
-
-### 2.8 Stamp Card Animations
-**Аргументация:** Только если Phase 1 Stamp Card показал engagement. Card-flip animation (0.8 сек), MTG-стиль.
-
-**Phase 2 метрики:**
-| Метрика | Target |
-|---------|--------|
-| Two-phase confirmation rate | ≥70% RSVPs |
-| Auto-cancel accuracy | ≥80% (ивент реально был пустой) |
-| Waitlist→confirmed конверсия | ≥75% |
-| Recap Card share rate | ≥25% участников |
-| Intent tag usage | ≥70% ивентов |
+### Error states
+Пройтись по всем экранам: что видит пользователь при ошибке сети, при "ивент полон", при конфликте данных. В шумном зале непонятная ошибка = удалённое приложение. Toast с понятным текстом + retry кнопка где уместно.
 
 ---
 
-## Phase 3 — Discovery + Format Depth (месяцы 3-4)
+## Волна 1 — Причины возвращаться (1-2 недели)
 
-### 3.1 Recurring Events
-**Условие:** 3+ магазинов делают еженедельные ивенты.
+### «Иду сегодня» — эфемерный сигнал
 
-**Аргументация:** iCal RRULE → автоматическая генерация events на 14 дней вперёд. Организатор подтверждает одним тапом. В фиде — одна карточка с бейджем "каждый четверг".
+Большая кнопка на главном экране. Один тап — ты видим всем в городе. TTL 2 часа (flash-механика — MTG-флейвор). Когда 3+ человек нажали — подсказка "Создать встречу?". Это единственная фича которая даёт причину открыть приложение каждый день в 17:00. Заменяет 45-минутный WhatsApp-тред "кто сегодня свободен?".
 
-**Преимущества:** Снижает organizer burnout (главный risk по Community Expert). Sticky retention — ивенты в календаре = привычка.
+```sql
+CREATE TABLE lfg_signals (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  city       TEXT NOT NULL,
+  format     mtg_format,
+  message    TEXT,              -- опциональный короткий текст
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT now() + interval '2 hours',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_lfg_active ON lfg_signals(city, expires_at) WHERE expires_at > now();
+ALTER TABLE lfg_signals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "lfg_read_active" ON lfg_signals FOR SELECT USING (expires_at > now());
+CREATE POLICY "lfg_insert_own" ON lfg_signals FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "lfg_delete_own" ON lfg_signals FOR DELETE USING (auth.uid() = user_id);
+```
 
-### 3.2 Push Templates для организаторов
-**Аргументация:** Готовые шаблоны: "Ивент подтверждён!", "Нужен ещё 1 игрок — поделись!", "Локация изменилась." One-tap send. 160 символов, без чата.
+Push: Supabase Realtime subscription на `lfg_signals` → клиент фильтрует по city/format → toast + звук. При 3+ сигналов в городе — баннер "3 игрока свободны рядом! Создать встречу?"
 
-**Преимущества:** Сокращает admin overhead (Pain Type C по Store Pitch). Высокая perceived value при минимальных усилиях.
+### XP и уровни
 
-### 3.3 Calendar Integration (.ics)
-**Аргументация:** После RSVP — "Добавить в календарь" (Google Calendar / Apple Calendar). Стандартный .ics link, никакого OAuth. Deep link обратно в ивент.
+Полноценная система, не заглушка. Начисление XP:
 
-**Преимущества:** Retention tool: если MTGx ивенты в твоём календаре, приложение sticky. Target: 40% confirmed RSVPs добавляют в календарь.
+| Действие | XP | Почему |
+|---|---|---|
+| Записался going + QR check-in | +20 | Core loop — ходить на игры |
+| Создал событие которое состоялось | +30 | Стимул организовывать |
+| Пригласил нового игрока (реферал) | +50 | Виральность — самое ценное |
+| Записался maybe + пришёл | +10 | Поощрение честности |
+| Первый визит в новый клуб | +15 | Расширение географии |
 
-### 3.4 Commander Brackets (Power Level 1-4)
-**Аргументация:** Self-report при RSVP. Организатор видит распределение bracket. Решает #1 Commander social problem без rules engine.
+Уровни (квадратичная кривая, формула: `level = floor(sqrt(total_xp / 100)) + 1`):
 
-**Преимущества:** Commander — самый растущий формат в Israel. Высокая лояльность к поду → evangelism.
+| Уровень | XP | Название |
+|---|---|---|
+| 1 | 0 | Squire |
+| 2 | 100 | Apprentice |
+| 3 | 400 | Mage |
+| 4 | 900 | Archmage |
+| 5 | 1600 | Planeswalker |
+| 6 | 2500 | Mythic |
+| 7 | 3600 | Eternal |
 
-### 3.5 QR Code per Event (WhatsApp Sharing)
-**Аргументация:** Статический deep-link QR, pre-fills WhatsApp сообщение с RSVP. Zero backend, работает с Day 1.
+Визуальный бейдж уровня на профиле и в списке участников ивента. Цветная рамка аватара меняется с уровнем (серая → бронза → серебро → золото → фиолет → анимированный градиент). При level-up — card-flip анимация (0.8 сек) + toast "Вы достигли Archmage".
 
-**Преимущества:** WhatsApp symbiosis без бота. Организатор делится QR в группе.
+```sql
+-- XP Ledger (immutable — никогда не UPDATE, только INSERT)
+CREATE TABLE user_xp (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  amount       INT NOT NULL,
+  reason       TEXT NOT NULL,
+  ref_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
+  ref_meta     JSONB,
+  awarded_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_user_xp_user ON user_xp(user_id);
 
-### 3.6 Club Analytics (Basic)
-**Аргументация:** Для магазинов: посещаемость, пиковые дни, формат-популярность, show/no-show по игрокам. Бесплатно в Phase 3, paywall в Phase 4.
+-- Кэш на профиле
+ALTER TABLE profiles ADD COLUMN total_xp INT NOT NULL DEFAULT 0;
+ALTER TABLE profiles ADD COLUMN xp_level INT NOT NULL DEFAULT 1;
 
-**Преимущества:** Acquisition hook для магазинов. Данные, которых у них раньше не было.
+-- Auto-update trigger
+CREATE OR REPLACE FUNCTION fn_update_xp_cache() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
+DECLARE v_total INT; v_level INT;
+BEGIN
+  SELECT COALESCE(SUM(amount), 0) INTO v_total FROM user_xp WHERE user_id = NEW.user_id;
+  v_level := GREATEST(1, floor(sqrt(GREATEST(v_total, 0) / 100.0))::INT + 1);
+  UPDATE profiles SET total_xp = v_total, xp_level = v_level WHERE id = NEW.user_id;
+  RETURN NEW;
+END;$$;
+CREATE TRIGGER trg_xp_cache AFTER INSERT ON user_xp
+  FOR EACH ROW EXECUTE FUNCTION fn_update_xp_cache();
 
-### 3.7 Store Leaderboard
-**Аргументация:** Публичный рейтинг магазинов по частоте ивентов, посещаемости, satisfaction. Friendly competition между магазинами.
+-- RLS: читать свои, писать только через RPC
+ALTER TABLE user_xp ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "xp_read_own" ON user_xp FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "xp_no_direct_write" ON user_xp FOR INSERT WITH CHECK (false);
+```
 
-**Преимущества:** Retention для store owners (держат рейтинг). Discovery для игроков.
+### Достижения (ачивки)
+
+Разблокируются автоматически. Видны на профиле. Горизонтальный скролл маленьких иконок.
+
+| Ачивка | Условие | Иконка |
+|---|---|---|
+| First Tap | Первый RSVP going | Tapped land |
+| Regular | 5 ивентов за месяц | Calendar |
+| Organizer | Создал 3 события которые состоялись | Spell stack |
+| Multi-format | Играл в 3+ форматов | Rainbow mana |
+| Reliable | 10 going подряд без отмен | Shield |
+| Explorer | Посетил 3 разных клуба | Compass |
+| Recruiter | Привёл 3 новых игроков | Portal |
+| Veteran | 50 ивентов всего | Crown |
+| Founder | Один из первых 50 пользователей | Star |
+| Night Owl | 5 ивентов после 20:00 | Moon |
+| Weekend Warrior | 10 ивентов в выходные | Sword |
+
+```sql
+CREATE TABLE achievements (
+  id          TEXT PRIMARY KEY,
+  title       TEXT NOT NULL,
+  description TEXT NOT NULL,
+  icon_key    TEXT NOT NULL,
+  xp_reward   INT NOT NULL DEFAULT 0,
+  is_hidden   BOOLEAN NOT NULL DEFAULT false,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE user_achievements (
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  achievement_id TEXT NOT NULL REFERENCES achievements(id),
+  unlocked_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ref_event_id   UUID REFERENCES events(id) ON DELETE SET NULL,
+  UNIQUE(user_id, achievement_id)
+);
+CREATE INDEX idx_ua_user ON user_achievements(user_id);
+
+-- RLS: ачивки публичны (видны на профилях), запись только через RPC
+ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "achievements_read_all" ON achievements FOR SELECT USING (true);
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ua_read_all" ON user_achievements FOR SELECT USING (true);
+CREATE POLICY "ua_no_direct_write" ON user_achievements FOR INSERT WITH CHECK (false);
+
+-- Единая функция начисления XP + ачивок
+CREATE OR REPLACE FUNCTION award_xp(
+  p_user_id UUID, p_amount INT, p_reason TEXT,
+  p_event_id UUID DEFAULT NULL, p_achievement TEXT DEFAULT NULL
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp AS $$
+BEGIN
+  INSERT INTO user_xp(user_id, amount, reason, ref_event_id)
+  VALUES (p_user_id, p_amount, p_reason, p_event_id);
+  IF p_achievement IS NOT NULL THEN
+    INSERT INTO user_achievements(user_id, achievement_id, ref_event_id)
+    VALUES (p_user_id, p_achievement, p_event_id)
+    ON CONFLICT (user_id, achievement_id) DO NOTHING;
+    -- Bonus XP за ачивку
+    INSERT INTO user_xp(user_id, amount, reason, ref_event_id)
+    SELECT p_user_id, xp_reward, 'achievement_' || p_achievement, p_event_id
+    FROM achievements WHERE id = p_achievement AND xp_reward > 0;
+  END IF;
+END;$$;
+```
+
+### QR Check-in
+
+Организатор показывает QR на телефоне/экране. Игрок сканирует = подтверждение присутствия. Фундамент: XP, reliability, аналитика — всё завязано на реальную явку. **Без check-in'а XP за going не начисляется.**
+
+```sql
+ALTER TABLE events ADD COLUMN qr_token UUID DEFAULT gen_random_uuid();
+ALTER TABLE events ADD COLUMN checkin_enabled BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE rsvps ADD COLUMN checked_in_at TIMESTAMPTZ;
+
+CREATE OR REPLACE FUNCTION checkin_by_qr(p_token UUID, p_user_id UUID)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp AS $$
+DECLARE v_event_id UUID;
+BEGIN
+  SELECT id INTO v_event_id FROM events WHERE qr_token = p_token;
+  IF v_event_id IS NULL THEN RAISE EXCEPTION 'invalid_qr'; END IF;
+  UPDATE rsvps SET checked_in_at = now()
+  WHERE event_id = v_event_id AND user_id = p_user_id AND status = 'going';
+  IF NOT FOUND THEN RAISE EXCEPTION 'not_rsvped'; END IF;
+END;$$;
+```
+
+UI: Организатор — fullscreen QR (высокий контраст, работает даже при слабом WiFi — token кэшируется). Игрок — кнопка "Сканировать QR" → камера → done.
+
+### Recap Card
+
+После закрытия ивента — красивая шеринговая карточка: "Friday Draft at Rotemz — 8 players, Pauper." Генерация на клиенте (`dom-to-image`). Один тап → в WhatsApp. Логотип MTGx = бесплатный маркетинг. Создаёт FOMO у тех кто не пришёл.
+
+Содержит: формат, площадка, число участников, дата, XP earned, unlocked achievements. Watermark "mtgx.app".
+
+### Intent Tags
+
+При создании quick meetup — выбор тега: Casual / Competitive / Deck Testing / Draft / Teaching. Pill chips на карточке (цветокодированные: casual=зелёный, competitive=красный, teaching=синий). Игрок понимает куда идёт до того как нажмёт going.
+
+```sql
+ALTER TABLE events ADD COLUMN intent_tags TEXT[] DEFAULT '{}';
+CREATE INDEX idx_events_intent ON events USING GIN(intent_tags);
+```
+
+### Язык стола
+
+Флаг на событии: RU / EN / HE / Mixed. Иконки флагов на карточке ивента. Фильтр в ленте. Для Израиля это критично — русскоязычный игрок, нашедший "русский стол", расскажет всем знакомым. Мощнейший acquisition channel для русскоязычного сегмента.
+
+```sql
+ALTER TABLE events ADD COLUMN table_language TEXT DEFAULT 'mixed';
+```
+
+### Proxy Policy
+
+Переключатель на big event: No Proxies / Partial (N карт) / 100% Proxy Friendly. Иконка на карточке (щит = no proxies, копия = proxies OK). Убирает сотни одинаковых вопросов.
+
+```sql
+ALTER TABLE events ADD COLUMN proxy_policy TEXT DEFAULT 'allowed';
+-- Values: 'none', 'partial', 'allowed'
+```
+
+### WhatsApp-оптимизированные шеринг-ссылки
+
+Когда организатор кидает ссылку на MTGx ивент в WhatsApp — рендерится красивая карточка:
+- Название + формат
+- Дата и время
+- Площадка
+- "5/8 мест занято"
+- Proxy policy + язык стола
+- Intent tags
+
+OG meta tags на EventDetailPage. Через Vercel OG Image Generation для динамических изображений.
 
 ---
 
-## Phase 4 — Monetization + Scale (Q2+)
+## Волна 2 — Умная логистика (2-3 недели)
 
-### 4.1 Store Subscription Tier
-**Условие:** 5+ активных магазинов.
-Gates: advanced analytics, priority listing, branded events, unlimited recurring.
+### Двухфазная запись
 
-### 4.2 Gamification (XP / Achievements)
-**Условие:** Stamp Card доказал ценность retention.
+За 24-6 часов до начала — push "Подтверди участие" с одной кнопкой. Кто подтвердил — цветной аватар в списке. Кто не ответил — серый (maybe). Организатор видит реальную картину. Никаких штрафов — просто уточнение.
 
-Schema (из анализа Backend Engineer):
-- `user_xp` — immutable ledger
-- `achievements` — definitions
-- `user_achievements` — unlocks
-- Квадратичная кривая: L1=0, L2=100, L3=400, L4=900 XP
-- MTG-тематика: Squire → Apprentice → Mage → Archmage → Planeswalker → Mythic → Eternal
+```sql
+ALTER TABLE rsvps ADD COLUMN confirmed_at TIMESTAMPTZ;
+ALTER TABLE events ADD COLUMN confirmation_deadline TIMESTAMPTZ;
+-- Поллер: за 24ч до event.starts_at → push с кнопкой → при тапе → UPDATE rsvps SET confirmed_at = now()
+```
 
-### 4.3 Leagues / Seasons
-**Условие:** Стабильные recurring events.
-Standings через триггер на rsvp_history. 8-12 дней.
+### Waitlist
 
-### 4.4 Payment Localization
-Bit / Paybox (израильский стандарт), не Stripe.
+Когда max_players достигнут — кнопка "Встать в очередь". Позиция видна: "Вы #2". При открытии места — push с 30-минутным окном "Место освободилось! Занять?". FIFO, атомарный RPC.
 
-### 4.5 Telegram Bot (send-only)
-**Условие:** WhatsApp sharing данные подтверждают спрос.
-НЕ two-way bot. Только уведомления: подтверждение ивента, изменение RSVP, новый ивент рядом.
+```sql
+CREATE TABLE event_waitlist (
+  id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  event_id  UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id   UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  position  INT NOT NULL,
+  added_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(event_id, user_id)
+);
+CREATE INDEX idx_waitlist_event ON event_waitlist(event_id, position);
+
+CREATE OR REPLACE FUNCTION promote_from_waitlist(p_event_id UUID)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp AS $$
+DECLARE v_next RECORD;
+BEGIN
+  SELECT * INTO v_next FROM event_waitlist
+    WHERE event_id = p_event_id ORDER BY position LIMIT 1 FOR UPDATE SKIP LOCKED;
+  IF v_next IS NOT NULL THEN
+    INSERT INTO rsvps(event_id, user_id, status) VALUES (p_event_id, v_next.user_id, 'going')
+      ON CONFLICT (event_id, user_id) DO UPDATE SET status = 'going';
+    DELETE FROM event_waitlist WHERE id = v_next.id;
+    -- Shift positions
+    UPDATE event_waitlist SET position = position - 1 WHERE event_id = p_event_id;
+    -- Push notification через outbox
+    INSERT INTO notification_outbox(user_id, event_type, payload)
+    VALUES (v_next.user_id, 'waitlist_promoted', jsonb_build_object('event_id', p_event_id));
+  END IF;
+END;$$;
+```
+
+### Авто-отмена
+
+За 3 часа до старта если going < min_players — автоматическая отмена. Push всем: "Не набрался кворум. Перенести?" с кнопкой one-tap reschedule. Не-карательный фрейминг.
+
+```sql
+-- Поллер проверяет: events WHERE starts_at - interval '3 hours' < now()
+-- AND status = 'active' AND (SELECT COUNT(*) FROM rsvps WHERE event_id = events.id AND status = 'going') < min_players
+-- → UPDATE events SET status = 'cancelled' + push всем
+```
+
+### Draft Autosave
+
+Черновик события сохраняется в localStorage с debounce 2 сек. Индикатор "Сохранено" на форме. При потере соединения — черновик не теряется. При возврате — форма восстанавливается.
+
+### Коммуникация организатор → участники
+
+Push всем записавшимся с готовыми шаблонами:
+- "Начинаем на 30 минут позже"
+- "Нужен ещё 1 игрок — поделись!"
+- "Локация изменилась на [X]"
+- "Ивент подтверждён! До встречи!"
+
+One-tap send из event management view. 160 символов.
+
+### Reliability Score — расширение
+
+Текущая формула + визуальные статусы:
+- **Новичок** (< 3 ивентов) — нейтральный бейдж
+- **Надёжный** (> 85% явки) — зелёный бейдж
+- **Рискованный** (< 60% явки) — жёлтый бейдж
+
+Видно только организаторам на RSVP-листе. Игрок видит СВОЙ score с breakdown: "2 no-show за 3 месяца — для улучшения ходите на ближайшие ивенты". Никаких блокировок. Никаких штрафов. Просто информация.
+
+### Post-Event Feedback
+
+После ивента — 2-question push:
+1. "Ивент соответствовал описанию?" (да/нет)
+2. "Играли бы с этим организатором снова?" (да/нет)
+
+Приватно, агрегировано. Организатор видит только % — не кто что ответил. Закрывает feedback loop.
+
+```sql
+CREATE TABLE event_feedback (
+  id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  event_id            UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id             UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  matched_description BOOLEAN NOT NULL,
+  would_play_again    BOOLEAN NOT NULL,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(event_id, user_id)
+);
+```
+
+### Event Health Indicator
+
+На карточке ивента: прогресс-бар "5/8 подтверждено" + confidence badge ("Этот организатор обычно заполняет ивенты"). Social proof — игроки записываются быстрее когда видят что "ещё чуть-чуть и наберётся". Computed на лету из event history организатора.
+
+### "Fill My Pod" — Targeted Push
+
+1-2 открытых места за 48ч до ивента. Организатор тапает "Добрать игроков" — платформа шлёт targeted push игрокам в том же городе, формате, с подходящей доступностью по сетке. Не broadcast — точное попадание.
+
+### Organizer Reputation Badge
+
+Публичный "Track record" на карточке ивента:
+- Ивентов проведено
+- % отмен
+- Средняя посещаемость vs capacity
+- Бейдж: "Новичок" / "Опытный" / "Ветеран"
+
+Мотивирует организаторов держать качество. Игрок видит — стоит ли идти к первому организатору vs к проверенному.
 
 ---
 
-## Anti-Priorities (НЕ СТРОИТЬ)
+## Волна 3 — Клубы и регулярность (3-4 недели)
 
-| Фича | Причина |
-|------|---------|
-| Session utilities (life counter, randomizer) | MTG Arena, Moxfield делают это лучше. Dilution of focus. |
-| Social network (feeds, likes, follows) | WhatsApp — социальный слой. MTGx — координационный. |
-| WhatsApp Business API two-way bot | Meta approval 2-6 недель, стоимость за сообщение, support burden. |
-| Real-time GPS / location tracking | Israel маленький. Проблема не "где?" а "стоит ли?" |
-| Detailed playstyle profiles | Friction при заполнении без downstream use. Infer из истории. |
-| Prize Wall / loyalty points (platform-wide) | Бизнес-логика магазина, не платформы. |
-| Full XP system before Stamp Card proof | 6-8 дней без данных о retention value. |
+### Recurring Events
+
+Серия с шаблоном и паттерном: каждый вторник, каждый четверг, раз в 2 недели. iCal RRULE → автогенерация events за 14 дней. В ленте — одна карточка с бейджем "каждый четверг". Организатор подтверждает одним тапом. Снимает 80% рутины организаторов.
+
+```sql
+CREATE TABLE event_templates (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organizer_id    UUID NOT NULL REFERENCES profiles(id),
+  venue_id        UUID REFERENCES venues(id),
+  title           TEXT NOT NULL,
+  format          mtg_format NOT NULL,
+  city            TEXT NOT NULL,
+  description     TEXT,
+  fee_text        TEXT,
+  min_players     INT,
+  max_players     INT,
+  intent_tags     TEXT[] DEFAULT '{}',
+  proxy_policy    TEXT DEFAULT 'allowed',
+  table_language  TEXT DEFAULT 'mixed',
+  recurrence_rule TEXT NOT NULL,        -- iCal RRULE: 'FREQ=WEEKLY;BYDAY=TH'
+  start_time      TIME NOT NULL,
+  duration_minutes INT NOT NULL DEFAULT 240,
+  next_at         TIMESTAMPTZ,
+  is_active       BOOLEAN NOT NULL DEFAULT true,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+### Календарь клуба
+
+Недельный/месячный вид. Владелец видит: зарезервированные слоты (турниры), спонтанные встречи, свободные окна. Каждое событие с RSVP-счётчиком. Быстрое создание нового ивента в пустом слоте.
+
+### Резервация слотов
+
+Владелец блокирует время под турнир. Слот виден как занятый. Quick meetup в этом слоте невозможен.
+
+### Базовая аналитика для клуба
+
+Без BI, но ценная:
+- Уникальные игроки в месяц
+- Популярные форматы по дням
+- Пиковые дни/часы
+- Show rate (записался / пришёл по QR)
+- Retention: вернулся после первого визита
+- Top-5 самых активных игроков
+
+### Calendar Integration (.ics)
+
+После RSVP — "Добавить в Google Calendar / Apple Calendar". Стандартный .ics link. Deep link обратно в ивент. Если MTGx ивенты в твоём календаре — приложение sticky.
 
 ---
 
-## Cold Start Plan
+## Волна 4 — Глубина форматов и discovery (месяц 2-3)
 
-### Phase 0 — Reconnaissance (1-2 недели, 0 пользователей)
-1. Вступить в каждую MTG WhatsApp-группу в Gush Dan (15-30 групп)
-2. Определить 5-10 "community hubs" — людей, которые организуют игры
-3. Это Day 1 targets. Не реклама. Не SEO. Эти 5-10 человек.
+### Commander Brackets
 
-### Phase 1 — Handcrafted Launch (2-4 неделя, target: 1 магазин, 15 игроков)
-1. Выбрать один магазин (не самый большой — самый digitally frustrated)
-2. Предложить: "Я лично настрою ваши ивенты. Zero commitment."
-3. Прийти на первый ивент физически. Онбордить телефон-в-руке (80%+ конверсия vs 2% по ссылке)
-4. Target: 15 зарегистрированных, 1 активный магазин, 1 успешный ивент с QR check-in
+При RSVP на Commander — опционально bracket 1-5 (power level). Организатор видит распределение за столом. В будущем — интеграция с Moxfield API для автооценки деклиста.
 
-### Phase 2 — WhatsApp Parasitism (4-8 неделя, target: 50 игроков, 2-3 магазина)
-1. Каждый MTGx ивент генерирует copy-paste блок для WhatsApp (выглядит как human-typed)
-2. Организатор вставляет в свою WhatsApp-группу
-3. Метрика: 10% click-to-register конверсия
+```sql
+ALTER TABLE events ADD COLUMN commander_bracket INT CHECK (commander_bracket BETWEEN 1 AND 5);
+ALTER TABLE rsvps ADD COLUMN declared_bracket INT CHECK (declared_bracket BETWEEN 1 AND 5);
+```
 
-### Phase 3 — Social Proof Loop (8-16 неделя, target: 150 игроков)
-1. "3 игрока из вашего района зарегались на этой неделе" — локальные nudges
-2. Post-event recap cards → organic sharing
-3. Players share results → backlink к MTGx
+### Геолокационный поиск
+
+Карта клубов и событий. Радиус +15 км вместо жёсткой фильтрации по городу. Для Гуш-Дана объединяет ТА, Рамат-Ган, Петах-Тикву, Реховот. "Что рядом сегодня вечером?" — один тап.
+
+### Store Leaderboard
+
+Публичный рейтинг клубов по частоте ивентов, посещаемости, активности. Friendly competition. Discovery для новых игроков.
+
+### Плейстайл-профиль
+
+Мини-анкета (опциональная): casual/competitive, скорость, общительность. Подсветка совместимости на странице ивента: "5 игроков с похожим стилем уже записались." Референс: Nerd Culture, GameTree.
+
+### Сессионные утилиты
+
+Счётчик жизней (Commander с трекингом командирского урона от каждого оппонента), рандомизатор первого игрока, таймер раунда. Каждая минута в MTGx во время игры = retention. Игрок не уходит в другое приложение.
+
+### Referral System
+
+"Пригласи друга → +50 XP тебе и ему + ачивка Recruiter". Deep link с реферальным кодом. Встроенный viral loop.
+
+```sql
+ALTER TABLE profiles ADD COLUMN referred_by UUID REFERENCES profiles(id);
+ALTER TABLE profiles ADD COLUMN referral_code TEXT UNIQUE DEFAULT encode(gen_random_bytes(4), 'hex');
+```
 
 ---
 
-## Критические риски
+## Волна 5 — Масштаб и монетизация (Q2+)
 
-| Риск | Severity | Митигация |
-|------|----------|-----------|
-| Store-евангелисты отказываются | Critical | Личные отношения, не product pitch. Начинать с их боли. "Я лично настрою." |
-| Chicken-and-egg (нет игроков ↔ нет магазинов) | Critical | Физический онбординг на первом ивенте. 15 игроков минимум. |
-| WhatsApp group owners чувствуют угрозу | High | Никогда не позиционировать как замену. Все фичи дополняют WhatsApp. |
-| Русскоязычные чурнят на англоязычном UI | Medium | Russian-first онбординг. Перевод УЖЕ есть (ru locale). |
-| Offline на площадках (слабый WiFi) | Medium | localStorage fallback. QR работает оффлайн (pre-cached token). |
-| RLS policy explosion | Medium | ≤6 политик на hot tables. Консолидация по ролям. |
-| Supabase Free tier ограничения | Low | Phase 1 укладывается. Pro ($25/мес) при переходе к Phase 3. |
+### Подписка для магазинов (Freemium B2B)
+
+Базовый функционал бесплатно. Pro за подписку:
+- Расширенная аналитика (форматы, retention, churn)
+- Приоритетное отображение в поиске
+- Брендированные ивенты (кастомные баннеры)
+- Безлимитные recurring events (free tier: 2 серии)
+- Программа лояльности (Prize Wall) — клуб начисляет баллы привязанные к XP, игроки обменивают на призы
+
+**Игроки не платят никогда.**
+
+### Лиги / Сезоны
+
+Лига на 2-4 недели с гибкими матчами и standings. Промежуточный формат между турниром и встречей. Высокий retention — игроки возвращаются чтобы закрыть сезон. Референс: TopDeck.gg.
+
+```sql
+CREATE TABLE seasons (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name      TEXT NOT NULL,
+  format    mtg_format NOT NULL,
+  city      TEXT NOT NULL,
+  starts_at TIMESTAMPTZ NOT NULL,
+  ends_at   TIMESTAMPTZ NOT NULL,
+  status    TEXT NOT NULL DEFAULT 'upcoming'
+);
+CREATE TABLE league_standings (
+  id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  season_id     UUID NOT NULL REFERENCES seasons(id),
+  user_id       UUID NOT NULL REFERENCES profiles(id),
+  points        INT NOT NULL DEFAULT 0,
+  events_played INT NOT NULL DEFAULT 0,
+  UNIQUE(season_id, user_id)
+);
+```
+
+### WhatsApp/Telegram бот
+
+Команды: `/events today`, `/lfg pauper tomorrow`, `/my schedule`. Подтверждение и отмена из бота. Кросс-постинг ивентов в клубные чаты. Рост без убеждения ставить приложение.
+
+### Иврит + RTL
+
+Полная локализация. RTL layout. Расширение на ивритоязычную аудиторию.
+
+### Платёжная локализация
+
+Bit / Paybox (израильский стандарт). Для турниров с взносом — оплата через клуб, не через платформу.
+
+### Нативное приложение
+
+Capacitor или React Native. Push без ограничений PWA. Иконка в телефоне = постоянное напоминание.
 
 ---
 
-## Технические Prerequisites
+## Что НЕ делать
 
-1. **rsvp_with_lock** — `FOR UPDATE SKIP LOCKED`, не простой RPC wrapper
-2. **supabase gen types** — заменить ручные типы на `supabase gen types typescript`
-3. **Разбить mtgx-poller** — отдельные Edge Functions с независимыми retry
-4. **RLS consolidation** — ≤6 политик на hot tables (profiles, events, rsvps)
-5. **Enum planning** — добавить `pending_confirm`, `waitlist` в `rsvp_status` сразу (ALTER TYPE необратим)
+- Общая лента постов, мемы, новости — есть Discord и WhatsApp
+- Трейдинг/обмен картами — другой продукт
+- Универсальный чат — убивает фокус
+- Субъективные оценки игроков (звёзды/отзывы) — сведение счётов
+- Штрафы и блокировки для игроков — отпугивает аудиторию
+- Платный функционал для игроков — убивает adoption
+- WhatsApp Business API двусторонний бот — 2-6 недель approval Meta, стоимость за сообщение
+- GPS-трекинг в реалтайме — Израиль маленький, проблема не "где" а "стоит ли"
+
+---
+
+## Cold Start
+
+1. Вступить в 15-30 MTG WhatsApp-групп Гуш-Дана
+2. Найти 5-10 community hubs — людей которые уже организуют игры
+3. Выбрать один магазин — не самый большой, а самый "задолбавшийся" от ручной координации
+4. Предложить: "Я лично настрою ваши ивенты. Бесплатно."
+5. Прийти физически на первый ивент. Онбордить телефон-в-руке (80% конверсия vs 2% по ссылке)
+6. **Founder badge** — первые 50 пользователей с QR check-in
+7. WhatsApp-симбиоз: шаринг text-блоками которые выглядят как написанные человеком
+8. Recap Cards после каждого ивента → organic sharing → FOMO
+
+---
+
+*Roadmap v2. Март 2026.*
