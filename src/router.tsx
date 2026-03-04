@@ -14,6 +14,7 @@ const VenuePage = lazy(() => import("@/pages/VenuePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
 const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
+const PlayersDirectoryPage = lazy(() => import("@/pages/PlayersDirectoryPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 function LazyPage({ children }: { children: React.ReactNode }) {
@@ -77,6 +78,14 @@ export const router = createBrowserRouter([
         element: (
           <LazyPage>
             <CreateEventPage />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "/players",
+        element: (
+          <LazyPage>
+            <PlayersDirectoryPage />
           </LazyPage>
         ),
       },

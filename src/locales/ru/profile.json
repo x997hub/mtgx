@@ -39,5 +39,11 @@
   "push_denied": "Push-уведомления заблокированы браузером",
   "push_enable": "Включить Push-уведомления",
   "onboarding_subscribe_description": "Подпишитесь, чтобы получать уведомления о подходящих событиях",
-  "onboarding_no_subs": "Вы можете настроить подписки позже в Настройках"
+  "onboarding_no_subs": "Вы можете настроить подписки позже в Настройках",
+  "players_directory": "Игроки",
+  "all_days": "Все дни",
+  "all_venues": "Все клубы",
+  "no_players": "Игроки не найдены",
+  "no_players_description": "Попробуйте изменить фильтры",
+  "clear_filters": "Сбросить"
 }

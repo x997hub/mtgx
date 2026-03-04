@@ -57,6 +57,7 @@
   "low_reliability": "Low reliability players",
   "subscriptions": "Subscriptions",
   "no_subscriptions": "No subscriptions yet",
+  "players": "Players",
   "app_tagline": "Find MTG games. Fill tables.",
   "login_google": "Sign in with Google"
 }

@@ -1,11 +1,12 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Home, Plus, Settings, User } from "lucide-react";
+import { Home, Plus, Settings, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 
 const NAV_ITEMS = [
   { to: "/", icon: Home, labelKey: "home" },
+  { to: "/players", icon: Users, labelKey: "players" },
   { to: "/events/new", icon: Plus, labelKey: "create" },
   { to: "/profile", icon: User, labelKey: "profile" },
   { to: "/settings", icon: Settings, labelKey: "settings" },

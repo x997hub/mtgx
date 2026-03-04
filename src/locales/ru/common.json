@@ -57,6 +57,7 @@
   "low_reliability": "Ненадёжные игроки",
   "subscriptions": "Подписки",
   "no_subscriptions": "Подписок пока нет",
+  "players": "Игроки",
   "app_tagline": "Находи MTG-игры. Заполняй столы.",
   "login_google": "Войти через Google"
 }

@@ -39,5 +39,11 @@
   "push_denied": "Push notifications blocked by browser",
   "push_enable": "Enable Push Notifications",
   "onboarding_subscribe_description": "Subscribe to get notified about events matching your interests",
-  "onboarding_no_subs": "You can set up subscriptions later in Settings"
+  "onboarding_no_subs": "You can set up subscriptions later in Settings",
+  "players_directory": "Players",
+  "all_days": "All days",
+  "all_venues": "All venues",
+  "no_players": "No players found",
+  "no_players_description": "Try adjusting your filters to find more players",
+  "clear_filters": "Clear all"
 }
