@@ -39,11 +39,14 @@ export function useSubscription() {
             return data;
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["subscriptions", user?.id] });
+            const userId = useAuthStore.getState().user?.id;
+            queryClient.invalidateQueries({ queryKey: ["subscriptions", userId] });
         },
     });
     const unsubscribeMutation = useMutation({
         mutationFn: async (subscriptionId) => {
+            if (!user)
+                throw new Error("Not authenticated");
             const { error } = await supabase
                 .from("subscriptions")
                 .delete()
@@ -52,7 +55,8 @@ export function useSubscription() {
                 throw error;
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["subscriptions", user?.id] });
+            const userId = useAuthStore.getState().user?.id;
+            queryClient.invalidateQueries({ queryKey: ["subscriptions", userId] });
         },
     });
     return {

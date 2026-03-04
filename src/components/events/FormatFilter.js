@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { useFilterStore } from "@/store/filterStore";
-const FORMATS = ["pauper", "commander", "standard", "draft"];
+import { FORMATS } from "@/lib/constants";
 export function FormatFilter() {
     const { t } = useTranslation("events");
     const { format, setFormat } = useFilterStore();

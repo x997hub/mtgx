@@ -50,9 +50,13 @@ export function useProfile(userId) {
                 throw error;
             return data;
         },
-        onSuccess: (data) => {
-            queryClient.setQueryData(["profile", currentUser?.id], data);
-            useAuthStore.getState().setProfile(data);
+        onSettled: (data, error) => {
+            const uid = useAuthStore.getState().user?.id;
+            if (!error && data) {
+                queryClient.setQueryData(["profile", uid], data);
+                useAuthStore.getState().setProfile(data);
+            }
+            queryClient.invalidateQueries({ queryKey: ["profile", uid] });
         },
     });
     const updateAvailabilityMutation = useMutation({
@@ -60,15 +64,21 @@ export function useProfile(userId) {
             if (!currentUser)
                 throw new Error("Not authenticated");
             // Delete existing and re-insert
-            await supabase.from("availability").delete().eq("user_id", currentUser.id);
+            const { error: deleteError } = await supabase
+                .from("availability")
+                .delete()
+                .eq("user_id", currentUser.id);
+            if (deleteError)
+                throw deleteError;
             if (slots.length > 0) {
-                const { error } = await supabase.from("availability").insert(slots);
-                if (error)
-                    throw error;
+                const { error: insertError } = await supabase.from("availability").insert(slots);
+                if (insertError)
+                    throw insertError;
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["availability", currentUser?.id] });
+            const uid = useAuthStore.getState().user?.id;
+            queryClient.invalidateQueries({ queryKey: ["availability", uid] });
         },
     });
     return {

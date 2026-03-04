@@ -1,5 +1,4 @@
-import type { Database } from "@/types/database.types";
-type MtgFormat = Database["public"]["Enums"]["mtg_format"];
+import type { MtgFormat } from "@/types/database.types";
 interface BigEventFormProps {
     defaultValues?: Partial<{
         title: string;

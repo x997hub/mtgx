@@ -4,8 +4,7 @@ type ToasterToast = {
     description?: string;
     variant?: "default" | "destructive";
 };
-interface Toast extends Omit<ToasterToast, "id"> {
-}
+type Toast = Omit<ToasterToast, "id">;
 declare function toast(props: Toast): {
     id: string;
     dismiss: () => void;

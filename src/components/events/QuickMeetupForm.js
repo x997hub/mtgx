@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { useEvents } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
-const FORMATS = ["pauper", "commander", "standard", "draft"];
+import { FORMATS } from "@/lib/constants";
 export function QuickMeetupForm() {
     const { t } = useTranslation("events");
     const navigate = useNavigate();

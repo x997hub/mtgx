@@ -15,34 +15,48 @@ function urlBase64ToUint8Array(base64String) {
 export function usePush() {
     const [permission, setPermission] = useState(typeof Notification !== "undefined" ? Notification.permission : "denied");
     const user = useAuthStore((s) => s.user);
-    const requestPermission = useCallback(async () => {
-        if (!("Notification" in window))
-            return "denied";
-        const result = await Notification.requestPermission();
-        setPermission(result);
-        if (result === "granted") {
-            await subscribeToPush();
-        }
-        return result;
-    }, [user]);
     const subscribeToPush = useCallback(async () => {
         if (!user || !VAPID_PUBLIC_KEY)
             return;
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
-        const subJson = subscription.toJSON();
-        if (!subJson.endpoint || !subJson.keys)
-            return;
-        await supabase.from("push_subscriptions").upsert({
-            user_id: user.id,
-            endpoint: subJson.endpoint,
-            p256dh: subJson.keys.p256dh,
-            auth: subJson.keys.auth,
-        }, { onConflict: "endpoint" });
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+            const subJson = subscription.toJSON();
+            if (!subJson.endpoint || !subJson.keys)
+                return;
+            const { error } = await supabase.from("push_subscriptions").upsert({
+                user_id: user.id,
+                endpoint: subJson.endpoint,
+                p256dh: subJson.keys.p256dh,
+                auth: subJson.keys.auth,
+            }, { onConflict: "endpoint" });
+            if (error) {
+                console.error("Failed to save push subscription:", error);
+            }
+        }
+        catch (err) {
+            console.error("Failed to subscribe to push notifications:", err);
+        }
     }, [user]);
+    const requestPermission = useCallback(async () => {
+        if (!("Notification" in window))
+            return "denied";
+        try {
+            const result = await Notification.requestPermission();
+            setPermission(result);
+            if (result === "granted") {
+                await subscribeToPush();
+            }
+            return result;
+        }
+        catch (err) {
+            console.error("Failed to request notification permission:", err);
+            return "denied";
+        }
+    }, [subscribeToPush]);
     return {
         permission,
         requestPermission,

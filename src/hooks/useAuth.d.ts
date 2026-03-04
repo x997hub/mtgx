@@ -15,6 +15,5 @@ export declare function useAuth(): {
     isAuthenticated: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
-    fetchProfile: (userId: string) => Promise<void>;
 };
 //# sourceMappingURL=useAuth.d.ts.map

@@ -4,6 +4,7 @@ interface UIState {
     sidebarOpen: boolean;
     notificationsCount: number;
     setLanguage: (language: string) => void;
+    setTheme: (theme: "dark") => void;
     setSidebarOpen: (open: boolean) => void;
     setNotificationsCount: (count: number) => void;
 }

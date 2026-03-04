@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/authStore";
 export function useRSVP() {
     const queryClient = useQueryClient();
+    const user = useAuthStore((s) => s.user);
     return useMutation({
         mutationFn: async ({ eventId, status }) => {
-            const { data: { user }, } = await supabase.auth.getUser();
             if (!user)
                 throw new Error("Not authenticated");
             const { data, error } = await supabase
@@ -19,18 +20,19 @@ export function useRSVP() {
         onMutate: async ({ eventId, status }) => {
             await queryClient.cancelQueries({ queryKey: ["rsvps", eventId] });
             const previous = queryClient.getQueryData(["rsvps", eventId]);
+            const userId = user?.id;
             queryClient.setQueryData(["rsvps", eventId], (old) => {
                 if (!Array.isArray(old))
                     return old;
                 return old.map((r) => {
                     const item = r;
-                    return item.user_id === "optimistic" ? { ...item, status } : item;
+                    return item.user_id === userId ? { ...item, status } : item;
                 });
             });
             return { previous };
         },
         onError: (_err, { eventId }, context) => {
-            if (context?.previous) {
+            if (context?.previous !== undefined) {
                 queryClient.setQueryData(["rsvps", eventId], context.previous);
             }
         },

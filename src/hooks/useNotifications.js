@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
@@ -7,6 +7,8 @@ export function useNotifications() {
     const user = useAuthStore((s) => s.user);
     const setNotificationsCount = useUIStore((s) => s.setNotificationsCount);
     const queryClient = useQueryClient();
+    const queryClientRef = useRef(queryClient);
+    queryClientRef.current = queryClient;
     const notificationsQuery = useQuery({
         queryKey: ["notifications", user?.id],
         queryFn: async () => {
@@ -41,13 +43,13 @@ export function useNotifications() {
             table: "notifications",
             filter: `user_id=eq.${user.id}`,
         }, () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
+            queryClientRef.current.invalidateQueries({ queryKey: ["notifications", user.id] });
         })
             .subscribe();
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user, queryClient]);
+    }, [user]);
     const markAsReadMutation = useMutation({
         mutationFn: async (notificationId) => {
             const { error } = await supabase
@@ -57,24 +59,33 @@ export function useNotifications() {
             if (error)
                 throw error;
         },
+        onError: (error) => {
+            console.error("Failed to mark notification as read:", error);
+        },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
+            const userId = useAuthStore.getState().user?.id;
+            queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
         },
     });
     const markAllReadMutation = useMutation({
         mutationFn: async () => {
-            if (!user)
+            const currentUser = useAuthStore.getState().user;
+            if (!currentUser)
                 return;
             const { error } = await supabase
                 .from("notifications")
                 .update({ is_read: true })
-                .eq("user_id", user.id)
+                .eq("user_id", currentUser.id)
                 .eq("is_read", false);
             if (error)
                 throw error;
         },
+        onError: (error) => {
+            console.error("Failed to mark all notifications as read:", error);
+        },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
+            const userId = useAuthStore.getState().user?.id;
+            queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
         },
     });
     return {
