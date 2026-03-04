@@ -87,9 +87,15 @@ export default function ProfileEditPage() {
   async function handleSave() {
     if (!user) return;
 
+    // Validate WhatsApp number format
+    if (whatsapp && !/^\+?\d{7,15}$/.test(whatsapp.replace(/[\s\-()]/g, ""))) {
+      toast({ title: "Invalid phone number format", variant: "destructive" });
+      return;
+    }
+
     try {
       await updateProfile({
-        display_name: displayName,
+        display_name: displayName.trim(),
         city,
         formats,
         whatsapp: whatsapp || null,

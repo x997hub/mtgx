@@ -27,9 +27,12 @@ export function useAuthListener() {
       }
       setLoading(false);
 
-      // Clear hash fragment after OAuth callback
-      if (event === "SIGNED_IN" && window.location.hash.includes("access_token")) {
-        window.history.replaceState(null, "", window.location.pathname);
+      // Clear URL params after OAuth callback (PKCE uses query params, implicit uses hash)
+      if (event === "SIGNED_IN") {
+        const url = new URL(window.location.href);
+        if (window.location.hash.includes("access_token") || url.searchParams.has("code")) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
       }
     });
 

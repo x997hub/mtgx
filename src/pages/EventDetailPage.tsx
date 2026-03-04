@@ -75,7 +75,7 @@ export default function EventDetailPage() {
     minute: "2-digit",
   });
 
-  const eventUrl = window.location.href;
+  const eventUrl = `${window.location.origin}${window.location.pathname}`;
   const eventTitle = event.title || t(event.type === "big" ? "events:big_event" : "events:quick_meetup");
   const goingCount = rsvps?.filter((r) => r.status === "going").length ?? 0;
   const spotsLeft = event.max_players ? event.max_players - goingCount : null;

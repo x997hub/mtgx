@@ -63,7 +63,8 @@ export function useSubscription() {
       const { error } = await supabase
         .from("subscriptions")
         .delete()
-        .eq("id", subscriptionId);
+        .eq("id", subscriptionId)
+        .eq("user_id", user.id);
       if (error) throw error;
     },
     onSettled: () => {

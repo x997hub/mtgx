@@ -16,7 +16,7 @@ Deno.serve(async (req: Request) => {
   // or with a shared secret. If CRON_SECRET is set, require it in the Authorization header.
   const cronSecret = Deno.env.get("CRON_SECRET");
   const authHeader = req.headers.get("authorization");
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return new Response("Unauthorized", { status: 401 });
   }
 
