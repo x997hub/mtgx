@@ -1,5 +1,5 @@
 export const FORMATS = ["pauper", "commander", "standard", "draft"];
-export const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
+export const CITIES = ["Rishon LeZion", "Tel Aviv", "Ramat Gan", "Herzliya", "Kfar Saba"];
 export const DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 export const SLOTS = ["day", "evening"];
 /** Colors used in FormatBadge (solid backgrounds) */

@@ -6,7 +6,7 @@ export function useAuth() {
     const listenerFiredRef = useRef(false);
     useEffect(() => {
         listenerFiredRef.current = false;
-        const { data: { subscription }, } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription }, } = supabase.auth.onAuthStateChange((event, session) => {
             listenerFiredRef.current = true;
             setSession(session);
             if (session?.user) {
@@ -16,6 +16,10 @@ export function useAuth() {
                 setProfile(null);
             }
             setLoading(false);
+            // Clear hash fragment after OAuth callback
+            if (event === "SIGNED_IN" && window.location.hash.includes("access_token")) {
+                window.history.replaceState(null, "", window.location.pathname);
+            }
         });
         supabase.auth.getSession().then(({ data: { session }, error }) => {
             if (error) {
@@ -41,11 +45,12 @@ export function useAuth() {
                 .from("profiles")
                 .select("*")
                 .eq("id", userId)
-                .single();
+                .maybeSingle();
             if (error) {
                 console.error("Failed to fetch profile:", error);
                 return;
             }
+            // data is null when profile doesn't exist yet (new user)
             setProfile(data);
         }
         catch (err) {
@@ -56,7 +61,7 @@ export function useAuth() {
         await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: `${window.location.origin}/onboarding`,
+                redirectTo: window.location.origin,
             },
         });
     }

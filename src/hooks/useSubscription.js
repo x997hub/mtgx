@@ -25,13 +25,13 @@ export function useSubscription() {
                 throw new Error("Not authenticated");
             const { data, error } = await supabase
                 .from("subscriptions")
-                .insert({
+                .upsert({
                 user_id: user.id,
                 target_type: targetType,
                 target_id: targetId ?? null,
                 format: format ?? null,
                 city: city ?? null,
-            })
+            }, { onConflict: "user_id,target_type,target_id,format,city" })
                 .select()
                 .single();
             if (error)

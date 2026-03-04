@@ -1,6 +1,6 @@
 import type { MtgFormat, DayOfWeek, TimeSlot } from "@/types/database.types";
 export declare const FORMATS: MtgFormat[];
-export declare const CITIES: readonly ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
+export declare const CITIES: readonly ["Rishon LeZion", "Tel Aviv", "Ramat Gan", "Herzliya", "Kfar Saba"];
 export declare const DAYS: DayOfWeek[];
 export declare const SLOTS: TimeSlot[];
 /** Colors used in FormatBadge (solid backgrounds) */

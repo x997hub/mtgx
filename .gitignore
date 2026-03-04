@@ -5,3 +5,5 @@ dist/
 *.tsbuildinfo
 .tmp/
 supabase/.temp/
+.vercel
+.env*.local
