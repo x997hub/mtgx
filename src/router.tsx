@@ -13,6 +13,7 @@ const ProfileEditPage = lazy(() => import("@/pages/ProfileEditPage"));
 const VenuePage = lazy(() => import("@/pages/VenuePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
+const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 function LazyPage({ children }: { children: React.ReactNode }) {
   return (
@@ -115,6 +116,14 @@ export const router = createBrowserRouter([
         element: (
           <LazyPage>
             <AdminPage />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "*",
+        element: (
+          <LazyPage>
+            <NotFoundPage />
           </LazyPage>
         ),
       },

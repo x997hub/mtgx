@@ -25,6 +25,6 @@ export function AvailabilityGrid({ value, onChange, readOnly }) {
     };
     return (_jsxs("div", { className: "space-y-3", children: [_jsxs("div", { className: "grid grid-cols-8 gap-1", children: [_jsx("div", {}), DAYS.map((day) => (_jsx("div", { className: "text-center text-xs text-gray-400", children: t(day) }, day)))] }), SLOTS.map((slot) => (_jsxs("div", { className: "grid grid-cols-8 gap-1", children: [_jsx("div", { className: "flex items-center text-xs text-gray-400", children: t(`${slot}_slot`) }), DAYS.map((day) => {
                         const level = getLevel(day, slot);
-                        return (_jsx("button", { type: "button", onClick: () => handleClick(day, slot), disabled: readOnly, className: cn("h-10 rounded border transition-colors", LEVEL_COLORS[level], !readOnly && "cursor-pointer hover:opacity-80"), title: t(level) }, `${day}_${slot}`));
+                        return (_jsx("button", { type: "button", onClick: () => handleClick(day, slot), disabled: readOnly, className: cn("h-10 rounded border transition-colors", LEVEL_COLORS[level], !readOnly && "cursor-pointer hover:opacity-80"), "aria-label": `${t(day)} ${t(`${slot}_slot`)} - ${t(level)}`, title: t(level) }, `${day}_${slot}`));
                     })] }, slot))), _jsx("div", { className: "flex gap-4 text-xs text-gray-400", children: LEVEL_CYCLE.filter((l) => l !== "unavailable").map((level) => (_jsxs("div", { className: "flex items-center gap-1.5", children: [_jsx("div", { className: cn("h-3 w-3 rounded", LEVEL_COLORS[level]) }), t(level)] }, level))) })] }));
 }

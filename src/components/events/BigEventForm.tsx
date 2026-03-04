@@ -4,17 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
-import { FORMATS } from "@/lib/constants";
+import { EventFormFields } from "@/components/events/EventFormFields";
 import type { MtgFormat } from "@/types/database.types";
 
 interface BigEventFormProps {
@@ -82,64 +75,26 @@ export function BigEventForm({ defaultValues }: BigEventFormProps) {
         />
       </div>
 
-      <div className="space-y-2">
-        <Label>{t("format")}</Label>
-        <Select value={format} onValueChange={(v) => setFormat(v as MtgFormat)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {FORMATS.map((f) => (
-              <SelectItem key={f} value={f}>
-                {t(f)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <EventFormFields
+        format={format}
+        onFormatChange={setFormat}
+        city={city}
+        onCityChange={setCity}
+        startsAt={startsAt}
+        onStartsAtChange={setStartsAt}
+        minPlayers={minPlayers}
+        onMinPlayersChange={setMinPlayers}
+      />
 
       <div className="space-y-2">
-        <Label htmlFor="starts_at">{t("date_time")}</Label>
+        <Label htmlFor="max_players">{t("max_players")}</Label>
         <Input
-          id="starts_at"
-          type="datetime-local"
-          value={startsAt}
-          onChange={(e) => setStartsAt(e.target.value)}
-          required
+          id="max_players"
+          type="number"
+          min={2}
+          value={maxPlayers}
+          onChange={(e) => setMaxPlayers(Number(e.target.value))}
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="city">{t("city")}</Label>
-        <Input
-          id="city"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="min_players">{t("min_players")}</Label>
-          <Input
-            id="min_players"
-            type="number"
-            min={2}
-            value={minPlayers}
-            onChange={(e) => setMinPlayers(Number(e.target.value))}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="max_players">{t("max_players")}</Label>
-          <Input
-            id="max_players"
-            type="number"
-            min={2}
-            value={maxPlayers}
-            onChange={(e) => setMaxPlayers(Number(e.target.value))}
-          />
-        </div>
       </div>
 
       <div className="space-y-2">

@@ -37,5 +37,13 @@
   "welcome_subtitle": "Find MTG games near you",
   "looking_for_game": "Looking for game",
   "no_notifications": "No notifications yet",
-  "mark_all_read": "Mark all as read"
+  "mark_all_read": "Mark all as read",
+  "access_denied": "Access Denied",
+  "admin_required": "Admin access required.",
+  "no_reports": "No reports available yet.",
+  "error_occurred": "Something went wrong",
+  "try_again": "Try again",
+  "page_not_found": "Page not found",
+  "go_home": "Go to home",
+  "push_description": "Get notified about new events, reminders, and updates."
 }

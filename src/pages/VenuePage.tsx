@@ -64,6 +64,14 @@ export default function VenuePage() {
     );
   }
 
+  if (venueQuery.isError) {
+    return (
+      <div className="min-h-screen bg-surface p-4">
+        <EmptyState title={tc("error_occurred")} />
+      </div>
+    );
+  }
+
   const venue = venueQuery.data;
 
   if (!venue) {

@@ -12,9 +12,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DAYS, SLOTS } from "@/lib/constants";
 import { Pencil, Shield, Bell } from "lucide-react";
-const DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const SLOTS = ["day", "evening"];
 const LEVEL_COLORS = {
     available: "bg-emerald-600",
     sometimes: "bg-amber-600",

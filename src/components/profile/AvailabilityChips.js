@@ -18,7 +18,7 @@ export function AvailabilityChips({ selected, onChange }) {
     return (_jsxs("div", { className: "space-y-3", children: [_jsx("p", { className: "text-sm text-gray-400", children: t("availability_description") }), _jsx("div", { className: "flex flex-wrap gap-2", children: DAYS.flatMap((day) => SLOTS.map((slot) => {
                     const key = `${day}_${slot}`;
                     const isSelected = selected.has(key);
-                    return (_jsxs("button", { type: "button", onClick: () => toggle(key), className: cn("rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[36px]", isSelected
+                    return (_jsxs("button", { type: "button", onClick: () => toggle(key), "aria-pressed": isSelected, className: cn("rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[36px]", isSelected
                             ? "border-[#e94560] bg-[#e94560]/20 text-[#e94560]"
                             : "border-gray-600 text-gray-400 hover:border-gray-500"), children: [t(day), " ", t(`${slot}_slot`)] }, key));
                 })) })] }));

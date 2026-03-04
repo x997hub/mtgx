@@ -34,7 +34,7 @@ export function PushPermissionPrompt({ open, onOpenChange }: PushPermissionPromp
           </div>
           <DialogTitle className="text-center">{t("push_notifications")}</DialogTitle>
           <DialogDescription className="text-center">
-            Get notified when new events match your availability, when events fill up, and 24h reminders.
+            {t("common:push_description")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col">

@@ -15,12 +15,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "@/components/ui/use-toast";
+import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
 import type { MtgFormat, DayOfWeek, TimeSlot, AvailabilityInsert } from "@/types/database.types";
-
-const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
-const FORMATS: MtgFormat[] = ["pauper", "commander", "standard", "draft"];
-const DAYS: DayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const SLOTS: TimeSlot[] = ["day", "evening"];
 
 export default function OnboardingPage() {
   const { t } = useTranslation(["profile", "common", "events"]);

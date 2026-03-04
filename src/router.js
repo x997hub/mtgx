@@ -13,6 +13,7 @@ const ProfileEditPage = lazy(() => import("@/pages/ProfileEditPage"));
 const VenuePage = lazy(() => import("@/pages/VenuePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
+const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 function LazyPage({ children }) {
     return (_jsx(Suspense, { fallback: _jsx("div", { className: "flex min-h-[50vh] items-center justify-center", children: _jsx("div", { className: "h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" }) }), children: children }));
 }
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
             {
                 path: "/admin",
                 element: (_jsx(LazyPage, { children: _jsx(AdminPage, {}) })),
+            },
+            {
+                path: "*",
+                element: (_jsx(LazyPage, { children: _jsx(NotFoundPage, {}) })),
             },
         ],
     },

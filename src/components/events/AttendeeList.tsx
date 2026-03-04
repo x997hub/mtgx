@@ -34,9 +34,9 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
       <h3 className="text-sm font-medium text-gray-300">
         {t("attendees")} ({attendees.filter((a) => a.status === "going").length})
       </h3>
-      <div className="space-y-1">
+      <ul className="space-y-1">
         {sorted.map((attendee) => (
-          <div
+          <li
             key={attendee.user_id}
             className="flex items-center gap-3 rounded-lg px-2 py-1.5"
           >
@@ -53,9 +53,9 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
             >
               {t(attendee.status)}
             </Badge>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

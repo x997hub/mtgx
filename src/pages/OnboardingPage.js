@@ -10,10 +10,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "@/components/ui/use-toast";
-const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
-const FORMATS = ["pauper", "commander", "standard", "draft"];
-const DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const SLOTS = ["day", "evening"];
+import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
 export default function OnboardingPage() {
     const { t } = useTranslation(["profile", "common", "events"]);
     const navigate = useNavigate();

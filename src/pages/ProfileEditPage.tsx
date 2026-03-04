@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
 import type {
   MtgFormat,
   DayOfWeek,
@@ -19,10 +20,6 @@ import type {
 } from "@/types/database.types";
 import { Loader2, Save } from "lucide-react";
 
-const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
-const FORMATS: MtgFormat[] = ["pauper", "commander", "standard", "draft"];
-const DAYS: DayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const SLOTS: TimeSlot[] = ["day", "evening"];
 const LEVELS: AvailabilityLevel[] = ["available", "sometimes", "unavailable"];
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {

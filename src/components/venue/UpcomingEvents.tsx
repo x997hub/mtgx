@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Calendar } from "lucide-react";
+import { Calendar, AlertTriangle } from "lucide-react";
 
 interface UpcomingEventsProps {
   venueId: string;
@@ -12,7 +12,7 @@ interface UpcomingEventsProps {
 export function UpcomingEvents({ venueId }: UpcomingEventsProps) {
   const { t } = useTranslation("venue");
 
-  const { data: events, isLoading } = useQuery({
+  const { data: events, isLoading, isError } = useQuery({
     queryKey: ["venue-events", venueId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -30,6 +30,18 @@ export function UpcomingEvents({ venueId }: UpcomingEventsProps) {
   });
 
   if (isLoading) return null;
+
+  if (isError) {
+    return (
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-100">{t("upcoming_events")}</h2>
+        <EmptyState
+          icon={AlertTriangle}
+          title={t("common:error_occurred")}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

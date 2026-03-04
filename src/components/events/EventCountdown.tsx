@@ -19,12 +19,15 @@ function getTimeLeft(target: Date) {
 
 export function EventCountdown({ startsAt }: EventCountdownProps) {
   const { t } = useTranslation("events");
-  const target = new Date(startsAt);
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(target));
+  const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(new Date(startsAt)));
 
   useEffect(() => {
+    const target = new Date(startsAt);
+    setTimeLeft(getTimeLeft(target));
     const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft(target));
+      const remaining = getTimeLeft(target);
+      setTimeLeft(remaining);
+      if (!remaining) clearInterval(interval);
     }, 60000);
     return () => clearInterval(interval);
   }, [startsAt]);
@@ -32,7 +35,7 @@ export function EventCountdown({ startsAt }: EventCountdownProps) {
   if (!timeLeft) return null;
 
   return (
-    <div className="flex items-center gap-1 text-sm text-gray-400">
+    <div role="timer" aria-live="polite" className="flex items-center gap-1 text-sm text-gray-400">
       <span>{t("starts_in")}</span>
       {timeLeft.days > 0 && (
         <span className="font-medium text-gray-200">

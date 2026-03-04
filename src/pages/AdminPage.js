@@ -21,12 +21,13 @@ export default function AdminPage() {
     const { t } = useTranslation(["common", "events"]);
     const { profile } = useAuth();
     if (profile?.role !== "admin") {
-        return (_jsx("div", { className: "flex min-h-[50vh] items-center justify-center", children: _jsx(Card, { className: "bg-surface-card border-surface-hover max-w-sm", children: _jsxs(CardContent, { className: "flex flex-col items-center gap-4 p-8", children: [_jsx(ShieldAlert, { className: "h-12 w-12 text-accent" }), _jsx("p", { className: "text-lg font-semibold text-text-primary", children: "Access Denied" }), _jsx("p", { className: "text-sm text-text-secondary", children: "Admin access required." })] }) }) }));
+        return (_jsx("div", { className: "flex min-h-[50vh] items-center justify-center", children: _jsx(Card, { className: "bg-surface-card border-surface-hover max-w-sm", children: _jsxs(CardContent, { className: "flex flex-col items-center gap-4 p-8", children: [_jsx(ShieldAlert, { className: "h-12 w-12 text-accent" }), _jsx("p", { className: "text-lg font-semibold text-text-primary", children: t("common:access_denied") }), _jsx("p", { className: "text-sm text-text-secondary", children: t("common:admin_required") })] }) }) }));
     }
     return (_jsxs("div", { className: "mx-auto max-w-4xl space-y-6 p-4", children: [_jsx("h1", { className: "text-2xl font-bold text-text-primary", children: t("common:admin") }), _jsxs(Tabs, { defaultValue: "report", children: [_jsxs(TabsList, { className: "bg-surface-card", children: [_jsxs(TabsTrigger, { value: "report", children: [_jsx(BarChart3, { className: "mr-1 h-4 w-4" }), t("common:report", "Report")] }), _jsxs(TabsTrigger, { value: "users", children: [_jsx(Users, { className: "mr-1 h-4 w-4" }), t("common:users", "Users")] }), _jsxs(TabsTrigger, { value: "events", children: [_jsx(Calendar, { className: "mr-1 h-4 w-4" }), t("common:events")] })] }), _jsx(TabsContent, { value: "report", children: _jsx(ReportTab, {}) }), _jsx(TabsContent, { value: "users", children: _jsx(UsersTab, {}) }), _jsx(TabsContent, { value: "events", children: _jsx(EventsTab, {}) })] })] }));
 }
 function ReportTab() {
-    const { data: report, isLoading } = useQuery({
+    const { t } = useTranslation(["common", "events"]);
+    const { data: report, isLoading, isError } = useQuery({
         queryKey: ["admin-report"],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -43,16 +44,20 @@ function ReportTab() {
     if (isLoading) {
         return (_jsx("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4", children: Array.from({ length: 6 }).map((_, i) => (_jsx(Skeleton, { className: "h-24 rounded-lg" }, i))) }));
     }
+    if (isError) {
+        return _jsx("p", { className: "p-4 text-red-400", children: t("common:error_occurred") });
+    }
     if (!report) {
-        return _jsx("p", { className: "p-4 text-text-secondary", children: "No reports available yet." });
+        return _jsx("p", { className: "p-4 text-text-secondary", children: t("common:no_reports") });
     }
     const payload = report.payload;
     const metrics = Object.entries(payload);
     return (_jsxs("div", { className: "space-y-3 mt-4", children: [_jsxs("p", { className: "text-xs text-text-secondary", children: ["Report date: ", new Date(report.report_date).toLocaleDateString()] }), _jsx("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: metrics.map(([key, value]) => (_jsxs(Card, { className: "bg-surface-card border-surface-hover", children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm text-text-secondary", children: key }) }), _jsx(CardContent, { children: _jsx("p", { className: "text-2xl font-bold text-accent", children: value }) })] }, key))) })] }));
 }
 function UsersTab() {
+    const { t } = useTranslation(["common", "events"]);
     const queryClient = useQueryClient();
-    const { data: profiles, isLoading } = useQuery({
+    const { data: profiles, isLoading, isError } = useQuery({
         queryKey: ["admin-profiles"],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -80,10 +85,14 @@ function UsersTab() {
     if (isLoading) {
         return (_jsx("div", { className: "space-y-2 mt-4", children: Array.from({ length: 5 }).map((_, i) => (_jsx(Skeleton, { className: "h-14 w-full rounded-lg" }, i))) }));
     }
+    if (isError) {
+        return _jsx("p", { className: "p-4 text-red-400", children: t("common:error_occurred") });
+    }
     return (_jsx("div", { className: "space-y-2 mt-4", children: profiles?.map((user) => (_jsx(Card, { className: "bg-surface-card border-surface-hover", children: _jsxs(CardContent, { className: "flex items-center justify-between p-4", children: [_jsxs("div", { children: [_jsx("p", { className: "font-medium text-text-primary", children: user.display_name }), _jsx("p", { className: "text-sm text-text-secondary", children: user.city })] }), _jsxs(Select, { value: user.role, onValueChange: (role) => updateRoleMutation.mutate({ userId: user.id, role: role }), children: [_jsx(SelectTrigger, { className: "w-[130px]", children: _jsx(SelectValue, {}) }), _jsx(SelectContent, { children: ROLES.map((role) => (_jsx(SelectItem, { value: role, children: role }, role))) })] })] }) }, user.id))) }));
 }
 function EventsTab() {
-    const { data: events, isLoading } = useQuery({
+    const { t } = useTranslation(["common", "events"]);
+    const { data: events, isLoading, isError } = useQuery({
         queryKey: ["admin-events"],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -98,6 +107,9 @@ function EventsTab() {
     });
     if (isLoading) {
         return (_jsx("div", { className: "space-y-2 mt-4", children: Array.from({ length: 5 }).map((_, i) => (_jsx(Skeleton, { className: "h-16 w-full rounded-lg" }, i))) }));
+    }
+    if (isError) {
+        return _jsx("p", { className: "p-4 text-red-400", children: t("common:error_occurred") });
     }
     return (_jsx("div", { className: "space-y-2 mt-4", children: events?.map((evt) => {
             const title = evt.title || `Quick ${evt.format}`;

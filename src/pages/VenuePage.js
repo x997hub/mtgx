@@ -54,6 +54,9 @@ export default function VenuePage() {
     if (venueQuery.isLoading) {
         return (_jsxs("div", { className: "min-h-screen bg-surface p-4 space-y-4", children: [_jsx(Skeleton, { className: "h-24 w-full rounded-xl" }), _jsx(Skeleton, { className: "h-48 w-full rounded-xl" }), _jsx(Skeleton, { className: "h-32 w-full rounded-xl" })] }));
     }
+    if (venueQuery.isError) {
+        return (_jsx("div", { className: "min-h-screen bg-surface p-4", children: _jsx(EmptyState, { title: tc("error_occurred") }) }));
+    }
     const venue = venueQuery.data;
     if (!venue) {
         return (_jsx("div", { className: "min-h-screen bg-surface p-4", children: _jsx(EmptyState, { title: tc("no_results") }) }));

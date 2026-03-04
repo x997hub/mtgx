@@ -66,6 +66,7 @@ export function AvailabilityGrid({ value, onChange, readOnly }: AvailabilityGrid
                   LEVEL_COLORS[level],
                   !readOnly && "cursor-pointer hover:opacity-80"
                 )}
+                aria-label={`${t(day)} ${t(`${slot}_slot`)} - ${t(level)}`}
                 title={t(level)}
               />
             );

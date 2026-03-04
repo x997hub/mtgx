@@ -16,10 +16,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { FAB } from "@/components/shared/FAB";
 import { useEvents } from "@/hooks/useEvents";
 import { useFilterStore } from "@/store/filterStore";
+import { FORMATS, CITIES } from "@/lib/constants";
 import type { MtgFormat } from "@/types/database.types";
-
-const FORMATS: MtgFormat[] = ["pauper", "commander", "standard", "draft"];
-const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
 
 export default function EventFeedPage() {
   const { t } = useTranslation(["events", "common"]);

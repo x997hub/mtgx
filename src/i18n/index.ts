@@ -31,6 +31,7 @@ i18n
     },
     fallbackLng: "en",
     defaultNS: "common",
+    fallbackNS: "common",
     ns: ["common", "events", "profile", "venue"],
     interpolation: {
       escapeValue: false,

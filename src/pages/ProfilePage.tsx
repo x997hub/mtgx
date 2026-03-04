@@ -11,11 +11,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability } from "@/types/database.types";
 import { Pencil, Shield, Bell } from "lucide-react";
-
-const DAYS: DayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const SLOTS: TimeSlot[] = ["day", "evening"];
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600",

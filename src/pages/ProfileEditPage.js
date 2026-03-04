@@ -11,11 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
 import { Loader2, Save } from "lucide-react";
-const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
-const FORMATS = ["pauper", "commander", "standard", "draft"];
-const DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const SLOTS = ["day", "evening"];
 const LEVELS = ["available", "sometimes", "unavailable"];
 const LEVEL_COLORS = {
     available: "bg-emerald-600 hover:bg-emerald-500",

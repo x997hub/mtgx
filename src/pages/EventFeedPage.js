@@ -11,8 +11,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { FAB } from "@/components/shared/FAB";
 import { useEvents } from "@/hooks/useEvents";
 import { useFilterStore } from "@/store/filterStore";
-const FORMATS = ["pauper", "commander", "standard", "draft"];
-const CITIES = ["Tel Aviv", "Jerusalem", "Haifa", "Beer Sheva", "Netanya"];
+import { FORMATS, CITIES } from "@/lib/constants";
 export default function EventFeedPage() {
     const { t } = useTranslation(["events", "common"]);
     const navigate = useNavigate();

@@ -39,6 +39,7 @@ export function AvailabilityChips({ selected, onChange }: AvailabilityChipsProps
                 key={key}
                 type="button"
                 onClick={() => toggle(key)}
+                aria-pressed={isSelected}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[36px]",
                   isSelected

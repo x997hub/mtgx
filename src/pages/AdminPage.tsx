@@ -36,8 +36,8 @@ export default function AdminPage() {
         <Card className="bg-surface-card border-surface-hover max-w-sm">
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <ShieldAlert className="h-12 w-12 text-accent" />
-            <p className="text-lg font-semibold text-text-primary">Access Denied</p>
-            <p className="text-sm text-text-secondary">Admin access required.</p>
+            <p className="text-lg font-semibold text-text-primary">{t("common:access_denied")}</p>
+            <p className="text-sm text-text-secondary">{t("common:admin_required")}</p>
           </CardContent>
         </Card>
       </div>
@@ -79,7 +79,8 @@ export default function AdminPage() {
 }
 
 function ReportTab() {
-  const { data: report, isLoading } = useQuery({
+  const { t } = useTranslation(["common", "events"]);
+  const { data: report, isLoading, isError } = useQuery({
     queryKey: ["admin-report"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -103,8 +104,12 @@ function ReportTab() {
     );
   }
 
+  if (isError) {
+    return <p className="p-4 text-red-400">{t("common:error_occurred")}</p>;
+  }
+
   if (!report) {
-    return <p className="p-4 text-text-secondary">No reports available yet.</p>;
+    return <p className="p-4 text-text-secondary">{t("common:no_reports")}</p>;
   }
 
   const payload = report.payload as Record<string, number>;
@@ -132,9 +137,10 @@ function ReportTab() {
 }
 
 function UsersTab() {
+  const { t } = useTranslation(["common", "events"]);
   const queryClient = useQueryClient();
 
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles, isLoading, isError } = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -167,6 +173,10 @@ function UsersTab() {
         ))}
       </div>
     );
+  }
+
+  if (isError) {
+    return <p className="p-4 text-red-400">{t("common:error_occurred")}</p>;
   }
 
   return (
@@ -203,7 +213,8 @@ function UsersTab() {
 }
 
 function EventsTab() {
-  const { data: events, isLoading } = useQuery({
+  const { t } = useTranslation(["common", "events"]);
+  const { data: events, isLoading, isError } = useQuery({
     queryKey: ["admin-events"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -224,6 +235,10 @@ function EventsTab() {
         ))}
       </div>
     );
+  }
+
+  if (isError) {
+    return <p className="p-4 text-red-400">{t("common:error_occurred")}</p>;
   }
 
   return (

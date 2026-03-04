@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Calendar } from "lucide-react";
+import { Calendar, AlertTriangle } from "lucide-react";
 export function UpcomingEvents({ venueId }) {
     const { t } = useTranslation("venue");
-    const { data: events, isLoading } = useQuery({
+    const { data: events, isLoading, isError } = useQuery({
         queryKey: ["venue-events", venueId],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -26,5 +26,8 @@ export function UpcomingEvents({ venueId }) {
     });
     if (isLoading)
         return null;
+    if (isError) {
+        return (_jsxs("div", { className: "space-y-3", children: [_jsx("h2", { className: "text-lg font-semibold text-gray-100", children: t("upcoming_events") }), _jsx(EmptyState, { icon: AlertTriangle, title: t("common:error_occurred") })] }));
+    }
     return (_jsxs("div", { className: "space-y-3", children: [_jsx("h2", { className: "text-lg font-semibold text-gray-100", children: t("upcoming_events") }), events && events.length > 0 ? (_jsx("div", { className: "space-y-3", children: events.map((event) => (_jsx(EventCard, { event: event }, event.id))) })) : (_jsx(EmptyState, { icon: Calendar, title: t("no_upcoming_events") }))] }));
 }
