@@ -13,11 +13,11 @@ export function useAuth() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       listenerFiredRef.current = true;
       setSession(session);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
       } else {
         setProfile(null);
       }
@@ -29,7 +29,7 @@ export function useAuth() {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (error) {
         console.error("Failed to get session:", error);
         setLoading(false);
@@ -40,7 +40,7 @@ export function useAuth() {
       if (!listenerFiredRef.current) {
         setSession(session);
         if (session?.user) {
-          fetchProfile(session.user.id);
+          await fetchProfile(session.user.id);
         }
         setLoading(false);
       }

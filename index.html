@@ -12,24 +12,7 @@
   <body>
     <div id="root"></div>
     <script>
-      // Nuke old service workers and caches
-      if (navigator.serviceWorker) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          regs.forEach(function(r) { r.unregister(); });
-        });
-        caches.keys().then(function(names) {
-          names.forEach(function(n) { caches.delete(n); });
-        });
-      }
       // Auto-reload once on chunk load failure (stale deploy)
-      window.addEventListener('error', function(e) {
-        if (e.message && e.message.indexOf('dynamically imported module') !== -1) {
-          if (!sessionStorage.getItem('chunk_reload')) {
-            sessionStorage.setItem('chunk_reload', '1');
-            location.reload();
-          }
-        }
-      });
       window.addEventListener('unhandledrejection', function(e) {
         if (e.reason && e.reason.message && e.reason.message.indexOf('dynamically imported module') !== -1) {
           if (!sessionStorage.getItem('chunk_reload')) {
