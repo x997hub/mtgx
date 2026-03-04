@@ -29,6 +29,7 @@ i18n
         venue: ruVenue,
       },
     },
+    lng: "en",
     fallbackLng: "en",
     defaultNS: "common",
     fallbackNS: "common",
@@ -37,7 +38,7 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ["localStorage", "navigator"],
+      order: ["localStorage"],
       caches: ["localStorage"],
     },
   });
