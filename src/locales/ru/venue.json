@@ -1,0 +1,12 @@
+{
+  "venue_info": "Информация о площадке",
+  "address": "Адрес",
+  "hours": "Часы работы",
+  "capacity": "Вместимость",
+  "contacts": "Контакты",
+  "supported_formats": "Поддерживаемые форматы",
+  "upcoming_events": "Ближайшие события",
+  "no_upcoming_events": "Ближайших событий на этой площадке нет",
+  "subscribe_venue": "Подписаться на площадку",
+  "players_capacity": "{{count}} игроков"
+}

@@ -1,0 +1,12 @@
+{
+  "venue_info": "Venue Info",
+  "address": "Address",
+  "hours": "Working Hours",
+  "capacity": "Capacity",
+  "contacts": "Contacts",
+  "supported_formats": "Supported Formats",
+  "upcoming_events": "Upcoming Events",
+  "no_upcoming_events": "No upcoming events at this venue",
+  "subscribe_venue": "Subscribe to this venue",
+  "players_capacity": "{{count}} players"
+}

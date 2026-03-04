@@ -1,0 +1,213 @@
+import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { FormatBadge } from "@/components/shared/FormatBadge";
+import { CityBadge } from "@/components/shared/CityBadge";
+import { SubscribeButton } from "@/components/shared/SubscribeButton";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { EventCard } from "@/components/events/EventCard";
+import type { Venue, Event } from "@/types/database.types";
+import { MapPin, Clock, Users, Phone, Calendar } from "lucide-react";
+
+export default function VenuePage() {
+  const { t } = useTranslation("venue");
+  const { t: tc } = useTranslation("common");
+  const { venueId } = useParams<{ venueId: string }>();
+
+  const venueQuery = useQuery({
+    queryKey: ["venue", venueId],
+    queryFn: async () => {
+      if (!venueId) return null;
+      const { data, error } = await supabase
+        .from("venues")
+        .select("*")
+        .eq("id", venueId)
+        .single();
+      if (error) throw error;
+      return data as Venue;
+    },
+    enabled: !!venueId,
+  });
+
+  const eventsQuery = useQuery({
+    queryKey: ["venue-events", venueId],
+    queryFn: async () => {
+      if (!venueId) return [];
+      const { data, error } = await supabase
+        .from("events")
+        .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name)" as "*")
+        .eq("venue_id", venueId)
+        .eq("status", "active")
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(20);
+      if (error) throw error;
+      return data as unknown as (Event & {
+        venues?: { name: string; city: string } | null;
+        profiles?: { display_name: string } | null;
+      })[];
+    },
+    enabled: !!venueId,
+  });
+
+  if (venueQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-surface p-4 space-y-4">
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  const venue = venueQuery.data;
+
+  if (!venue) {
+    return (
+      <div className="min-h-screen bg-surface p-4">
+        <EmptyState title={tc("no_results")} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-surface text-text-primary">
+      <div className="mx-auto max-w-lg space-y-4 p-4">
+        {/* Header */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-2">
+                <h1 className="text-xl font-bold text-gray-100">{venue.name}</h1>
+                <CityBadge city={venue.city} />
+              </div>
+              <SubscribeButton targetType="venue" targetId={venue.id} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Venue Info */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-400">{t("venue_info")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Address */}
+            <div className="flex items-start gap-3">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <div>
+                <p className="text-xs text-gray-500">{t("address")}</p>
+                <p className="text-sm text-gray-200">{venue.address}</p>
+              </div>
+            </div>
+
+            {/* Hours */}
+            {venue.hours && Object.keys(venue.hours).length > 0 && (
+              <>
+                <Separator />
+                <div className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500">{t("hours")}</p>
+                    <div className="space-y-1">
+                      {Object.entries(venue.hours).map(([day, time]) => (
+                        <div key={day} className="flex justify-between text-sm">
+                          <span className="text-gray-400">{day}</span>
+                          <span className="text-gray-200">{time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Capacity */}
+            {venue.capacity != null && (
+              <>
+                <Separator />
+                <div className="flex items-start gap-3">
+                  <Users className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-500">{t("capacity")}</p>
+                    <p className="text-sm text-gray-200">
+                      {t("players_capacity", { count: venue.capacity })}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Contacts */}
+            {venue.contacts && Object.keys(venue.contacts).length > 0 && (
+              <>
+                <Separator />
+                <div className="flex items-start gap-3">
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500">{t("contacts")}</p>
+                    <div className="space-y-1">
+                      {Object.entries(venue.contacts).map(([label, value]) => (
+                        <div key={label} className="flex justify-between text-sm">
+                          <span className="text-gray-400">{label}</span>
+                          <span className="text-gray-200">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Supported Formats */}
+            {venue.supported_formats.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">{t("supported_formats")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {venue.supported_formats.map((format) => (
+                      <FormatBadge key={format} format={format} />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Events */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm text-gray-400">
+              <Calendar className="h-4 w-4" />
+              {t("upcoming_events")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {eventsQuery.isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+              </div>
+            ) : eventsQuery.data && eventsQuery.data.length > 0 ? (
+              <div className="space-y-3">
+                {eventsQuery.data.map((event) => (
+                  <EventCard key={event.id} event={event as any} />
+                ))}
+              </div>
+            ) : (
+              <p className="py-4 text-center text-sm text-gray-500">
+                {t("no_upcoming_events")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
