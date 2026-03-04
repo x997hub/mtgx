@@ -11,6 +11,24 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // One-time: nuke old service workers and stale caches, then reload
+      if (navigator.serviceWorker && !window.__swCleaned) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          if (regs.length > 0) {
+            Promise.all(regs.map(function(r) { return r.unregister(); }))
+              .then(function() { return caches.keys(); })
+              .then(function(names) {
+                return Promise.all(names.map(function(n) { return caches.delete(n); }));
+              })
+              .then(function() {
+                window.__swCleaned = true;
+                location.reload();
+              });
+          }
+        });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
