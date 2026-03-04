@@ -9,9 +9,11 @@ interface AuthState {
   user: User | null;
   profile: Profile | null;
   isLoading: boolean;
+  profileChecked: boolean;
   isAuthenticated: boolean;
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
+  setProfileChecked: (checked: boolean) => void;
   setLoading: (loading: boolean) => void;
   reset: () => void;
 }
@@ -21,6 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
   isLoading: true,
+  profileChecked: false,
   isAuthenticated: false,
   setSession: (session) =>
     set({
@@ -28,7 +31,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       user: session?.user ?? null,
       isAuthenticated: !!session,
     }),
-  setProfile: (profile) => set({ profile }),
+  setProfile: (profile) => set({ profile, profileChecked: true }),
+  setProfileChecked: (profileChecked) => set({ profileChecked }),
   setLoading: (isLoading) => set({ isLoading }),
   reset: () =>
     set({
@@ -36,6 +40,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       user: null,
       profile: null,
       isLoading: false,
+      profileChecked: false,
       isAuthenticated: false,
     }),
 }));

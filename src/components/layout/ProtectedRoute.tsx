@@ -6,10 +6,11 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, profile } = useAuth();
+  const { isAuthenticated, isLoading, profileChecked, profile } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  // Wait for both auth and profile check to complete
+  if (isLoading || (isAuthenticated && !profileChecked)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#1a1a2e]">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#e94560] border-t-transparent" />
