@@ -47,5 +47,7 @@
   "event_created": "Event created successfully",
   "select_venue": "Select venue",
   "organized_by": "by {{name}}",
-  "quick_format": "Quick {{format}}"
+  "quick_format": "Quick {{format}}",
+  "today": "Today",
+  "upcoming": "Upcoming"
 }

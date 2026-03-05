@@ -47,5 +47,7 @@
   "event_created": "Событие успешно создано",
   "select_venue": "Выберите площадку",
   "organized_by": "от {{name}}",
-  "quick_format": "Быстрая {{format}}"
+  "quick_format": "Быстрая {{format}}",
+  "today": "Сегодня",
+  "upcoming": "Скоро"
 }

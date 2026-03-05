@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { CalendarPlus, Search } from "lucide-react";
+import { CalendarPlus, Flame, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useFilterStore } from "@/store/filterStore";
 import { FORMATS, CITIES } from "@/lib/constants";
 import type { MtgFormat } from "@/types/database.types";
+import type { EventWithRelations } from "@/hooks/useEvents";
 
 export default function EventFeedPage() {
   const { t } = useTranslation(["events", "common"]);
@@ -111,7 +112,7 @@ export default function EventFeedPage() {
       </div>
       <LFGSignalList city={profile?.city ?? undefined} />
 
-      {/* Events grid */}
+      {/* Events */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -125,13 +126,7 @@ export default function EventFeedPage() {
           description={t("events:no_events_description")}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-          {/* Infinite scroll sentinel */}
-          <div ref={sentinelRef} className="h-1" />
-        </div>
+        <EventSections events={events} sentinelRef={sentinelRef} />
       )}
 
       {isFetchingNextPage && (
@@ -145,6 +140,89 @@ export default function EventFeedPage() {
         <CalendarPlus className="h-5 w-5 mr-2" />
         {t("common:create")}
       </FAB>
+    </div>
+  );
+}
+
+function isToday(dateStr: string): boolean {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
+function EventSections({
+  events,
+  sentinelRef,
+}: {
+  events: EventWithRelations[];
+  sentinelRef: (node: HTMLDivElement | null) => void;
+}) {
+  const { t } = useTranslation("events");
+
+  const { todayEvents, upcomingEvents } = useMemo(() => {
+    const today: EventWithRelations[] = [];
+    const upcoming: EventWithRelations[] = [];
+    for (const e of events) {
+      if (isToday(e.starts_at)) {
+        today.push(e);
+      } else {
+        upcoming.push(e);
+      }
+    }
+    return { todayEvents: today, upcomingEvents: upcoming };
+  }, [events]);
+
+  return (
+    <div className="space-y-6">
+      {/* Today's events — highlighted block */}
+      {todayEvents.length > 0 && (
+        <section className="rounded-xl border-2 border-accent/40 bg-accent/5 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
+            </span>
+            <Flame className="h-5 w-5 text-accent" />
+            <h2 className="text-lg font-bold text-accent">
+              {t("today")}
+            </h2>
+            <Badge className="bg-accent/20 text-accent border-none">
+              {todayEvents.length}
+            </Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {todayEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Upcoming events */}
+      {upcomingEvents.length > 0 && (
+        <section className="space-y-3">
+          {todayEvents.length > 0 && (
+            <h2 className="text-lg font-semibold text-text-secondary">
+              {t("upcoming")}
+            </h2>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+            <div ref={sentinelRef} className="h-1" />
+          </div>
+        </section>
+      )}
+
+      {/* Sentinel when there are only today events */}
+      {upcomingEvents.length === 0 && (
+        <div ref={sentinelRef} className="h-1" />
+      )}
     </div>
   );
 }
