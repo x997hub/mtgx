@@ -33,8 +33,8 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto -mx-2 px-2">
+      <table className="min-w-[320px] w-full text-sm">
         <thead>
           <tr>
             <th className="p-1 text-left text-gray-400" />
@@ -149,31 +149,34 @@ export default function ProfilePage() {
       <div className="mx-auto max-w-lg space-y-4 p-4">
         {/* Header */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={profile.display_name} className="h-full w-full rounded-full object-cover" />
-                ) : (
-                  <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-                )}
-              </Avatar>
-              <div className="flex-1 min-w-0 space-y-1">
-                <h1 className="text-2xl font-bold text-gray-100 break-words">{profile.display_name}</h1>
-                <div className="flex flex-wrap items-center gap-2">
-                  <CityBadge city={profile.city} />
-                  <Badge variant="outline" className="text-gray-300">
-                    {t(ROLE_LABELS[profile.role] ?? "role_player")}
-                  </Badge>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-14 w-14 shrink-0">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={profile.display_name} className="h-full w-full rounded-full object-cover" />
+                  ) : (
+                    <AvatarFallback className="text-base">{initials}</AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="min-w-0">
+                  <h1 className="text-xl font-bold text-gray-100 truncate">{profile.display_name}</h1>
+                  <p className="text-sm text-gray-400">{profile.city}</p>
                 </div>
               </div>
               {isOwn && (
-                <Button variant="ghost" size="icon" asChild aria-label={t("edit_profile")}>
+                <Button variant="ghost" size="icon" asChild aria-label={t("edit_profile")} className="shrink-0">
                   <Link to="/profile/edit">
                     <Pencil className="h-4 w-4" />
                   </Link>
                 </Button>
               )}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <CityBadge city={profile.city} />
+              <Badge variant="outline" className="text-gray-300">
+                {t(ROLE_LABELS[profile.role] ?? "role_player")}
+              </Badge>
             </div>
           </CardContent>
         </Card>
