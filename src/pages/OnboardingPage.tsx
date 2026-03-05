@@ -166,7 +166,7 @@ export default function OnboardingPage() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <CardTitle className="text-text-primary text-lg text-center">
+          <CardTitle className="text-text-primary text-xl text-center">
             {step === 0 && t("profile:onboarding_city")}
             {step === 1 && t("profile:onboarding_formats")}
             {step === 2 && t("profile:onboarding_availability")}

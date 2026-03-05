@@ -130,14 +130,14 @@ export default function EventDetailPage() {
       <Card className="bg-surface-card border-surface-hover">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-3 text-text-secondary">
-            <Calendar className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm">{dateStr} {timeStr}</span>
+            <Calendar className="h-5 w-5 flex-shrink-0" />
+            <span className="text-base">{dateStr} {timeStr}</span>
           </div>
 
           {event.venues && (
             <div className="flex items-center gap-3 text-text-secondary">
-              <MapPin className="h-4 w-4 flex-shrink-0" />
-              <div className="text-sm">
+              <MapPin className="h-5 w-5 flex-shrink-0" />
+              <div className="text-base">
                 <div className="text-text-primary">
                   {event.venues.name}
                 </div>
@@ -147,8 +147,8 @@ export default function EventDetailPage() {
           )}
 
           <div className="flex items-center gap-3 text-text-secondary">
-            <Users className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm">
+            <Users className="h-5 w-5 flex-shrink-0" />
+            <span className="text-base">
               {event.min_players}
               {event.max_players ? `–${event.max_players}` : "+"} {t("events:players", "players")}
               {spotsLeft !== null && spotsLeft > 0 && (

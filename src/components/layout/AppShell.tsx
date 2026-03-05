@@ -35,13 +35,13 @@ export function AppShell() {
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors hover:bg-primary",
+                "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary",
                 location.pathname === to
                   ? "bg-primary text-accent"
                   : "text-gray-400"
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-6 w-6" />
               {t(labelKey)}
             </Link>
           ))}
@@ -49,13 +49,13 @@ export function AppShell() {
             <Link
               to="/admin"
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors hover:bg-primary mt-auto",
+                "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary mt-auto",
                 location.pathname === "/admin"
                   ? "bg-primary text-accent"
                   : "text-gray-400"
               )}
             >
-              <Shield className="h-5 w-5" />
+              <Shield className="h-6 w-6" />
               {t("admin")}
             </Link>
           )}
@@ -65,7 +65,7 @@ export function AppShell() {
       {/* Main content */}
       <div className="flex flex-1 flex-col">
         {/* Top header */}
-        <header className="flex h-14 items-center justify-between border-b border-gray-700 bg-secondary px-4 md:px-6">
+        <header className="flex h-16 items-center justify-between border-b border-gray-700 bg-secondary px-4 md:px-6">
           <Link to="/" className="text-lg font-bold text-accent md:hidden">
             MTGX
           </Link>
@@ -90,13 +90,13 @@ export function AppShell() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-gray-700 bg-secondary md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-[72px] items-center justify-around border-t border-gray-700 bg-secondary md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, labelKey }) => (
           <Link
             key={to}
             to={to}
             className={cn(
-              "flex min-h-[44px] min-w-[40px] flex-col items-center justify-center gap-0.5 text-[11px]",
+              "flex min-h-[48px] min-w-[44px] flex-col items-center justify-center gap-0.5 text-xs",
               location.pathname === to ? "text-accent" : "text-gray-400"
             )}
           >

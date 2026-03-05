@@ -141,7 +141,7 @@ export default function ProfileEditPage() {
   return (
     <div className="min-h-screen bg-surface text-text-primary">
       <div className="mx-auto max-w-lg space-y-4 p-4">
-        <h1 className="text-xl font-bold text-gray-100">{t("edit_profile")}</h1>
+        <h1 className="text-2xl font-bold text-gray-100">{t("edit_profile")}</h1>
 
         {/* Display Name */}
         <Card>
@@ -214,7 +214,7 @@ export default function ProfileEditPage() {
                   key={option}
                   type="button"
                   onClick={() => setCarAccess(carAccess === option ? "" : option)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-5 py-2 text-base font-medium transition-colors ${
                     carAccess === option
                       ? "bg-accent text-white"
                       : "bg-gray-700 text-gray-400"
@@ -244,7 +244,7 @@ export default function ProfileEditPage() {
               >
                 {interestedInTrading && <Repeat className="h-4 w-4" />}
               </div>
-              <span className="text-sm text-gray-200">{t("interested_in_trading")}</span>
+              <span className="text-base text-gray-200">{t("interested_in_trading")}</span>
             </button>
           </CardContent>
         </Card>
@@ -252,7 +252,7 @@ export default function ProfileEditPage() {
         {/* Formats */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">{t("formats")}</CardTitle>
+            <CardTitle className="text-base text-gray-400">{t("formats")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -264,7 +264,7 @@ export default function ProfileEditPage() {
                     key={format}
                     type="button"
                     onClick={() => toggleFormat(format)}
-                    className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
                       active ? colors.active : colors.inactive
                     }`}
                   >
@@ -279,7 +279,7 @@ export default function ProfileEditPage() {
         {/* Availability Grid */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">{t("availability")}</CardTitle>
+            <CardTitle className="text-base text-gray-400">{t("availability")}</CardTitle>
             <p className="text-xs text-gray-500">{t("availability_description")}</p>
           </CardHeader>
           <CardContent>
@@ -309,7 +309,7 @@ export default function ProfileEditPage() {
                             <button
                               type="button"
                               onClick={() => cycleLevel(day, slot)}
-                              className={`mx-auto h-8 w-8 rounded transition-colors ${LEVEL_COLORS[level]}`}
+                              className={`mx-auto h-10 w-10 rounded transition-colors ${LEVEL_COLORS[level]}`}
                               title={t(level)}
                             />
                           </td>

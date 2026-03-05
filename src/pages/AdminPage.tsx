@@ -158,7 +158,7 @@ function ReportTab() {
       {payload.low_reliability_users && payload.low_reliability_users.length > 0 && (
         <Card className="bg-surface-card border-surface-hover">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-red-400">
+            <CardTitle className="text-base text-red-400">
               {t("common:low_reliability", "Low reliability players")}
             </CardTitle>
           </CardHeader>
@@ -184,7 +184,7 @@ function MetricCard({ label, value, subtitle }: { label: string; value: string |
   return (
     <Card className="bg-surface-card border-surface-hover">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-text-secondary">{label}</CardTitle>
+        <CardTitle className="text-base text-text-secondary">{label}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-2xl font-bold text-accent">{value}</p>

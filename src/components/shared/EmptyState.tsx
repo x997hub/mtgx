@@ -17,8 +17,8 @@ export function EmptyState({ icon: Icon, title, description, children, className
           <Icon className="h-8 w-8 text-gray-400" />
         </div>
       )}
-      <h3 className="mb-1 text-lg font-semibold text-gray-200">{title}</h3>
-      {description && <p className="mb-4 max-w-sm text-sm text-gray-400">{description}</p>}
+      <h3 className="mb-1 text-xl font-semibold text-gray-200">{title}</h3>
+      {description && <p className="mb-4 max-w-sm text-base text-gray-400">{description}</p>}
       {children && <div className="flex flex-wrap items-center justify-center gap-2">{children}</div>}
     </div>
   );

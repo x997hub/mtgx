@@ -144,7 +144,7 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-20 w-20">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={profile.display_name} className="h-full w-full rounded-full object-cover" />
                 ) : (
@@ -152,7 +152,7 @@ export default function ProfilePage() {
                 )}
               </Avatar>
               <div className="flex-1 space-y-1">
-                <h1 className="text-xl font-bold text-gray-100">{profile.display_name}</h1>
+                <h1 className="text-2xl font-bold text-gray-100">{profile.display_name}</h1>
                 <div className="flex flex-wrap items-center gap-2">
                   <CityBadge city={profile.city} />
                   <Badge variant="outline" className="text-gray-300">
@@ -175,10 +175,10 @@ export default function ProfilePage() {
         {profile.bio && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-gray-400">{t("bio")}</CardTitle>
+              <CardTitle className="text-base text-gray-400">{t("bio")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-200 whitespace-pre-line">{profile.bio}</p>
+              <p className="text-base text-gray-200 whitespace-pre-line">{profile.bio}</p>
             </CardContent>
           </Card>
         )}
@@ -189,7 +189,7 @@ export default function ProfilePage() {
             <Card className="hover:border-emerald-500/50 transition-colors cursor-pointer">
               <CardContent className="flex items-center gap-3 p-4">
                 <MessageCircle className="h-5 w-5 text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-400">{t("whatsapp_chat")}</span>
+                <span className="text-base font-medium text-emerald-400">{t("whatsapp_chat")}</span>
               </CardContent>
             </Card>
           </a>
@@ -200,14 +200,14 @@ export default function ProfilePage() {
           <Card>
             <CardContent className="flex flex-wrap gap-3 p-4">
               {profile.car_access && (
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Car className="h-4 w-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-base text-gray-300">
+                  <Car className="h-5 w-5 text-gray-400" />
                   {t(CAR_LABELS[profile.car_access] ?? "car_no")}
                 </div>
               )}
               {profile.interested_in_trading && (
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Repeat className="h-4 w-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-base text-gray-300">
+                  <Repeat className="h-5 w-5 text-gray-400" />
                   {t("interested_in_trading")}
                 </div>
               )}
@@ -234,7 +234,7 @@ export default function ProfilePage() {
         {profile.formats.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-gray-400">{t("formats")}</CardTitle>
+              <CardTitle className="text-base text-gray-400">{t("formats")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
@@ -249,7 +249,7 @@ export default function ProfilePage() {
         {/* Availability */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">{t("availability")}</CardTitle>
+            <CardTitle className="text-base text-gray-400">{t("availability")}</CardTitle>
           </CardHeader>
           <CardContent>
             <AvailabilityGrid availability={availability} />

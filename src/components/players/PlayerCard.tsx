@@ -45,16 +45,16 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
         <CardContent className="p-4 space-y-3">
           {/* Header: Avatar + Name + City */}
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-12 w-12">
               <AvatarFallback className="bg-primary text-accent text-sm font-bold">
                 {initials || "?"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-100 truncate">
+              <p className="text-base font-medium text-gray-100 truncate">
                 {player.display_name}
               </p>
-              <p className="text-xs text-gray-400">{player.city}</p>
+              <p className="text-sm text-gray-400">{player.city}</p>
             </div>
             {player.role !== "player" && (
               <Badge variant="outline" className="text-xs border-accent/50 text-accent shrink-0">

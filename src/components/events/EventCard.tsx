@@ -37,24 +37,24 @@ export function EventCard({ event }: EventCardProps) {
                 <FormatBadge format={event.format} />
                 <CityBadge city={event.city} />
               </div>
-              <h3 className="font-semibold text-gray-100">
+              <h3 className="text-lg font-semibold text-gray-100">
                 {event.title || t(event.type === "big" ? "big_event" : "quick_meetup")}
               </h3>
-              <div className="flex flex-col gap-1 text-sm text-gray-400">
+              <div className="flex flex-col gap-1 text-base text-gray-400">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <Calendar className="h-4 w-4" />
                   {timeStr} {hourStr}
                 </span>
                 {event.venues && (
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5" />
+                    <MapPin className="h-4 w-4" />
                     {event.venues.name}
                   </span>
                 )}
               </div>
             </div>
-            <div className="flex flex-col items-center gap-0.5 text-sm text-gray-400">
-              <Users className="h-4 w-4" />
+            <div className="flex flex-col items-center gap-0.5 text-base text-gray-400">
+              <Users className="h-5 w-5" />
               <span>{goingCount}</span>
               {spotsLeft != null && (
                 <span className={`text-xs ${spotsLeft <= 0 ? "text-red-400" : "text-gray-500"}`}>
