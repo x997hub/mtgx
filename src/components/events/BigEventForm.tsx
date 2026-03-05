@@ -68,6 +68,18 @@ export function BigEventForm({ defaultValues, clonedFrom }: BigEventFormProps) {
       toast({ title: t("city_required", "City is required"), variant: "destructive" });
       return;
     }
+    if (maxPlayers && maxPlayers < minPlayers) {
+      toast({ title: t("max_less_than_min", "Max players must be ≥ min players"), variant: "destructive" });
+      return;
+    }
+    if (!startsAt) {
+      toast({ title: t("date_required", "Date is required"), variant: "destructive" });
+      return;
+    }
+    if (new Date(startsAt) <= new Date()) {
+      toast({ title: t("date_must_be_future", "Event must be in the future"), variant: "destructive" });
+      return;
+    }
 
     try {
       await createEvent({

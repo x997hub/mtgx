@@ -51,5 +51,8 @@
   "today": "Сегодня",
   "upcoming": "Скоро",
   "lfg_preferred_time": "Предпочтительное время",
-  "lfg_select_formats": "Выберите хотя бы один формат"
+  "lfg_select_formats": "Выберите хотя бы один формат",
+  "date_required": "Укажите дату и время",
+  "date_must_be_future": "Событие должно быть в будущем",
+  "max_less_than_min": "Макс. игроков должно быть ≥ мин."
 }

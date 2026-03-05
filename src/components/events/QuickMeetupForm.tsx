@@ -34,6 +34,14 @@ export function QuickMeetupForm({ defaultValues }: QuickMeetupFormProps) {
       toast({ title: t("city_required", "City is required"), variant: "destructive" });
       return;
     }
+    if (!startsAt) {
+      toast({ title: t("date_required", "Date is required"), variant: "destructive" });
+      return;
+    }
+    if (new Date(startsAt) <= new Date()) {
+      toast({ title: t("date_must_be_future", "Event must be in the future"), variant: "destructive" });
+      return;
+    }
 
     const startsAtDate = new Date(startsAt);
 

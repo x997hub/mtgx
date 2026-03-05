@@ -13,3 +13,6 @@ src/**/*.d.ts.map
 !src/vite-env.d.ts
 .vercel
 .env*.local
+
+# Test coverage
+coverage/

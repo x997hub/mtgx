@@ -51,5 +51,8 @@
   "today": "Today",
   "upcoming": "Upcoming",
   "lfg_preferred_time": "Preferred time",
-  "lfg_select_formats": "Select at least one format"
+  "lfg_select_formats": "Select at least one format",
+  "date_required": "Date and time are required",
+  "date_must_be_future": "Event must be in the future",
+  "max_less_than_min": "Max players must be ≥ min players"
 }
