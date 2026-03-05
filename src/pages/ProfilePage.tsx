@@ -145,8 +145,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-text-primary">
-      <div className="mx-auto max-w-lg space-y-4 p-4">
+    <div className="min-h-screen bg-surface text-text-primary overflow-x-hidden">
+      <div className="mx-auto max-w-lg space-y-4 p-4 overflow-hidden">
         {/* Header */}
         <Card>
           <CardContent className="p-6">
@@ -158,8 +158,8 @@ export default function ProfilePage() {
                   <AvatarFallback className="text-lg">{initials}</AvatarFallback>
                 )}
               </Avatar>
-              <div className="flex-1 space-y-1">
-                <h1 className="text-2xl font-bold text-gray-100">{profile.display_name}</h1>
+              <div className="flex-1 min-w-0 space-y-1">
+                <h1 className="text-2xl font-bold text-gray-100 break-words">{profile.display_name}</h1>
                 <div className="flex flex-wrap items-center gap-2">
                   <CityBadge city={profile.city} />
                   <Badge variant="outline" className="text-gray-300">
