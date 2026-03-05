@@ -224,7 +224,7 @@ export default function ProfilePage() {
         {/* Car Access & Trading */}
         {(profile.car_access || profile.interested_in_trading) && (
           <Card>
-            <CardContent className="flex flex-wrap gap-3 p-4">
+            <CardContent className="flex flex-col gap-3 p-4">
               {profile.car_access && (
                 <div className="flex items-center gap-2 text-base text-gray-300">
                   <Car className="h-5 w-5 text-gray-400" />
