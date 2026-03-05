@@ -15,14 +15,14 @@ const TARGET_TYPE_ICONS: Record<SubscriptionTarget, typeof User> = {
   format_city: Layers,
 };
 
-function getSubscriptionLabel(sub: { target_type: SubscriptionTarget; target_id: string | null; format: string | null; city: string | null }): string {
+function getSubscriptionLabel(sub: { target_type: SubscriptionTarget; target_id: string | null; format: string | null; city: string | null }, t: (key: string) => string): string {
   switch (sub.target_type) {
     case "format_city":
       return `${sub.format ?? "?"} — ${sub.city ?? "?"}`;
     case "organizer":
-      return sub.target_id ? `ID: ${sub.target_id.slice(0, 8)}...` : "Unknown";
+      return sub.target_id ? `ID: ${sub.target_id.slice(0, 8)}...` : t("common:unknown");
     case "venue":
-      return sub.target_id ? `ID: ${sub.target_id.slice(0, 8)}...` : "Unknown";
+      return sub.target_id ? `ID: ${sub.target_id.slice(0, 8)}...` : t("common:unknown");
     default:
       return String(sub.target_id ?? "");
   }
@@ -126,7 +126,7 @@ export default function SettingsPage() {
                       <Icon className="h-4 w-4 text-text-secondary" />
                       <Badge variant="outline">{sub.target_type}</Badge>
                       <span className="text-sm text-text-secondary">
-                        {getSubscriptionLabel(sub)}
+                        {getSubscriptionLabel(sub, t)}
                       </span>
                     </div>
                     <Button

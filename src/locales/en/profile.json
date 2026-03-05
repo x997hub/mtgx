@@ -1,5 +1,4 @@
 {
-  "my_profile": "My Profile",
   "edit_profile": "Edit Profile",
   "display_name": "Display Name",
   "city": "City",
@@ -45,5 +44,6 @@
   "all_venues": "All venues",
   "no_players": "No players found",
   "no_players_description": "Try adjusting your filters to find more players",
-  "clear_filters": "Clear all"
+  "clear_filters": "Clear all",
+  "invalid_phone": "Invalid phone number format"
 }

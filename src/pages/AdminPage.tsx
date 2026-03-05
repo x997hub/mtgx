@@ -317,7 +317,7 @@ function EventsTab() {
   return (
     <div className="space-y-2 mt-4">
       {events?.map((evt) => {
-        const title = evt.title || `Quick ${evt.format}`;
+        const title = evt.title || t("events:quick_format", { format: evt.format });
         const organizer = evt.profiles?.display_name;
 
         return (

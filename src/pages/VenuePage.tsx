@@ -10,7 +10,8 @@ import { CityBadge } from "@/components/shared/CityBadge";
 import { SubscribeButton } from "@/components/shared/SubscribeButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { EventCard } from "@/components/events/EventCard";
-import type { Venue, VenuePhoto, Event } from "@/types/database.types";
+import type { Venue, VenuePhoto } from "@/types/database.types";
+import type { EventWithRelations } from "@/hooks/useEvents";
 import { MapPin, Clock, Users, Phone, Calendar } from "lucide-react";
 
 const VENUE_IMAGES_BUCKET = "venue-images";
@@ -41,17 +42,14 @@ export default function VenuePage() {
       if (!venueId) return [];
       const { data, error } = await supabase
         .from("events")
-        .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name)" as "*")
+        .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name), rsvps(count)" as "*")
         .eq("venue_id", venueId)
         .eq("status", "active")
         .gte("starts_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
         .limit(20);
       if (error) throw error;
-      return data as unknown as (Event & {
-        venues?: { name: string; city: string } | null;
-        profiles?: { display_name: string } | null;
-      })[];
+      return data as unknown as EventWithRelations[];
     },
     enabled: !!venueId,
   });
@@ -109,7 +107,7 @@ export default function VenuePage() {
       <div className="mx-auto max-w-lg space-y-4 p-4">
         {/* Photo */}
         {primaryPhotoUrl && (
-          <div className="aspect-video w-full overflow-hidden rounded-xl bg-[#16213e]">
+          <div className="aspect-video w-full overflow-hidden rounded-xl bg-secondary">
             <img
               src={primaryPhotoUrl}
               alt={venue.name}
@@ -238,7 +236,7 @@ export default function VenuePage() {
             ) : eventsQuery.data && eventsQuery.data.length > 0 ? (
               <div className="space-y-3">
                 {eventsQuery.data.map((event) => (
-                  <EventCard key={event.id} event={event as any} />
+                  <EventCard key={event.id} event={event} />
                 ))}
               </div>
             ) : (

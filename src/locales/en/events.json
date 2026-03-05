@@ -16,7 +16,6 @@
   "not_going": "Not Going",
   "rsvp": "RSVP",
   "rsvp_change": "Change RSVP",
-  "cancel_rsvp": "Cancel RSVP",
   "attendees": "Attendees",
   "spots_left": "{{count}} spots left",
   "event_full": "Event is full",
@@ -28,7 +27,6 @@
   "minutes": "minutes",
   "share_whatsapp": "Share on WhatsApp",
   "clone_event": "Clone Event",
-  "cancel_event": "Cancel Event",
   "lfg_banner": "{{count}} players looking for game in your area",
   "lfg_active": "Your LFG signal is active",
   "lfg_activate": "I'm looking for a game!",
@@ -48,6 +46,6 @@
   "create_quick_meetup": "Create Quick Meetup",
   "event_created": "Event created successfully",
   "select_venue": "Select venue",
-  "select_format": "Select format",
-  "organized_by": "by {{name}}"
+  "organized_by": "by {{name}}",
+  "quick_format": "Quick {{format}}"
 }

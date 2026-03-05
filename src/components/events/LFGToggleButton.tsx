@@ -81,7 +81,7 @@ export function LFGToggleButton() {
     <>
       <Button
         variant="outline"
-        className="gap-2 min-h-[44px] border-[#e94560]/40 text-[#e94560] hover:bg-[#e94560]/10"
+        className="gap-2 min-h-[44px] border-accent/40 text-accent hover:bg-accent/10"
         onClick={() => setDialogOpen(true)}
       >
         <Zap className="h-4 w-4" />

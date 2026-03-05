@@ -29,7 +29,7 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <Link to={`/events/${event.id}`}>
-      <Card className="transition-colors hover:border-[#e94560]/50">
+      <Card className="transition-colors hover:border-accent/50">
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 space-y-2">

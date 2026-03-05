@@ -10,14 +10,14 @@ interface LFGSignalListProps {
 }
 
 export function LFGSignalList({ city }: LFGSignalListProps) {
-  const { t } = useTranslation("events");
+  const { t } = useTranslation(["events", "common"]);
   const { signals, isSignalsLoading } = useLFG(city);
 
   if (isSignalsLoading || signals.length === 0) return null;
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-[#e94560]">
+      <div className="flex items-center gap-2 text-sm font-medium text-accent">
         <Zap className="h-4 w-4" />
         {t("lfg_banner", { count: signals.length })}
       </div>
@@ -25,15 +25,15 @@ export function LFGSignalList({ city }: LFGSignalListProps) {
         {signals.map((signal) => (
           <li
             key={signal.id}
-            className="flex items-center gap-3 rounded-lg bg-[#e94560]/5 border border-[#e94560]/20 px-3 py-2"
+            className="flex items-center gap-3 rounded-lg bg-accent/5 border border-accent/20 px-3 py-2"
           >
             <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs bg-[#e94560]/20 text-[#e94560]">
+              <AvatarFallback className="text-xs bg-accent/20 text-accent">
                 {signal.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
               </AvatarFallback>
             </Avatar>
             <span className="flex-1 text-sm text-text-primary">
-              {signal.profiles?.display_name || "Unknown"}
+              {signal.profiles?.display_name || t("common:unknown")}
             </span>
             <div className="flex gap-1">
               {signal.formats.map((f: MtgFormat) => (

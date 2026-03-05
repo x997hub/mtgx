@@ -1,7 +1,6 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -25,19 +24,19 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-[50vh] items-center justify-center p-4">
-          <Card>
-            <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-              <AlertTriangle className="h-12 w-12 text-accent" />
-              <p className="text-lg font-semibold text-text-primary">Something went wrong</p>
-              <Button onClick={() => this.setState({ hasError: false })}>
-                Try again
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <ErrorFallback onReset={() => this.setState({ hasError: false })} />
       );
     }
     return this.props.children;
   }
+}
+
+function ErrorFallback({ onReset }: { onReset: () => void }) {
+  const { t } = useTranslation("common");
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8">
+      <p className="text-lg font-semibold text-text-primary">{t("error_occurred")}</p>
+      <Button onClick={onReset}>{t("try_again")}</Button>
+    </div>
+  );
 }

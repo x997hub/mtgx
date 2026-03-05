@@ -1,5 +1,4 @@
 {
-  "my_profile": "Мой профиль",
   "edit_profile": "Редактировать профиль",
   "display_name": "Имя",
   "city": "Город",
@@ -45,5 +44,6 @@
   "all_venues": "Все клубы",
   "no_players": "Игроки не найдены",
   "no_players_description": "Попробуйте изменить фильтры",
-  "clear_filters": "Сбросить"
+  "clear_filters": "Сбросить",
+  "invalid_phone": "Неверный формат номера телефона"
 }

@@ -25,7 +25,7 @@ const STATUS_COLORS: Record<RsvpStatus, string> = {
 const STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going"];
 
 export function AttendeeList({ attendees }: AttendeeListProps) {
-  const { t } = useTranslation("events");
+  const { t } = useTranslation(["events", "common"]);
 
   const grouped = useMemo(() => {
     const groups: Record<RsvpStatus, Attendee[]> = {
@@ -66,7 +66,7 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
                     </AvatarFallback>
                   </Avatar>
                   <span className="flex-1 text-sm text-gray-200">
-                    {attendee.profiles?.display_name || "Unknown"}
+                    {attendee.profiles?.display_name || t("common:unknown")}
                   </span>
                   <Badge
                     className={`border-none text-white ${STATUS_COLORS[attendee.status]}`}

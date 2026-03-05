@@ -27,7 +27,6 @@ export default function OnboardingPage() {
 
   // Track that onboarding is in progress so we don't redirect prematurely
   const [onboardingStarted, setOnboardingStarted] = useState(false);
-  // BUG-2: Prevent double-clicks on Next/Finish
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -53,7 +52,6 @@ export default function OnboardingPage() {
     setAvailability((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // BUG-3: handleSaveProfile now re-throws on failure so callers can react
   const handleSaveProfile = async () => {
     if (!user) return;
     setOnboardingStarted(true);
@@ -61,12 +59,12 @@ export default function OnboardingPage() {
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
       user.email?.split("@")[0] ||
-      "Player";
+      t("common:default_player");
     try {
       await upsertProfile({
         id: user.id,
         display_name: displayName,
-        city: city || "Unknown",
+        city: city || t("common:unknown"),
         ...(formats.length > 0 ? { formats } : {}),
       });
     } catch (err) {
@@ -91,8 +89,6 @@ export default function OnboardingPage() {
     }
   };
 
-  // BUG-2: Guard with isSaving to prevent double-clicks
-  // BUG-3: Don't advance step if save fails
   const handleNext = async () => {
     if (isSaving) return;
     setIsSaving(true);
@@ -129,7 +125,6 @@ export default function OnboardingPage() {
     }
   };
 
-  // BUG-10: Check !existingProfile instead of !onboardingStarted
   const handleFinish = async () => {
     if (isSaving) return;
     setIsSaving(true);
@@ -223,7 +218,6 @@ export default function OnboardingPage() {
                     {t(`profile:${slot}_slot`)}
                   </div>
                 ))}
-                {/* BUG-7: Add key on Fragment */}
                 {DAYS.map((day) => (
                   <Fragment key={day}>
                     <div className="text-sm text-text-secondary font-medium pr-2">

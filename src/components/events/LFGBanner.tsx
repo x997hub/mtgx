@@ -27,7 +27,7 @@ export function LFGBanner() {
   if (!count || count === 0) return null;
 
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-[#e94560]/10 border border-[#e94560]/30 px-4 py-3 text-sm text-[#e94560]">
+    <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/30 px-4 py-3 text-sm text-accent">
       <Zap className="h-4 w-4 shrink-0" />
       <span>{t("lfg_banner", { count })}</span>
     </div>

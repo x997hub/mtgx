@@ -89,7 +89,7 @@ export default function ProfileEditPage() {
 
     // Validate WhatsApp number format
     if (whatsapp && !/^\+?\d{7,15}$/.test(whatsapp.replace(/[\s\-()]/g, ""))) {
-      toast({ title: "Invalid phone number format", variant: "destructive" });
+      toast({ title: t("invalid_phone"), variant: "destructive" });
       return;
     }
 

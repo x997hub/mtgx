@@ -41,12 +41,12 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
 
   return (
     <Link to={`/profile/${player.id}`}>
-      <Card className="bg-[#16213e] border-gray-700 hover:border-[#e94560]/50 transition-colors cursor-pointer">
+      <Card className="bg-secondary border-gray-700 hover:border-accent/50 transition-colors cursor-pointer">
         <CardContent className="p-4 space-y-3">
           {/* Header: Avatar + Name + City */}
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-[#1a1a2e] text-[#e94560] text-sm font-bold">
+              <AvatarFallback className="bg-primary text-accent text-sm font-bold">
                 {initials || "?"}
               </AvatarFallback>
             </Avatar>
@@ -57,7 +57,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
               <p className="text-xs text-gray-400">{player.city}</p>
             </div>
             {player.role !== "player" && (
-              <Badge variant="outline" className="text-xs border-[#e94560]/50 text-[#e94560] shrink-0">
+              <Badge variant="outline" className="text-xs border-accent/50 text-accent shrink-0">
                 {t(`profile:role_${player.role}`)}
               </Badge>
             )}

@@ -98,18 +98,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/:userId",
-        element: (
-          <LazyPage>
-            <ProfilePage />
-          </LazyPage>
-        ),
-      },
-      {
         path: "/profile/edit",
         element: (
           <LazyPage>
             <ProfileEditPage />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "/profile/:userId",
+        element: (
+          <LazyPage>
+            <ProfilePage />
           </LazyPage>
         ),
       },

@@ -10,7 +10,7 @@ let listenerInitialized = false;
  * Call this hook in a single top-level component (e.g. App.tsx or ProtectedRoute).
  */
 export function useAuthListener() {
-  const { setSession, setProfile, setLoading, reset } = useAuthStore();
+  const { setSession, setProfile, setLoading } = useAuthStore();
 
   useEffect(() => {
     if (listenerInitialized) return;

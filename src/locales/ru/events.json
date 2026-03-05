@@ -16,7 +16,6 @@
   "not_going": "Не иду",
   "rsvp": "Записаться",
   "rsvp_change": "Изменить запись",
-  "cancel_rsvp": "Отменить запись",
   "attendees": "Участники",
   "spots_left": "Осталось {{count}} мест",
   "event_full": "Все места заняты",
@@ -28,7 +27,6 @@
   "minutes": "мин.",
   "share_whatsapp": "Отправить в WhatsApp",
   "clone_event": "Повторить событие",
-  "cancel_event": "Отменить событие",
   "lfg_banner": "{{count}} игроков ищут игру в вашем районе",
   "lfg_active": "Ваш сигнал LFG активен",
   "lfg_activate": "Ищу игру!",
@@ -48,6 +46,6 @@
   "create_quick_meetup": "Создать быструю встречу",
   "event_created": "Событие успешно создано",
   "select_venue": "Выберите площадку",
-  "select_format": "Выберите формат",
-  "organized_by": "от {{name}}"
+  "organized_by": "от {{name}}",
+  "quick_format": "Быстрая {{format}}"
 }

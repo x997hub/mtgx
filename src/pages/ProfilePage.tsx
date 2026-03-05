@@ -214,7 +214,7 @@ export default function ProfilePage() {
                   {subscriptions.map((sub) => (
                     <div
                       key={sub.id}
-                      className="flex items-center justify-between rounded-lg bg-[#1a1a2e] px-3 py-2 text-sm"
+                      className="flex items-center justify-between rounded-lg bg-primary px-3 py-2 text-sm"
                     >
                       <span className="text-gray-200">
                         {sub.target_type}

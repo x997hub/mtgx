@@ -13,7 +13,6 @@ interface AuthState {
   isAuthenticated: boolean;
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
-  setProfileChecked: (checked: boolean) => void;
   setLoading: (loading: boolean) => void;
   reset: () => void;
 }
@@ -36,7 +35,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         : {}),
     })),
   setProfile: (profile) => set({ profile, profileChecked: true }),
-  setProfileChecked: (profileChecked) => set({ profileChecked }),
   setLoading: (isLoading) => set({ isLoading }),
   reset: () =>
     set({
