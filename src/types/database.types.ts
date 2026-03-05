@@ -12,6 +12,10 @@ export type TimeSlot = "morning" | "day" | "evening";
 export type CarAccess = "yes" | "no" | "sometimes";
 export type AvailabilityLevel = "available" | "sometimes" | "unavailable";
 export type OutboxStatus = "pending" | "sent" | "dead";
+export type MatchDayPref = "always" | "if_free" | "never";
+export type InviteVisibility = "all" | "played_together" | "my_venues" | "none";
+export type InviteStatus = "pending" | "accepted" | "declined" | "expired";
+export type MatchRadius = "my_city" | "nearby" | "all";
 
 export interface Database {
   public: {
@@ -446,6 +450,112 @@ export interface Database {
         };
         Relationships: [];
       };
+      auto_match_preferences: {
+        Row: {
+          user_id: string;
+          formats: MtgFormat[];
+          event_types: string[];
+          match_days: Record<string, MatchDayPref>;
+          radius: MatchRadius;
+          max_daily_notifications: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          formats?: MtgFormat[];
+          event_types?: string[];
+          match_days?: Record<string, MatchDayPref>;
+          radius?: MatchRadius;
+          max_daily_notifications?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          formats?: MtgFormat[];
+          event_types?: string[];
+          match_days?: Record<string, MatchDayPref>;
+          radius?: MatchRadius;
+          max_daily_notifications?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      invite_preferences: {
+        Row: {
+          user_id: string;
+          is_open: boolean;
+          available_slots: Record<string, boolean>;
+          formats: MtgFormat[];
+          visibility: InviteVisibility;
+          dnd_until: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          is_open?: boolean;
+          available_slots?: Record<string, boolean>;
+          formats?: MtgFormat[];
+          visibility?: InviteVisibility;
+          dnd_until?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          is_open?: boolean;
+          available_slots?: Record<string, boolean>;
+          formats?: MtgFormat[];
+          visibility?: InviteVisibility;
+          dnd_until?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      player_invites: {
+        Row: {
+          id: number;
+          from_user_id: string;
+          to_user_id: string;
+          event_id: string | null;
+          format: MtgFormat | null;
+          message: string | null;
+          proposed_time: string | null;
+          status: InviteStatus;
+          created_at: string;
+          responded_at: string | null;
+        };
+        Insert: {
+          from_user_id: string;
+          to_user_id: string;
+          event_id?: string | null;
+          format?: MtgFormat | null;
+          message?: string | null;
+          proposed_time?: string | null;
+          status?: InviteStatus;
+          created_at?: string;
+          responded_at?: string | null;
+        };
+        Update: {
+          from_user_id?: string;
+          to_user_id?: string;
+          event_id?: string | null;
+          format?: MtgFormat | null;
+          message?: string | null;
+          proposed_time?: string | null;
+          status?: InviteStatus;
+          created_at?: string;
+          responded_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -456,6 +566,26 @@ export interface Database {
       update_user_availability: {
         Args: { p_user_id: string; p_slots: Record<string, unknown>[] };
         Returns: undefined;
+      };
+      get_recommended_invites: {
+        Args: { p_event_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          city: string;
+          formats: MtgFormat[];
+          reliability_score: number;
+          played_together: boolean;
+          avatar_url: string | null;
+        }[];
+      };
+      send_bulk_invites: {
+        Args: { p_event_id: string; p_user_ids: string[]; p_message?: string | null };
+        Returns: { invited: number };
+      };
+      count_available_players: {
+        Args: { p_city: string; p_format: MtgFormat; p_day: string; p_slot: string };
+        Returns: number;
       };
     };
     Enums: {
@@ -511,3 +641,16 @@ export type NotificationOutbox = Database["public"]["Tables"]["notification_outb
 export type NotificationSent = Database["public"]["Tables"]["notification_sent"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type AdminReport = Database["public"]["Tables"]["admin_reports"]["Row"];
+
+export type AutoMatchPreferences = Database["public"]["Tables"]["auto_match_preferences"]["Row"];
+export type AutoMatchPreferencesInsert = Database["public"]["Tables"]["auto_match_preferences"]["Insert"];
+export type AutoMatchPreferencesUpdate = Database["public"]["Tables"]["auto_match_preferences"]["Update"];
+
+export type InvitePreferences = Database["public"]["Tables"]["invite_preferences"]["Row"];
+export type InvitePreferencesInsert = Database["public"]["Tables"]["invite_preferences"]["Insert"];
+export type InvitePreferencesUpdate = Database["public"]["Tables"]["invite_preferences"]["Update"];
+
+export type PlayerInvite = Database["public"]["Tables"]["player_invites"]["Row"];
+export type PlayerInviteInsert = Database["public"]["Tables"]["player_invites"]["Insert"];
+
+export type RecommendedPlayer = Database["public"]["Functions"]["get_recommended_invites"]["Returns"][number];

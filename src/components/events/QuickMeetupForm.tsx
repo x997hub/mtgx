@@ -14,9 +14,10 @@ interface QuickMeetupFormProps {
     city: string;
     min_players: number;
   }>;
+  onCreated?: (eventId: string) => void;
 }
 
-export function QuickMeetupForm({ defaultValues }: QuickMeetupFormProps) {
+export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormProps) {
   const { t } = useTranslation("events");
   const navigate = useNavigate();
   const { createEvent, isCreating } = useEvents();
@@ -46,7 +47,7 @@ export function QuickMeetupForm({ defaultValues }: QuickMeetupFormProps) {
     const startsAtDate = new Date(startsAt);
 
     try {
-      await createEvent({
+      const data = await createEvent({
         organizer_id: user.id,
         type: "quick",
         format,
@@ -57,7 +58,11 @@ export function QuickMeetupForm({ defaultValues }: QuickMeetupFormProps) {
         expires_at: new Date(startsAtDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       });
       toast({ title: t("event_created") });
-      navigate("/");
+      if (onCreated) {
+        onCreated(data.id);
+      } else {
+        navigate("/");
+      }
     } catch {
       toast({ title: t("common:error"), variant: "destructive" });
     }

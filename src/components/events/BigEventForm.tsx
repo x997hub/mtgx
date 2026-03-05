@@ -32,9 +32,10 @@ interface BigEventFormProps {
   }>;
   /** UUID of the event being cloned, if any */
   clonedFrom?: string;
+  onCreated?: (eventId: string) => void;
 }
 
-export function BigEventForm({ defaultValues, clonedFrom }: BigEventFormProps) {
+export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventFormProps) {
   const { t } = useTranslation("events");
   const navigate = useNavigate();
   const { createEvent, isCreating } = useEvents();
@@ -68,7 +69,7 @@ export function BigEventForm({ defaultValues, clonedFrom }: BigEventFormProps) {
       toast({ title: t("city_required", "City is required"), variant: "destructive" });
       return;
     }
-    if (maxPlayers && maxPlayers < minPlayers) {
+    if (maxPlayers != null && maxPlayers < minPlayers) {
       toast({ title: t("max_less_than_min", "Max players must be ≥ min players"), variant: "destructive" });
       return;
     }
@@ -82,7 +83,7 @@ export function BigEventForm({ defaultValues, clonedFrom }: BigEventFormProps) {
     }
 
     try {
-      await createEvent({
+      const data = await createEvent({
         organizer_id: user.id,
         type: "big",
         title,
@@ -97,7 +98,11 @@ export function BigEventForm({ defaultValues, clonedFrom }: BigEventFormProps) {
         cloned_from: clonedFrom ?? null,
       });
       toast({ title: t("event_created") });
-      navigate("/");
+      if (onCreated) {
+        onCreated(data.id);
+      } else {
+        navigate("/");
+      }
     } catch {
       toast({ title: t("common:error"), variant: "destructive" });
     }

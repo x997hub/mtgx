@@ -50,6 +50,12 @@ Deno.serve(async (req: Request) => {
         return await handleLfg(req, supabaseAdmin, user.id);
       case "/admin/assign-role":
         return await handleAssignRole(req, supabaseAdmin, user.id);
+      case "/invites":
+        if (req.method === "GET") return await handleGetInvites(req, supabaseAdmin, user.id);
+        if (req.method === "POST") return await handleSendInvite(req, supabaseAdmin, user.id);
+        return jsonResponse({ error: "Method not allowed" }, 405);
+      case "/invites/respond":
+        return await handleRespondInvite(req, supabaseAdmin, user.id);
       default:
         return jsonResponse({ error: "Not found" }, 404);
     }
@@ -323,6 +329,310 @@ async function handleAssignRole(
   }
 
   return jsonResponse({ profile });
+}
+
+// Send invite to a player
+async function handleSendInvite(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
+  }
+  const { to_user_id, event_id, format, message, proposed_time } = body as Record<string, unknown>;
+
+  if (!to_user_id) {
+    return jsonResponse({ error: "to_user_id is required" }, 400);
+  }
+
+  if (to_user_id === userId) {
+    return jsonResponse({ error: "Cannot invite yourself" }, 400);
+  }
+
+  if (message && typeof message === "string" && message.length > 200) {
+    return jsonResponse({ error: "Message must be 200 characters or less" }, 400);
+  }
+
+  // Check recipient's invite preferences
+  const { data: prefs } = await supabase
+    .from("invite_preferences")
+    .select("is_open, dnd_until, visibility")
+    .eq("user_id", to_user_id)
+    .maybeSingle();
+
+  if (prefs) {
+    if (!prefs.is_open) {
+      return jsonResponse({ error: "Player is not accepting invites" }, 403);
+    }
+    if (prefs.dnd_until && new Date(prefs.dnd_until) > new Date()) {
+      return jsonResponse({ error: "Player has Do Not Disturb active" }, 403);
+    }
+    // Visibility check
+    if (prefs.visibility === "none") {
+      return jsonResponse({ error: "Player is not accepting invites" }, 403);
+    }
+    if (prefs.visibility === "played_together") {
+      const { data: played } = await supabase.rpc("check_played_together" as never, {
+        p_user1: userId,
+        p_user2: to_user_id,
+      } as never).maybeSingle();
+      // Fallback: check directly
+      if (!played) {
+        const { data: directCheck } = await supabase
+          .from("rsvps")
+          .select("event_id")
+          .eq("user_id", userId)
+          .eq("status", "going")
+          .limit(100);
+
+        if (directCheck) {
+          const eventIds = directCheck.map((r: { event_id: string }) => r.event_id);
+          if (eventIds.length > 0) {
+            const { count } = await supabase
+              .from("rsvps")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", to_user_id as string)
+              .eq("status", "going")
+              .in("event_id", eventIds);
+
+            if (!count || count === 0) {
+              return jsonResponse({ error: "Player only accepts invites from players they played with" }, 403);
+            }
+          } else {
+            return jsonResponse({ error: "Player only accepts invites from players they played with" }, 403);
+          }
+        }
+      }
+    }
+  }
+
+  // Rate limit: 5 invites per day for non-organizers
+  if (event_id) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("organizer_id")
+      .eq("id", event_id)
+      .single();
+
+    if (!event || event.organizer_id !== userId) {
+      // Check daily limit
+      const { count } = await supabase
+        .from("player_invites")
+        .select("*", { count: "exact", head: true })
+        .eq("from_user_id", userId)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+      if (count !== null && count >= 5) {
+        return jsonResponse({ error: "Daily invite limit reached (5 per day)" }, 429);
+      }
+    }
+  } else {
+    // No event — always check limit
+    const { count } = await supabase
+      .from("player_invites")
+      .select("*", { count: "exact", head: true })
+      .eq("from_user_id", userId)
+      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+    if (count !== null && count >= 5) {
+      return jsonResponse({ error: "Daily invite limit reached (5 per day)" }, 429);
+    }
+  }
+
+  // Create invite
+  const { data: invite, error } = await supabase
+    .from("player_invites")
+    .insert({
+      from_user_id: userId,
+      to_user_id,
+      event_id: event_id || null,
+      format: format || null,
+      message: message || null,
+      proposed_time: proposed_time || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      return jsonResponse({ error: "Invite already sent" }, 409);
+    }
+    return jsonResponse({ error: error.message }, 500);
+  }
+
+  // Get sender name for notification
+  const { data: senderProfile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .single();
+
+  // Create in-app notification
+  await supabase.from("notifications").insert({
+    user_id: to_user_id as string,
+    event_id: (event_id as string) || null,
+    type: "player_invite",
+    title: `Invite from ${senderProfile?.display_name ?? "Someone"}`,
+    body: (message as string) || "You've been invited to play!",
+  });
+
+  // Create outbox for push
+  await supabase.from("notification_outbox").insert({
+    event_id: (event_id as string) || null,
+    type: "player_invite",
+    payload: {
+      from_user_id: userId,
+      to_user_id,
+      event_id: event_id || null,
+      message: message || "",
+      recipients: [to_user_id],
+    },
+  });
+
+  return jsonResponse({ invite }, 201);
+}
+
+// Respond to invite (accept/decline)
+async function handleRespondInvite(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
+  }
+  const { invite_id, status } = body as { invite_id?: number; status?: string };
+
+  if (!invite_id || !status) {
+    return jsonResponse({ error: "invite_id and status are required" }, 400);
+  }
+
+  if (!["accepted", "declined"].includes(status)) {
+    return jsonResponse({ error: "Status must be 'accepted' or 'declined'" }, 400);
+  }
+
+  // Get invite
+  const { data: invite, error: getError } = await supabase
+    .from("player_invites")
+    .select("*")
+    .eq("id", invite_id)
+    .single();
+
+  if (getError || !invite) {
+    return jsonResponse({ error: "Invite not found" }, 404);
+  }
+
+  if (invite.to_user_id !== userId) {
+    return jsonResponse({ error: "Only the recipient can respond" }, 403);
+  }
+
+  if (invite.status !== "pending") {
+    return jsonResponse({ error: "Invite is no longer pending" }, 400);
+  }
+
+  // Update invite status
+  const { data: updated, error: updateError } = await supabase
+    .from("player_invites")
+    .update({ status, responded_at: new Date().toISOString() })
+    .eq("id", invite_id)
+    .select()
+    .single();
+
+  if (updateError) {
+    return jsonResponse({ error: updateError.message }, 500);
+  }
+
+  // If accepted and has event_id, auto-RSVP
+  if (status === "accepted" && invite.event_id) {
+    try {
+      await supabase.rpc("rsvp_with_lock", {
+        p_event_id: invite.event_id,
+        p_user_id: userId,
+        p_status: "going",
+      });
+    } catch {
+      // If RPC doesn't exist, fallback to direct upsert
+      await supabase
+        .from("rsvps")
+        .upsert(
+          { event_id: invite.event_id, user_id: userId, status: "going", updated_at: new Date().toISOString() },
+          { onConflict: "event_id,user_id" }
+        );
+    }
+  }
+
+  // If accepted, notify sender
+  if (status === "accepted") {
+    const { data: responderProfile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .single();
+
+    await supabase.from("notifications").insert({
+      user_id: invite.from_user_id,
+      event_id: invite.event_id,
+      type: "invite_accepted",
+      title: "Invite accepted!",
+      body: `${responderProfile?.display_name ?? "Someone"} accepted your invitation`,
+    });
+
+    await supabase.from("notification_outbox").insert({
+      event_id: invite.event_id,
+      type: "invite_accepted",
+      payload: {
+        from_user_id: invite.from_user_id,
+        to_user_id: userId,
+        event_id: invite.event_id,
+        recipients: [invite.from_user_id],
+      },
+    });
+  }
+
+  return jsonResponse({ invite: updated });
+}
+
+// Get invites (incoming or outgoing)
+async function handleGetInvites(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const url = new URL(req.url);
+  const direction = url.searchParams.get("direction") || "incoming";
+  const statusFilter = url.searchParams.get("status");
+
+  let query;
+  if (direction === "outgoing") {
+    query = supabase
+      .from("player_invites")
+      .select("*, profiles!player_invites_to_user_id_fkey(display_name, avatar_url), events(id, title, format, starts_at)")
+      .eq("from_user_id", userId);
+  } else {
+    query = supabase
+      .from("player_invites")
+      .select("*, profiles!player_invites_from_user_id_fkey(display_name, avatar_url), events(id, title, format, starts_at)")
+      .eq("to_user_id", userId);
+  }
+
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(50);
+
+  if (error) {
+    return jsonResponse({ error: error.message }, 500);
+  }
+
+  return jsonResponse({ invites: data });
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {

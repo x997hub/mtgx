@@ -21,6 +21,8 @@ import type {
   CarAccess,
 } from "@/types/database.types";
 import { Car, Loader2, Repeat, Save } from "lucide-react";
+import { AutoMatchSettings } from "@/components/profile/AutoMatchSettings";
+import { InvitePreferencesSettings } from "@/components/profile/InvitePreferencesSettings";
 
 const LEVELS: AvailabilityLevel[] = ["available", "sometimes", "unavailable"];
 
@@ -333,6 +335,12 @@ export default function ProfileEditPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Auto-Match Settings */}
+        <AutoMatchSettings />
+
+        {/* Invite Preferences */}
+        <InvitePreferencesSettings />
 
         {/* Actions */}
         <div className="flex gap-3">

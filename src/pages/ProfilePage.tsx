@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useInvitePreferences } from "@/hooks/useInvitePreferences";
+import { InvitePlayerDialog } from "@/components/players/InvitePlayerDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +16,7 @@ import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
-import { Car, MessageCircle, Pencil, Repeat, Shield, Bell } from "lucide-react";
+import { Car, MessageCircle, Pencil, Repeat, Shield, Bell, UserPlus } from "lucide-react";
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600",
@@ -95,6 +98,10 @@ export default function ProfilePage() {
   const isOwn = !userId || userId === user?.id;
   const { profile, availability, isLoading } = useProfile(isOwn ? undefined : userId);
   const { subscriptions } = useSubscription();
+  const { prefs: invitePrefs } = useInvitePreferences(isOwn ? undefined : userId);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const canInvite = !isOwn && invitePrefs?.is_open &&
+    (!invitePrefs.dnd_until || new Date(invitePrefs.dnd_until) <= new Date());
 
   // Reliability score is visible to organizers, club_owners, and admins
   const canSeeReliability =
@@ -161,7 +168,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               {isOwn && (
-                <Button variant="ghost" size="icon" asChild>
+                <Button variant="ghost" size="icon" asChild aria-label={t("edit_profile")}>
                   <Link to="/profile/edit">
                     <Pencil className="h-4 w-4" />
                   </Link>
@@ -193,6 +200,25 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           </a>
+        )}
+
+        {/* Invite to Play */}
+        {canInvite && (
+          <>
+            <Button
+              className="w-full min-h-[44px]"
+              onClick={() => setShowInviteDialog(true)}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              {t("invite_to_play")}
+            </Button>
+            <InvitePlayerDialog
+              open={showInviteDialog}
+              onOpenChange={setShowInviteDialog}
+              targetUserId={userId!}
+              targetDisplayName={profile.display_name}
+            />
+          </>
         )}
 
         {/* Car Access & Trading */}

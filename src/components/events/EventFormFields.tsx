@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AvailablePlayersHint } from "@/components/events/AvailablePlayersHint";
 import {
   Select,
   SelectContent,
@@ -86,6 +87,8 @@ export function EventFormFields({
           required
         />
       </div>
+
+      <AvailablePlayersHint city={city} format={format} startsAt={startsAt} />
 
       <div className="space-y-2">
         <Label htmlFor={id("min_players")}>{t("min_players")}</Label>

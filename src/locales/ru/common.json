@@ -49,5 +49,10 @@
   "login_google": "Войти через Google",
   "default_player": "Игрок",
   "unknown": "Неизвестно",
-  "clubs": "Клубы"
+  "clubs": "Клубы",
+  "invites": "Приглашения",
+  "invites_tab": "Приглашения",
+  "notifications_tab": "Уведомления",
+  "big_event": "Большое событие",
+  "quick_meetup": "Быстрая встреча"
 }

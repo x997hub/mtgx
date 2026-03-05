@@ -31,6 +31,7 @@ Deno.serve(async (req: Request) => {
     reminders_sent: 0,
     min_reached: 0,
     daily_report: false,
+    expired_invites: 0,
   };
 
   try {
@@ -51,6 +52,9 @@ Deno.serve(async (req: Request) => {
 
     // 6. Generate daily report at 08:00
     results.daily_report = await maybeGenerateDailyReport(supabase);
+
+    // 7. Expire pending invites (24h)
+    results.expired_invites = await expireInvites(supabase);
   } catch (err) {
     console.error("Poller error:", err);
   }
@@ -209,6 +213,14 @@ async function getRecipients(
 
     // Remove the organizer from recipients
     recipientSet.delete(organizerId);
+  }
+
+  // Player invite & invite accepted: recipients from payload
+  if (entry.type === "player_invite" || entry.type === "invite_accepted" || entry.type === "auto_match") {
+    const payloadRecipients = payload.recipients as string[] | undefined;
+    if (payloadRecipients) {
+      payloadRecipients.forEach((id: string) => recipientSet.add(id));
+    }
   }
 
   return Array.from(recipientSet);
@@ -416,6 +428,22 @@ async function maybeGenerateDailyReport(supabase: ReturnType<typeof createClient
   return true;
 }
 
+async function expireInvites(supabase: ReturnType<typeof createClient>): Promise<number> {
+  const { data, error } = await supabase
+    .from("player_invites")
+    .update({ status: "expired" })
+    .eq("status", "pending")
+    .lt("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+    .select("id");
+
+  if (error) {
+    console.error("Error expiring invites:", error);
+    return 0;
+  }
+
+  return data?.length || 0;
+}
+
 async function sendWebPush(
   supabase: ReturnType<typeof createClient>,
   userId: string,
@@ -448,6 +476,9 @@ function getNotificationTitle(type: string): string {
     case "reminder": return "Event tomorrow!";
     case "event_cancelled": return "Event cancelled";
     case "lfg_match": return "Someone is looking for a game!";
+    case "player_invite": return "You've been invited to play!";
+    case "invite_accepted": return "Invite accepted!";
+    case "auto_match": return "New matching event!";
     default: return "MTGX Notification";
   }
 }
@@ -465,6 +496,12 @@ function getNotificationBody(entry: Record<string, unknown>): string {
       return `${payload.title || "An event"} has been cancelled`;
     case "lfg_match":
       return `Someone in ${payload.city} is looking for ${payload.format}`;
+    case "player_invite":
+      return `${payload.from_name || "Someone"} invited you to play`;
+    case "invite_accepted":
+      return `${payload.to_name || "Someone"} accepted your invitation`;
+    case "auto_match":
+      return `A new ${payload.format} event in ${payload.city} matches your preferences`;
     default:
       return "Check the app for details";
   }

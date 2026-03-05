@@ -49,5 +49,10 @@
   "login_google": "Sign in with Google",
   "default_player": "Player",
   "unknown": "Unknown",
-  "clubs": "Clubs"
+  "clubs": "Clubs",
+  "invites": "Invites",
+  "invites_tab": "Invites",
+  "notifications_tab": "Notifications",
+  "big_event": "Big event",
+  "quick_meetup": "Quick meetup"
 }
