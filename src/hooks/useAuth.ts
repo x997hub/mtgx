@@ -22,9 +22,10 @@ export function useAuthListener() {
       setSession(session);
       if (session?.user) {
         fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
       }
+      // Don't setProfile(null) here — setSession already resets profile
+      // when user changes, and calling setProfile(null) prematurely
+      // sets profileChecked=true causing an onboarding flash
       setLoading(false);
 
       // Clear URL params after OAuth callback (PKCE uses query params, implicit uses hash)
@@ -45,9 +46,8 @@ export function useAuthListener() {
       setSession(session);
       if (session?.user) {
         fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
       }
+      // Don't setProfile(null) here — setSession handles cleanup
       setLoading(false);
     });
 

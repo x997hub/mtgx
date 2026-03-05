@@ -5,5 +5,11 @@ dist/
 *.tsbuildinfo
 .tmp/
 supabase/.temp/
+
+# Prevent tsc-emitted files from overriding .tsx sources
+src/**/*.js
+src/**/*.d.ts
+src/**/*.d.ts.map
+!src/vite-env.d.ts
 .vercel
 .env*.local

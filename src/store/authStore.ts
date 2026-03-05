@@ -26,11 +26,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   profileChecked: false,
   isAuthenticated: false,
   setSession: (session) =>
-    set({
+    set((state) => ({
       session,
       user: session?.user ?? null,
       isAuthenticated: !!session,
-    }),
+      // Reset profile state when user changes (prevents onboarding flash)
+      ...(state.user?.id !== session?.user?.id
+        ? { profileChecked: false, profile: null }
+        : {}),
+    })),
   setProfile: (profile) => set({ profile, profileChecked: true }),
   setProfileChecked: (profileChecked) => set({ profileChecked }),
   setLoading: (isLoading) => set({ isLoading }),
