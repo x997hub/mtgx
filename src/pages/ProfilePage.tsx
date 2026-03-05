@@ -145,7 +145,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-text-primary max-w-[100vw] overflow-x-hidden">
+    <div className="min-h-screen bg-surface text-text-primary">
       <div className="mx-auto max-w-lg space-y-4 p-4">
         {/* Header */}
         <Card>
@@ -273,11 +273,11 @@ export default function ProfilePage() {
         )}
 
         {/* Availability */}
-        <Card className="overflow-hidden">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-gray-400">{t("availability")}</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent>
             <AvailabilityGrid availability={availability} />
           </CardContent>
         </Card>

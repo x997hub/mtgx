@@ -63,7 +63,7 @@ export function AppShell() {
       </aside>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0">
         {/* Top header */}
         <header className="flex h-16 items-center justify-between border-b border-gray-700 bg-secondary px-4 md:px-6">
           <Link to="/" className="text-lg font-bold text-accent md:hidden">
@@ -84,7 +84,7 @@ export function AppShell() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-6">
           <Outlet />
         </main>
       </div>
