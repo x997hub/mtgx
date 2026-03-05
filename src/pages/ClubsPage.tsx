@@ -15,7 +15,7 @@ export default function ClubsPage() {
             <p className="text-lg font-medium text-text-primary">
               {t("profile:clubs_coming_soon")}
             </p>
-            <p className="text-sm text-text-secondary">
+            <p className="text-base text-text-secondary">
               {t("profile:clubs_coming_soon_description")}
             </p>
           </div>

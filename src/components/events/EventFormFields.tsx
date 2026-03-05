@@ -72,7 +72,7 @@ export function EventFormFields({
           </SelectContent>
         </Select>
         {!city && (
-          <p className="text-xs text-red-400">{t("city_required", "City is required")}</p>
+          <p className="text-sm text-red-400">{t("city_required", "City is required")}</p>
         )}
       </div>
 

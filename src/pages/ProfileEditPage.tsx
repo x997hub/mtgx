@@ -202,7 +202,7 @@ export default function ProfileEditPage() {
         {/* Car Access */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm text-gray-400">
+            <CardTitle className="flex items-center gap-2 text-base text-gray-400">
               <Car className="h-4 w-4" />
               {t("car_access")}
             </CardTitle>
@@ -280,11 +280,11 @@ export default function ProfileEditPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-gray-400">{t("availability")}</CardTitle>
-            <p className="text-xs text-gray-500">{t("availability_description")}</p>
+            <p className="text-sm text-gray-500">{t("availability_description")}</p>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr>
                     <th className="p-1 text-left text-gray-400" />
@@ -319,15 +319,15 @@ export default function ProfileEditPage() {
                   ))}
                 </tbody>
               </table>
-              <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
+              <div className="mt-2 flex items-center gap-3 text-sm text-gray-400">
                 <span className="flex items-center gap-1">
-                  <span className="inline-block h-3 w-3 rounded bg-emerald-600" /> {t("available")}
+                  <span className="inline-block h-4 w-4 rounded bg-emerald-600" /> {t("available")}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="inline-block h-3 w-3 rounded bg-amber-600" /> {t("sometimes")}
+                  <span className="inline-block h-4 w-4 rounded bg-amber-600" /> {t("sometimes")}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="inline-block h-3 w-3 rounded bg-gray-700" /> {t("unavailable")}
+                  <span className="inline-block h-4 w-4 rounded bg-gray-700" /> {t("unavailable")}
                 </span>
               </div>
             </div>

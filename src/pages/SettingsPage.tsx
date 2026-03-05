@@ -76,20 +76,20 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {!isSupported ? (
-            <p className="text-sm text-text-secondary">
+            <p className="text-base text-text-secondary">
               {t("profile:push_not_supported", "Push notifications not supported in this browser")}
             </p>
           ) : permission === "granted" ? (
             <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm text-emerald-400">
+              <Bell className="h-5 w-5 text-emerald-400" />
+              <span className="text-base text-emerald-400">
                 {t("profile:push_enabled", "Push notifications enabled")}
               </span>
             </div>
           ) : permission === "denied" ? (
             <div className="flex items-center gap-2">
-              <BellOff className="h-4 w-4 text-red-400" />
-              <span className="text-sm text-red-400">
+              <BellOff className="h-5 w-5 text-red-400" />
+              <span className="text-base text-red-400">
                 {t("profile:push_denied", "Push notifications blocked by browser")}
               </span>
             </div>
@@ -115,7 +115,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {subscriptions.length === 0 ? (
-            <p className="text-sm text-text-secondary">{t("common:no_subscriptions", "No subscriptions yet")}</p>
+            <p className="text-base text-text-secondary">{t("common:no_subscriptions", "No subscriptions yet")}</p>
           ) : (
             <ul className="space-y-2">
               {subscriptions.map((sub) => {
@@ -125,7 +125,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                       <Icon className="h-4 w-4 text-text-secondary" />
                       <Badge variant="outline">{sub.target_type}</Badge>
-                      <span className="text-sm text-text-secondary">
+                      <span className="text-base text-text-secondary">
                         {getSubscriptionLabel(sub, t)}
                       </span>
                     </div>

@@ -121,7 +121,7 @@ export default function VenuePage() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-2">
-                <h1 className="text-xl font-bold text-gray-100">{venue.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-100">{venue.name}</h1>
                 <CityBadge city={venue.city} />
               </div>
               <SubscribeButton targetType="venue" targetId={venue.id} />
@@ -132,15 +132,15 @@ export default function VenuePage() {
         {/* Venue Info */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">{t("venue_info")}</CardTitle>
+            <CardTitle className="text-base text-gray-400">{t("venue_info")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Address */}
             <div className="flex items-start gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
               <div>
-                <p className="text-xs text-gray-500">{t("address")}</p>
-                <p className="text-sm text-gray-200">{venue.address}</p>
+                <p className="text-sm text-gray-500">{t("address")}</p>
+                <p className="text-base text-gray-200">{venue.address}</p>
               </div>
             </div>
 
@@ -149,12 +149,12 @@ export default function VenuePage() {
               <>
                 <Separator />
                 <div className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <Clock className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500">{t("hours")}</p>
+                    <p className="text-sm text-gray-500">{t("hours")}</p>
                     <div className="space-y-1">
                       {Object.entries(venue.hours).map(([day, time]) => (
-                        <div key={day} className="flex justify-between text-sm">
+                        <div key={day} className="flex justify-between text-base">
                           <span className="text-gray-400">{day}</span>
                           <span className="text-gray-200">{time}</span>
                         </div>
@@ -170,10 +170,10 @@ export default function VenuePage() {
               <>
                 <Separator />
                 <div className="flex items-start gap-3">
-                  <Users className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <Users className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500">{t("capacity")}</p>
-                    <p className="text-sm text-gray-200">
+                    <p className="text-sm text-gray-500">{t("capacity")}</p>
+                    <p className="text-base text-gray-200">
                       {t("players_capacity", { count: venue.capacity })}
                     </p>
                   </div>
@@ -186,12 +186,12 @@ export default function VenuePage() {
               <>
                 <Separator />
                 <div className="flex items-start gap-3">
-                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <Phone className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500">{t("contacts")}</p>
+                    <p className="text-sm text-gray-500">{t("contacts")}</p>
                     <div className="space-y-1">
                       {Object.entries(venue.contacts).map(([label, value]) => (
-                        <div key={label} className="flex justify-between text-sm">
+                        <div key={label} className="flex justify-between text-base">
                           <span className="text-gray-400">{label}</span>
                           <span className="text-gray-200">{value}</span>
                         </div>
@@ -207,7 +207,7 @@ export default function VenuePage() {
               <>
                 <Separator />
                 <div>
-                  <p className="mb-2 text-xs text-gray-500">{t("supported_formats")}</p>
+                  <p className="mb-2 text-sm text-gray-500">{t("supported_formats")}</p>
                   <div className="flex flex-wrap gap-2">
                     {venue.supported_formats.map((format) => (
                       <FormatBadge key={format} format={format} />
@@ -222,8 +222,8 @@ export default function VenuePage() {
         {/* Upcoming Events */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm text-gray-400">
-              <Calendar className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-base text-gray-400">
+              <Calendar className="h-5 w-5" />
               {t("upcoming_events")}
             </CardTitle>
           </CardHeader>
@@ -240,7 +240,7 @@ export default function VenuePage() {
                 ))}
               </div>
             ) : (
-              <p className="py-4 text-center text-sm text-gray-500">
+              <p className="py-4 text-center text-base text-gray-500">
                 {t("no_upcoming_events")}
               </p>
             )}

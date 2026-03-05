@@ -37,7 +37,7 @@ export default function AdminPage() {
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <ShieldAlert className="h-12 w-12 text-accent" />
             <p className="text-lg font-semibold text-text-primary">{t("common:access_denied")}</p>
-            <p className="text-sm text-text-secondary">{t("common:admin_required")}</p>
+            <p className="text-base text-text-secondary">{t("common:admin_required")}</p>
           </CardContent>
         </Card>
       </div>
@@ -128,7 +128,7 @@ function ReportTab() {
 
   return (
     <div className="space-y-4 mt-4">
-      <p className="text-xs text-text-secondary">
+      <p className="text-sm text-text-secondary">
         {t("common:report_date", { date: new Date(report.report_date).toLocaleDateString() })}
       </p>
 
@@ -165,7 +165,7 @@ function ReportTab() {
           <CardContent>
             <div className="space-y-2">
               {payload.low_reliability_users.map((u) => (
-                <div key={u.user_id} className="flex items-center justify-between text-sm">
+                <div key={u.user_id} className="flex items-center justify-between text-base">
                   <span className="text-text-primary">{u.display_name}</span>
                   <Badge className="bg-red-700/20 text-red-400 border-none">
                     {(u.score * 100).toFixed(0)}%
@@ -251,7 +251,7 @@ function UsersTab() {
           <CardContent className="flex items-center justify-between p-4">
             <div>
               <p className="font-medium text-text-primary">{user.display_name}</p>
-              <div className="flex items-center gap-2 text-sm text-text-secondary">
+              <div className="flex items-center gap-2 text-base text-text-secondary">
                 <span>{user.city}</span>
                 {user.reliability_score != null && user.reliability_score < 1 && (
                   <Badge
@@ -334,7 +334,7 @@ function EventsTab() {
                 <FormatBadge format={evt.format} />
                 <div>
                   <p className="font-medium text-text-primary">{title}</p>
-                  <p className="text-sm text-text-secondary">
+                  <p className="text-base text-text-secondary">
                     {new Date(evt.starts_at).toLocaleDateString()} — {evt.city}
                     {organizer && <> — {organizer}</>}
                   </p>

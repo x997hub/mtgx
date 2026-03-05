@@ -43,7 +43,7 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium text-gray-300">
+      <h3 className="text-base font-medium text-gray-300">
         {t("attendees")} ({goingCount})
       </h3>
       {STATUS_ORDER.map((status) => {
@@ -51,7 +51,7 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
         if (group.length === 0) return null;
         return (
           <div key={status} className="space-y-1">
-            <div className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+            <div className="text-sm font-medium text-text-secondary uppercase tracking-wide">
               {t(status)} ({group.length})
             </div>
             <ul className="space-y-1">
@@ -60,12 +60,12 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
                   key={attendee.user_id}
                   className="flex items-center gap-3 rounded-lg px-2 py-1.5"
                 >
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="text-sm">
                       {attendee.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="flex-1 text-sm text-gray-200">
+                  <span className="flex-1 text-base text-gray-200">
                     {attendee.profiles?.display_name || t("common:unknown")}
                   </span>
                   <Badge

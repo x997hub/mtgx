@@ -17,8 +17,8 @@ export function LFGSignalList({ city }: LFGSignalListProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-accent">
-        <Zap className="h-4 w-4" />
+      <div className="flex items-center gap-2 text-base font-medium text-accent">
+        <Zap className="h-5 w-5" />
         {t("lfg_banner", { count: signals.length })}
       </div>
       <ul className="space-y-1">
@@ -27,12 +27,12 @@ export function LFGSignalList({ city }: LFGSignalListProps) {
             key={signal.id}
             className="flex items-center gap-3 rounded-lg bg-accent/5 border border-accent/20 px-3 py-2"
           >
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs bg-accent/20 text-accent">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="text-sm bg-accent/20 text-accent">
                 {signal.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
               </AvatarFallback>
             </Avatar>
-            <span className="flex-1 text-sm text-text-primary">
+            <span className="flex-1 text-base text-text-primary">
               {signal.profiles?.display_name || t("common:unknown")}
             </span>
             <div className="flex gap-1">

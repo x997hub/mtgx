@@ -102,24 +102,24 @@ export default function EventDetailPage() {
       {countdown && (
         <Card className="bg-surface-card border-surface-hover">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-sm text-text-secondary mb-2">
-              <Clock className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-base text-text-secondary mb-2">
+              <Clock className="h-5 w-5" />
               {t("events:starts_in")}
             </div>
             <div className="flex gap-4 text-center">
               {countdown.days > 0 && (
                 <div>
                   <div className="text-2xl font-bold text-accent">{countdown.days}</div>
-                  <div className="text-xs text-text-secondary">{t("events:days")}</div>
+                  <div className="text-sm text-text-secondary">{t("events:days")}</div>
                 </div>
               )}
               <div>
                 <div className="text-2xl font-bold text-accent">{countdown.hours}</div>
-                <div className="text-xs text-text-secondary">{t("events:hours")}</div>
+                <div className="text-sm text-text-secondary">{t("events:hours")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-accent">{countdown.minutes}</div>
-                <div className="text-xs text-text-secondary">{t("events:minutes")}</div>
+                <div className="text-sm text-text-secondary">{t("events:minutes")}</div>
               </div>
             </div>
           </CardContent>
@@ -163,7 +163,7 @@ export default function EventDetailPage() {
           </div>
 
           {event.fee_text && (
-            <div className="text-sm text-text-secondary">
+            <div className="text-base text-text-secondary">
               <span className="font-medium text-text-primary">{t("events:fee")}:</span>{" "}
               {event.fee_text}
             </div>
@@ -172,14 +172,14 @@ export default function EventDetailPage() {
           {event.description && (
             <>
               <Separator className="bg-surface-hover" />
-              <div className="text-sm text-text-secondary whitespace-pre-wrap">
+              <div className="text-base text-text-secondary whitespace-pre-wrap">
                 {event.description}
               </div>
             </>
           )}
 
           {event.profiles && (
-            <div className="text-xs text-text-secondary">
+            <div className="text-sm text-text-secondary">
               {t("events:organized_by", { name: event.profiles.display_name })}
             </div>
           )}

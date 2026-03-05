@@ -74,8 +74,8 @@ export default function NotificationsPage() {
                     ) : (
                       <p className="font-medium text-text-primary">{notification.title}</p>
                     )}
-                    <p className="text-sm text-text-secondary">{notification.body}</p>
-                    <p className="text-xs text-text-secondary">
+                    <p className="text-base text-text-secondary">{notification.body}</p>
+                    <p className="text-sm text-text-secondary">
                       {new Date(notification.created_at).toLocaleString()}
                     </p>
                   </div>

@@ -197,7 +197,7 @@ export default function OnboardingPage() {
                 <Badge
                   key={format}
                   variant={formats.includes(format) ? "default" : "outline"}
-                  className={`cursor-pointer px-4 py-2 text-sm min-h-[44px] flex items-center transition-colors ${
+                  className={`cursor-pointer px-5 py-2.5 text-base min-h-[48px] flex items-center transition-colors ${
                     formats.includes(format)
                       ? "bg-accent text-white hover:bg-accent/80"
                       : "border-surface-hover text-text-secondary hover:bg-surface-hover"
@@ -213,19 +213,19 @@ export default function OnboardingPage() {
           {/* Step 2: Availability */}
           {step === 2 && (
             <div className="space-y-4">
-              <p className="text-sm text-text-secondary">
+              <p className="text-base text-text-secondary">
                 {t("profile:availability_description")}
               </p>
               <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 items-center">
                 <div />
                 {SLOTS.map((slot) => (
-                  <div key={slot} className="text-center text-sm text-text-secondary font-medium">
+                  <div key={slot} className="text-center text-base text-text-secondary font-medium">
                     {t(`profile:${slot}_slot`)}
                   </div>
                 ))}
                 {DAYS.map((day) => (
                   <Fragment key={day}>
-                    <div className="text-sm text-text-secondary font-medium pr-2">
+                    <div className="text-base text-text-secondary font-medium pr-2">
                       {t(`profile:${day}`)}
                     </div>
                     {SLOTS.map((slot) => {
@@ -255,7 +255,7 @@ export default function OnboardingPage() {
           {/* Step 3: Subscriptions */}
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-sm text-text-secondary text-center">
+              <p className="text-base text-text-secondary text-center">
                 {t("profile:onboarding_subscribe_description", "Subscribe to get notified about events matching your interests")}
               </p>
               {city && formats.length > 0 ? (
@@ -265,7 +265,7 @@ export default function OnboardingPage() {
                       key={format}
                       className="flex items-center justify-between rounded-lg border border-surface-hover px-4 py-3"
                     >
-                      <span className="text-text-primary text-sm">
+                      <span className="text-text-primary text-base">
                         {t(`events:${format}`)} — {city}
                       </span>
                       <Badge variant="outline" className="text-accent border-accent">
@@ -275,7 +275,7 @@ export default function OnboardingPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-text-secondary text-center">
+                <p className="text-base text-text-secondary text-center">
                   {t("profile:onboarding_no_subs", "You can set up subscriptions later in Settings")}
                 </p>
               )}

@@ -31,7 +31,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-base">
         <thead>
           <tr>
             <th className="p-1 text-left text-gray-400" />
@@ -53,7 +53,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
                 return (
                   <td key={day} className="p-1 text-center">
                     <div
-                      className={`mx-auto h-6 w-6 rounded ${LEVEL_COLORS[level]}`}
+                      className={`mx-auto h-8 w-8 rounded ${LEVEL_COLORS[level]}`}
                       title={t(level)}
                     />
                   </td>
@@ -63,15 +63,15 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
           ))}
         </tbody>
       </table>
-      <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
+      <div className="mt-2 flex items-center gap-3 text-sm text-gray-400">
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded bg-emerald-600" /> {t("available")}
+          <span className="inline-block h-4 w-4 rounded bg-emerald-600" /> {t("available")}
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded bg-amber-600" /> {t("sometimes")}
+          <span className="inline-block h-4 w-4 rounded bg-amber-600" /> {t("sometimes")}
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded bg-gray-700" /> {t("unavailable")}
+          <span className="inline-block h-4 w-4 rounded bg-gray-700" /> {t("unavailable")}
         </span>
       </div>
     </div>
@@ -221,7 +221,7 @@ export default function ProfilePage() {
             <CardContent className="flex items-center gap-3 p-4">
               <Shield className="h-5 w-5 text-accent" />
               <div>
-                <p className="text-sm text-gray-400">{t("reliability_score")}</p>
+                <p className="text-base text-gray-400">{t("reliability_score")}</p>
                 <p className="text-lg font-semibold text-gray-100">
                   {((profile.reliability_score ?? 1) * 100).toFixed(0)}%
                 </p>
@@ -260,20 +260,20 @@ export default function ProfilePage() {
         {isOwn && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm text-gray-400">
+              <CardTitle className="flex items-center gap-2 text-base text-gray-400">
                 <Bell className="h-4 w-4" />
                 {t("subscriptions")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {subscriptions.length === 0 ? (
-                <p className="text-sm text-gray-500">{t("no_subscriptions")}</p>
+                <p className="text-base text-gray-500">{t("no_subscriptions")}</p>
               ) : (
                 <div className="space-y-2">
                   {subscriptions.map((sub) => (
                     <div
                       key={sub.id}
-                      className="flex items-center justify-between rounded-lg bg-primary px-3 py-2 text-sm"
+                      className="flex items-center justify-between rounded-lg bg-primary px-3 py-2 text-base"
                     >
                       <span className="text-gray-200">
                         {sub.target_type}
