@@ -34,7 +34,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-base">
+      <table className="w-full text-sm">
         <thead>
           <tr>
             <th className="p-1 text-left text-gray-400" />
@@ -56,7 +56,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
                 return (
                   <td key={day} className="p-1 text-center">
                     <div
-                      className={`mx-auto h-8 w-8 rounded ${LEVEL_COLORS[level]}`}
+                      className={`mx-auto h-6 w-6 rounded ${LEVEL_COLORS[level]}`}
                       title={t(level)}
                     />
                   </td>
@@ -66,7 +66,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
           ))}
         </tbody>
       </table>
-      <div className="mt-2 flex items-center gap-3 text-sm text-gray-400">
+      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-400">
         <span className="flex items-center gap-1">
           <span className="inline-block h-4 w-4 rounded bg-emerald-600" /> {t("available")}
         </span>
@@ -145,8 +145,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-text-primary overflow-x-hidden">
-      <div className="mx-auto max-w-lg space-y-4 p-4 overflow-hidden">
+    <div className="min-h-screen bg-surface text-text-primary max-w-[100vw] overflow-x-hidden">
+      <div className="mx-auto max-w-lg space-y-4 p-4">
         {/* Header */}
         <Card>
           <CardContent className="p-6">
@@ -273,11 +273,11 @@ export default function ProfilePage() {
         )}
 
         {/* Availability */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-gray-400">{t("availability")}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <AvailabilityGrid availability={availability} />
           </CardContent>
         </Card>
