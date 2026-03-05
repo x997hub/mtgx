@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
 import type { Database } from "@/types/database.types";
 
 type SubscriptionTarget = Database["public"]["Enums"]["subscription_target"];
@@ -51,6 +52,9 @@ export function useSubscription() {
       if (error) throw error;
       return data;
     },
+    onError: () => {
+      toast({ title: "Subscription failed", variant: "destructive" });
+    },
     onSettled: () => {
       const userId = useAuthStore.getState().user?.id;
       queryClient.invalidateQueries({ queryKey: ["subscriptions", userId] });
@@ -66,6 +70,9 @@ export function useSubscription() {
         .eq("id", subscriptionId)
         .eq("user_id", user.id);
       if (error) throw error;
+    },
+    onError: () => {
+      toast({ title: "Unsubscribe failed", variant: "destructive" });
     },
     onSettled: () => {
       const userId = useAuthStore.getState().user?.id;

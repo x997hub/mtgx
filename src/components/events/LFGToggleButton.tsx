@@ -158,6 +158,7 @@ export function LFGToggleButton() {
                     <button
                       key={format}
                       type="button"
+                      aria-pressed={active}
                       onClick={() => toggleFormat(format)}
                       className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
                         active ? colors.active : colors.inactive
@@ -178,6 +179,7 @@ export function LFGToggleButton() {
                   <button
                     key={slot}
                     type="button"
+                    aria-pressed={selectedSlot === slot}
                     onClick={() => setSelectedSlot(selectedSlot === slot ? "" : slot)}
                     className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
                       selectedSlot === slot

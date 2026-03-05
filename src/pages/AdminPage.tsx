@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormatBadge } from "@/components/shared/FormatBadge";
+import { toast } from "@/components/ui/use-toast";
 import { Users, Calendar, BarChart3, ShieldAlert } from "lucide-react";
 
 const ROLES: UserRole[] = ["player", "organizer", "club_owner", "admin"];
@@ -228,6 +229,12 @@ function UsersTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
     },
+    onError: () => {
+      toast({
+        title: t("common:error_occurred"),
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -246,6 +253,9 @@ function UsersTab() {
 
   return (
     <div className="space-y-2 mt-4">
+      {profiles && profiles.length === 0 && (
+        <p className="p-4 text-center text-text-secondary">{t("common:no_results")}</p>
+      )}
       {profiles?.map((user) => (
         <Card key={user.id} className="bg-surface-card border-surface-hover">
           <CardContent className="flex items-center justify-between p-4">
@@ -323,6 +333,9 @@ function EventsTab() {
 
   return (
     <div className="space-y-2 mt-4">
+      {events && events.length === 0 && (
+        <p className="p-4 text-center text-text-secondary">{t("common:no_results")}</p>
+      )}
       {events?.map((evt) => {
         const title = evt.title || t("events:quick_format", { format: evt.format });
         const organizer = evt.profiles?.display_name;

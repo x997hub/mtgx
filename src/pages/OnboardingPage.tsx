@@ -99,6 +99,9 @@ export default function OnboardingPage() {
     setIsSaving(true);
     try {
       if (step === 0) {
+        // Prevent redirect race: mark onboarding as started before any async work,
+        // even if city is empty and handleSaveProfile() won't be called yet.
+        setOnboardingStarted(true);
         if (city) await handleSaveProfile();
         setStep(1);
       } else if (step === 1) {
@@ -235,6 +238,7 @@ export default function OnboardingPage() {
                         <button
                           key={key}
                           type="button"
+                          aria-label={`${t(`profile:${day}`)} ${t(`profile:${slot}_slot`)}`}
                           onClick={() => toggleAvailability(day, slot)}
                           className={`min-h-[44px] rounded-lg border transition-colors ${
                             isActive

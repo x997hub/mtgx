@@ -29,7 +29,7 @@ export default function VenuePage() {
         .from("venues")
         .select("*")
         .eq("id", venueId)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data as Venue;
     },
@@ -233,6 +233,10 @@ export default function VenuePage() {
                 <Skeleton className="h-20 w-full rounded-lg" />
                 <Skeleton className="h-20 w-full rounded-lg" />
               </div>
+            ) : eventsQuery.isError ? (
+              <p className="py-4 text-center text-base text-red-400">
+                {tc("error_occurred")}
+              </p>
             ) : eventsQuery.data && eventsQuery.data.length > 0 ? (
               <div className="space-y-3">
                 {eventsQuery.data.map((event) => (

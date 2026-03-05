@@ -134,6 +134,7 @@ export default function SettingsPage() {
                       size="sm"
                       onClick={() => unsubscribe(sub.id)}
                       className="min-h-[44px] min-w-[44px] text-red-400 hover:text-red-300"
+                      aria-label={t("common:unsubscribe")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

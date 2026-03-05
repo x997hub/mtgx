@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
 
 /** Module-level flag to prevent duplicate auth listeners across component instances */
 let listenerInitialized = false;
@@ -87,12 +88,16 @@ export function useAuth() {
     useAuthStore();
 
   async function loginWithGoogle() {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: window.location.origin,
       },
     });
+    if (error) {
+      console.error("Failed to sign in with Google:", error);
+      toast({ title: "Sign-in failed", description: error.message, variant: "destructive" });
+    }
   }
 
   async function logout() {

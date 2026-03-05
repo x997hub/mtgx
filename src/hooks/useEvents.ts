@@ -25,6 +25,7 @@ export function useEvents() {
         .from("events")
         .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name), rsvps(count)" as "*")
         .eq("status", "active")
+        .eq("rsvps.status", "going")
         .gte("starts_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
         .range(pageParam * PAGE_SIZE, (pageParam + 1) * PAGE_SIZE - 1);

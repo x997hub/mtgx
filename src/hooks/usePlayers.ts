@@ -103,6 +103,7 @@ export function usePlayers(filters: PlayerFilters) {
     players: playersQuery.data?.pages.flat() ?? [],
     availabilityMap,
     isLoading: playersQuery.isLoading,
+    isError: playersQuery.isError,
     fetchNextPage: playersQuery.fetchNextPage,
     hasNextPage: playersQuery.hasNextPage,
     isFetchingNextPage: playersQuery.isFetchingNextPage,
