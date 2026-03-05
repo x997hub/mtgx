@@ -49,5 +49,7 @@
   "organized_by": "by {{name}}",
   "quick_format": "Quick {{format}}",
   "today": "Today",
-  "upcoming": "Upcoming"
+  "upcoming": "Upcoming",
+  "lfg_preferred_time": "Preferred time",
+  "lfg_select_formats": "Select at least one format"
 }

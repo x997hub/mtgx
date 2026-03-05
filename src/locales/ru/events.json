@@ -49,5 +49,7 @@
   "organized_by": "от {{name}}",
   "quick_format": "Быстрая {{format}}",
   "today": "Сегодня",
-  "upcoming": "Скоро"
+  "upcoming": "Скоро",
+  "lfg_preferred_time": "Предпочтительное время",
+  "lfg_select_formats": "Выберите хотя бы один формат"
 }

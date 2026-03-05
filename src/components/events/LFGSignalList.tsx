@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Zap } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { useLFG } from "@/hooks/useLFG";
 import type { MtgFormat } from "@/types/database.types";
@@ -35,10 +36,15 @@ export function LFGSignalList({ city }: LFGSignalListProps) {
             <span className="flex-1 text-base text-text-primary">
               {signal.profiles?.display_name || t("common:unknown")}
             </span>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               {signal.formats.map((f: MtgFormat) => (
                 <FormatBadge key={f} format={f} />
               ))}
+              {signal.preferred_slot && (
+                <Badge variant="outline" className="border-accent/40 text-accent text-xs">
+                  {t(`profile:${signal.preferred_slot}_slot`)}
+                </Badge>
+              )}
             </div>
           </li>
         ))}

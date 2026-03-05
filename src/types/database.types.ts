@@ -293,6 +293,7 @@ export interface Database {
           user_id: string;
           city: string;
           formats: MtgFormat[];
+          preferred_slot: TimeSlot | null;
           expires_at: string;
           created_at: string;
         };
@@ -300,6 +301,7 @@ export interface Database {
           user_id: string;
           city: string;
           formats: MtgFormat[];
+          preferred_slot?: TimeSlot | null;
           expires_at?: string;
           created_at?: string;
         };
@@ -307,6 +309,7 @@ export interface Database {
           user_id?: string;
           city?: string;
           formats?: MtgFormat[];
+          preferred_slot?: TimeSlot | null;
           expires_at?: string;
           created_at?: string;
         };

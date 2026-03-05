@@ -2,13 +2,14 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
-import type { MtgFormat } from "@/types/database.types";
+import type { MtgFormat, TimeSlot } from "@/types/database.types";
 
 interface LFGSignal {
   id: number;
   user_id: string;
   city: string;
   formats: MtgFormat[];
+  preferred_slot: TimeSlot | null;
   expires_at: string;
   created_at: string;
   profiles?: { display_name: string } | null;
@@ -17,6 +18,7 @@ interface LFGSignal {
 interface ActivateLFGParams {
   city: string;
   formats: MtgFormat[];
+  preferred_slot?: TimeSlot | null;
 }
 
 /**
@@ -93,7 +95,7 @@ export function useLFG(city?: string) {
 
   // Activate LFG signal (upsert — one signal per user via UNIQUE constraint)
   const activateMutation = useMutation({
-    mutationFn: async ({ city: signalCity, formats }: ActivateLFGParams) => {
+    mutationFn: async ({ city: signalCity, formats, preferred_slot }: ActivateLFGParams) => {
       if (!user) throw new Error("Not authenticated");
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
@@ -103,6 +105,7 @@ export function useLFG(city?: string) {
             user_id: user.id,
             city: signalCity,
             formats,
+            preferred_slot: preferred_slot ?? null,
             expires_at: expiresAt,
           },
           { onConflict: "user_id" }
