@@ -12,14 +12,29 @@
   <body>
     <div id="root"></div>
     <script>
-      // Auto-reload once on chunk load failure (stale deploy)
+      // Auto-reload on chunk load failure (stale deploy after new version)
       window.addEventListener('unhandledrejection', function(e) {
         if (e.reason && e.reason.message && e.reason.message.indexOf('dynamically imported module') !== -1) {
           if (!sessionStorage.getItem('chunk_reload')) {
             sessionStorage.setItem('chunk_reload', '1');
-            location.reload();
+            // Unregister stale SW before reload so fresh assets are fetched
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.unregister(); });
+                caches.keys().then(function(names) {
+                  names.forEach(function(name) { caches.delete(name); });
+                  location.reload();
+                });
+              });
+            } else {
+              location.reload();
+            }
           }
         }
+      });
+      // Clear reload flag on successful load
+      window.addEventListener('load', function() {
+        sessionStorage.removeItem('chunk_reload');
       });
     </script>
     <script type="module" src="/src/main.tsx"></script>
