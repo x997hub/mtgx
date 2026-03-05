@@ -1,12 +1,14 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Home, Plus, Settings, User, Users } from "lucide-react";
+import { Building2, Home, Plus, Settings, Shield, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
+import { useAuthStore } from "@/store/authStore";
 
 const NAV_ITEMS = [
   { to: "/", icon: Home, labelKey: "home" },
   { to: "/players", icon: Users, labelKey: "players" },
+  { to: "/clubs", icon: Building2, labelKey: "clubs" },
   { to: "/events/new", icon: Plus, labelKey: "create" },
   { to: "/profile", icon: User, labelKey: "profile" },
   { to: "/settings", icon: Settings, labelKey: "settings" },
@@ -15,6 +17,8 @@ const NAV_ITEMS = [
 export function AppShell() {
   const { t } = useTranslation();
   const location = useLocation();
+  const role = useAuthStore((s) => s.profile?.role);
+  const isAdmin = role === "admin";
 
   return (
     <div className="flex min-h-screen bg-primary text-gray-100">
@@ -31,7 +35,7 @@ export function AppShell() {
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-primary",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors hover:bg-primary",
                 location.pathname === to
                   ? "bg-primary text-accent"
                   : "text-gray-400"
@@ -41,6 +45,20 @@ export function AppShell() {
               {t(labelKey)}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors hover:bg-primary mt-auto",
+                location.pathname === "/admin"
+                  ? "bg-primary text-accent"
+                  : "text-gray-400"
+              )}
+            >
+              <Shield className="h-5 w-5" />
+              {t("admin")}
+            </Link>
+          )}
         </nav>
       </aside>
 
@@ -52,7 +70,17 @@ export function AppShell() {
             MTGX
           </Link>
           <div className="hidden md:block" />
-          <NotificationBell />
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 hover:text-accent transition-colors md:hidden"
+              >
+                <Shield className="h-5 w-5" />
+              </Link>
+            )}
+            <NotificationBell />
+          </div>
         </header>
 
         {/* Page content */}
@@ -68,11 +96,11 @@ export function AppShell() {
             key={to}
             to={to}
             className={cn(
-              "flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 text-xs",
+              "flex min-h-[44px] min-w-[40px] flex-col items-center justify-center gap-0.5 text-[11px]",
               location.pathname === to ? "text-accent" : "text-gray-400"
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-6 w-6" />
             <span>{t(labelKey)}</span>
           </Link>
         ))}

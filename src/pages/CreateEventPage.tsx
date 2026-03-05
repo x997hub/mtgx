@@ -5,17 +5,25 @@ import { FormLayout } from "@/components/layout/FormLayout";
 import { EventTypeToggle } from "@/components/events/EventTypeToggle";
 import { BigEventForm } from "@/components/events/BigEventForm";
 import { QuickMeetupForm } from "@/components/events/QuickMeetupForm";
-import type { EventType, MtgFormat } from "@/types/database.types";
+import { useAuth } from "@/hooks/useAuth";
+import type { EventType, MtgFormat, UserRole } from "@/types/database.types";
+
+const CAN_CREATE_BIG: UserRole[] = ["organizer", "club_owner", "admin"];
 
 export default function CreateEventPage() {
   const { t } = useTranslation("events");
+  const { profile } = useAuth();
   const location = useLocation();
   const cloneFrom = (location.state as { cloneFrom?: Record<string, unknown> } | null)
     ?.cloneFrom;
 
-  const [eventType, setEventType] = useState<EventType>(
-    (cloneFrom?.type as EventType) ?? "quick"
-  );
+  const canCreateBig = profile != null && CAN_CREATE_BIG.includes(profile.role);
+
+  const [eventType, setEventType] = useState<EventType>(() => {
+    const cloneType = cloneFrom?.type as EventType | undefined;
+    if (cloneType === "big" && !canCreateBig) return "quick";
+    return cloneType ?? "quick";
+  });
 
   return (
     <FormLayout>
@@ -24,7 +32,9 @@ export default function CreateEventPage() {
           {t("create_event")}
         </h1>
 
-        <EventTypeToggle value={eventType} onChange={setEventType} />
+        {canCreateBig && (
+          <EventTypeToggle value={eventType} onChange={setEventType} />
+        )}
 
         {eventType === "big" ? (
           <BigEventForm

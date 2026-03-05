@@ -72,7 +72,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
             </div>
           )}
 
-          {/* Mini availability grid: 7 cols × 2 rows */}
+          {/* Mini availability grid: 7 cols × 3 rows */}
           {availability.length > 0 && (
             <div className="space-y-1">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">

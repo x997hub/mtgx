@@ -48,5 +48,6 @@
   "app_tagline": "Находи MTG-игры. Заполняй столы.",
   "login_google": "Войти через Google",
   "default_player": "Игрок",
-  "unknown": "Неизвестно"
+  "unknown": "Неизвестно",
+  "clubs": "Клубы"
 }

@@ -13,7 +13,7 @@ import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
-import { Pencil, Shield, Bell } from "lucide-react";
+import { Car, MessageCircle, Pencil, Repeat, Shield, Bell } from "lucide-react";
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600",
@@ -46,7 +46,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
           {SLOTS.map((slot) => (
             <tr key={slot}>
               <td className="p-1 text-gray-400 whitespace-nowrap">
-                {t(slot === "day" ? "day_slot" : "evening_slot")}
+                {t(`${slot}_slot`)}
               </td>
               {DAYS.map((day) => {
                 const level = getLevel(day, slot);
@@ -126,6 +126,17 @@ export default function ProfilePage() {
     .toUpperCase()
     .slice(0, 2);
 
+  const avatarUrl = profile.avatar_url;
+  const whatsappUrl = profile.whatsapp
+    ? `https://wa.me/${profile.whatsapp.replace(/[\s\-()+ ]/g, "")}`
+    : null;
+
+  const CAR_LABELS: Record<string, string> = {
+    yes: "car_yes",
+    no: "car_no",
+    sometimes: "car_sometimes",
+  };
+
   return (
     <div className="min-h-screen bg-surface text-text-primary">
       <div className="mx-auto max-w-lg space-y-4 p-4">
@@ -134,7 +145,11 @@ export default function ProfilePage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={profile.display_name} className="h-full w-full rounded-full object-cover" />
+                ) : (
+                  <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+                )}
               </Avatar>
               <div className="flex-1 space-y-1">
                 <h1 className="text-xl font-bold text-gray-100">{profile.display_name}</h1>
@@ -155,6 +170,50 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Bio */}
+        {profile.bio && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-gray-400">{t("bio")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-200 whitespace-pre-line">{profile.bio}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* WhatsApp */}
+        {whatsappUrl && (
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <Card className="hover:border-emerald-500/50 transition-colors cursor-pointer">
+              <CardContent className="flex items-center gap-3 p-4">
+                <MessageCircle className="h-5 w-5 text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-400">{t("whatsapp_chat")}</span>
+              </CardContent>
+            </Card>
+          </a>
+        )}
+
+        {/* Car Access & Trading */}
+        {(profile.car_access || profile.interested_in_trading) && (
+          <Card>
+            <CardContent className="flex flex-wrap gap-3 p-4">
+              {profile.car_access && (
+                <div className="flex items-center gap-2 text-sm text-gray-300">
+                  <Car className="h-4 w-4 text-gray-400" />
+                  {t(CAR_LABELS[profile.car_access] ?? "car_no")}
+                </div>
+              )}
+              {profile.interested_in_trading && (
+                <div className="flex items-center gap-2 text-sm text-gray-300">
+                  <Repeat className="h-4 w-4 text-gray-400" />
+                  {t("interested_in_trading")}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Reliability score (visible to organizers/admins) */}
         {canSeeReliability && (

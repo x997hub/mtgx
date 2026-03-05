@@ -8,7 +8,8 @@ export type EventStatus = "active" | "cancelled" | "confirmed" | "expired";
 export type RsvpStatus = "going" | "maybe" | "not_going";
 export type SubscriptionTarget = "organizer" | "venue" | "format_city";
 export type DayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
-export type TimeSlot = "day" | "evening";
+export type TimeSlot = "morning" | "day" | "evening";
+export type CarAccess = "yes" | "no" | "sometimes";
 export type AvailabilityLevel = "available" | "sometimes" | "unavailable";
 export type OutboxStatus = "pending" | "sent" | "dead";
 
@@ -24,6 +25,10 @@ export interface Database {
           whatsapp: string | null;
           role: UserRole;
           reliability_score: number;
+          bio: string | null;
+          avatar_url: string | null;
+          car_access: CarAccess | null;
+          interested_in_trading: boolean;
           created_at: string;
         };
         Insert: {
@@ -34,6 +39,10 @@ export interface Database {
           whatsapp?: string | null;
           role?: UserRole;
           reliability_score?: number;
+          bio?: string | null;
+          avatar_url?: string | null;
+          car_access?: CarAccess | null;
+          interested_in_trading?: boolean;
           created_at?: string;
         };
         Update: {
@@ -44,6 +53,10 @@ export interface Database {
           whatsapp?: string | null;
           role?: UserRole;
           reliability_score?: number;
+          bio?: string | null;
+          avatar_url?: string | null;
+          car_access?: CarAccess | null;
+          interested_in_trading?: boolean;
           created_at?: string;
         };
         Relationships: [];
@@ -451,6 +464,7 @@ export interface Database {
       subscription_target: SubscriptionTarget;
       day_of_week: DayOfWeek;
       time_slot: TimeSlot;
+      car_access: CarAccess;
       availability_level: AvailabilityLevel;
       outbox_status: OutboxStatus;
     };

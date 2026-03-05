@@ -45,5 +45,16 @@
   "no_players": "Игроки не найдены",
   "no_players_description": "Попробуйте изменить фильтры",
   "clear_filters": "Сбросить",
-  "invalid_phone": "Неверный формат номера телефона"
+  "invalid_phone": "Неверный формат номера телефона",
+  "morning_slot": "Утро",
+  "car_access": "Доступ к машине",
+  "car_yes": "Есть машина",
+  "car_no": "Нет машины",
+  "car_sometimes": "Иногда есть",
+  "bio": "О себе",
+  "bio_placeholder": "Расскажите о себе другим игрокам...",
+  "interested_in_trading": "Интересует обмен/торговля",
+  "whatsapp_chat": "Написать в WhatsApp",
+  "clubs_coming_soon": "В разработке",
+  "clubs_coming_soon_description": "Функция клубов находится в разработке"
 }

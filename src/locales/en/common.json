@@ -48,5 +48,6 @@
   "app_tagline": "Find MTG games. Fill tables.",
   "login_google": "Sign in with Google",
   "default_player": "Player",
-  "unknown": "Unknown"
+  "unknown": "Unknown",
+  "clubs": "Clubs"
 }

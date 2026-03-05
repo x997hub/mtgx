@@ -10,15 +10,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
+import { Textarea } from "@/components/ui/textarea";
+import { FORMATS, CITIES, DAYS, SLOTS, CAR_ACCESS_OPTIONS } from "@/lib/constants";
 import type {
   MtgFormat,
   DayOfWeek,
   TimeSlot,
   AvailabilityLevel,
   AvailabilityInsert,
+  CarAccess,
 } from "@/types/database.types";
-import { Loader2, Save } from "lucide-react";
+import { Car, Loader2, Repeat, Save } from "lucide-react";
 
 const LEVELS: AvailabilityLevel[] = ["available", "sometimes", "unavailable"];
 
@@ -49,6 +51,9 @@ export default function ProfileEditPage() {
   const [city, setCity] = useState("");
   const [formats, setFormats] = useState<MtgFormat[]>([]);
   const [whatsapp, setWhatsapp] = useState("");
+  const [bio, setBio] = useState("");
+  const [carAccess, setCarAccess] = useState<CarAccess | "">("");
+  const [interestedInTrading, setInterestedInTrading] = useState(false);
   const [grid, setGrid] = useState<Record<string, AvailabilityLevel>>({});
 
   useEffect(() => {
@@ -57,6 +62,9 @@ export default function ProfileEditPage() {
       setCity(profile.city);
       setFormats(profile.formats);
       setWhatsapp(profile.whatsapp ?? "");
+      setBio(profile.bio ?? "");
+      setCarAccess(profile.car_access ?? "");
+      setInterestedInTrading(profile.interested_in_trading ?? false);
     }
   }, [profile]);
 
@@ -99,6 +107,9 @@ export default function ProfileEditPage() {
         city,
         formats,
         whatsapp: whatsapp || null,
+        bio: bio.trim() || null,
+        car_access: carAccess || null,
+        interested_in_trading: interestedInTrading,
       });
 
       const slots: AvailabilityInsert[] = [];
@@ -172,6 +183,69 @@ export default function ProfileEditPage() {
                 placeholder={t("whatsapp_placeholder")}
               />
             </div>
+
+            {/* Bio */}
+            <div className="space-y-1.5">
+              <Label htmlFor="bio">{t("bio")}</Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder={t("bio_placeholder")}
+                rows={3}
+                className="resize-none"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Car Access */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm text-gray-400">
+              <Car className="h-4 w-4" />
+              {t("car_access")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {CAR_ACCESS_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setCarAccess(carAccess === option ? "" : option)}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                    carAccess === option
+                      ? "bg-accent text-white"
+                      : "bg-gray-700 text-gray-400"
+                  }`}
+                >
+                  {t(`car_${option}`)}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Interested in Trading */}
+        <Card>
+          <CardContent className="p-4">
+            <button
+              type="button"
+              onClick={() => setInterestedInTrading(!interestedInTrading)}
+              className="flex w-full items-center gap-3"
+            >
+              <div
+                className={`flex h-6 w-6 items-center justify-center rounded border transition-colors ${
+                  interestedInTrading
+                    ? "border-accent bg-accent text-white"
+                    : "border-gray-600 bg-transparent"
+                }`}
+              >
+                {interestedInTrading && <Repeat className="h-4 w-4" />}
+              </div>
+              <span className="text-sm text-gray-200">{t("interested_in_trading")}</span>
+            </button>
           </CardContent>
         </Card>
 
@@ -225,7 +299,7 @@ export default function ProfileEditPage() {
                   {SLOTS.map((slot) => (
                     <tr key={slot}>
                       <td className="p-1 text-gray-400 whitespace-nowrap">
-                        {t(slot === "day" ? "day_slot" : "evening_slot")}
+                        {t(`${slot}_slot`)}
                       </td>
                       {DAYS.map((day) => {
                         const key = `${day}-${slot}`;

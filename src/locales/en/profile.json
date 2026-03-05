@@ -45,5 +45,16 @@
   "no_players": "No players found",
   "no_players_description": "Try adjusting your filters to find more players",
   "clear_filters": "Clear all",
-  "invalid_phone": "Invalid phone number format"
+  "invalid_phone": "Invalid phone number format",
+  "morning_slot": "Morning",
+  "car_access": "Access to Car",
+  "car_yes": "Have a car",
+  "car_no": "No car",
+  "car_sometimes": "Sometimes have access",
+  "bio": "About Me",
+  "bio_placeholder": "Tell other players about yourself...",
+  "interested_in_trading": "Interested in Trading/Exchange",
+  "whatsapp_chat": "Chat on WhatsApp",
+  "clubs_coming_soon": "Coming Soon",
+  "clubs_coming_soon_description": "Clubs feature is under development"
 }

@@ -60,12 +60,17 @@ export default function OnboardingPage() {
       user.user_metadata?.name ||
       user.email?.split("@")[0] ||
       t("common:default_player");
+    const googleAvatar =
+      user.user_metadata?.avatar_url ||
+      user.user_metadata?.picture ||
+      null;
     try {
       await upsertProfile({
         id: user.id,
         display_name: displayName,
         city: city || t("common:unknown"),
         ...(formats.length > 0 ? { formats } : {}),
+        ...(googleAvatar ? { avatar_url: googleAvatar } : {}),
       });
     } catch (err) {
       toast({ title: t("common:error"), variant: "destructive" });
@@ -211,7 +216,7 @@ export default function OnboardingPage() {
               <p className="text-sm text-text-secondary">
                 {t("profile:availability_description")}
               </p>
-              <div className="grid grid-cols-[auto_1fr_1fr] gap-2 items-center">
+              <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 items-center">
                 <div />
                 {SLOTS.map((slot) => (
                   <div key={slot} className="text-center text-sm text-text-secondary font-medium">

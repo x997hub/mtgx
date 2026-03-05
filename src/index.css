@@ -32,6 +32,10 @@
   --radius-default: 0.5rem;
 }
 
+html {
+  font-size: 17px;
+}
+
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",

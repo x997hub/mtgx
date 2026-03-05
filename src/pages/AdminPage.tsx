@@ -194,8 +194,15 @@ function MetricCard({ label, value, subtitle }: { label: string; value: string |
   );
 }
 
+const ROLE_LABELS: Record<UserRole, string> = {
+  player: "role_player",
+  organizer: "role_organizer",
+  club_owner: "role_club_owner",
+  admin: "role_admin",
+};
+
 function UsersTab() {
-  const { t } = useTranslation(["common", "events"]);
+  const { t } = useTranslation(["common", "events", "profile"]);
   const queryClient = useQueryClient();
 
   const { data: profiles, isLoading, isError } = useQuery({
@@ -271,7 +278,7 @@ function UsersTab() {
               <SelectContent>
                 {ROLES.map((role) => (
                   <SelectItem key={role} value={role}>
-                    {role}
+                    {t(`profile:${ROLE_LABELS[role]}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
