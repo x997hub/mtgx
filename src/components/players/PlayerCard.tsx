@@ -36,26 +36,28 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
 
   return (
     <Link to={`/profile/${player.id}`}>
-      <Card className="bg-secondary border-gray-700 hover:border-accent/50 transition-colors cursor-pointer">
+      <Card className="h-full bg-secondary border-gray-700 hover:border-accent/50 transition-colors cursor-pointer">
         <CardContent className="p-4 space-y-3">
-          {/* Header: Avatar + Name + City */}
+          {/* Header: Avatar + Name + City + Role */}
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-12 w-12 shrink-0">
               <AvatarFallback className="bg-primary text-accent text-sm font-bold">
                 {initials || "?"}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
               <p className="text-base font-medium text-gray-100 truncate">
                 {player.display_name}
               </p>
-              <p className="text-sm text-gray-400">{player.city}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-400 truncate">{player.city}</p>
+                {player.role !== "player" && (
+                  <Badge variant="outline" className="text-[10px] leading-tight border-accent/50 text-accent shrink-0 px-1.5 py-0">
+                    {t(`profile:role_${player.role}`)}
+                  </Badge>
+                )}
+              </div>
             </div>
-            {player.role !== "player" && (
-              <Badge variant="outline" className="text-xs border-accent/50 text-accent shrink-0">
-                {t(`profile:role_${player.role}`)}
-              </Badge>
-            )}
           </div>
 
           {/* Format badges */}

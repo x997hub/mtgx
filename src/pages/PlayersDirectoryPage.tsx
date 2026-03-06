@@ -143,7 +143,7 @@ export default function PlayersDirectoryPage() {
       {isError ? (
         <p className="text-center text-red-400">{t("common:error_occurred")}</p>
       ) : isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-40 rounded-lg" />
           ))}
@@ -155,7 +155,7 @@ export default function PlayersDirectoryPage() {
           description={t("profile:no_players_description")}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {players.map((player) => (
             <PlayerCard
               key={player.id}
