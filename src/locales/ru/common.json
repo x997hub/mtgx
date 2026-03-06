@@ -54,5 +54,32 @@
   "invites_tab": "Приглашения",
   "notifications_tab": "Уведомления",
   "big_event": "Большое событие",
-  "quick_meetup": "Быстрая встреча"
+  "quick_meetup": "Быстрая встреча",
+  "errors": {
+    "event_full": "Событие заполнено",
+    "event_not_found": "Событие не найдено",
+    "already_registered": "Вы уже зарегистрированы",
+    "not_authenticated": "Пожалуйста, войдите в систему",
+    "network_error": "Ошибка сети. Проверьте подключение",
+    "rate_limited": "Слишком много запросов. Попробуйте позже",
+    "unknown_error": "Что-то пошло не так",
+    "try_again": "Попробовать снова"
+  },
+  "feedback": {
+    "report_problem": "Сообщить о проблеме",
+    "type_bug": "Баг",
+    "type_suggestion": "Предложение",
+    "type_question": "Вопрос",
+    "describe_issue": "Опишите проблему...",
+    "attach_screenshot": "Прикрепить скриншот",
+    "submit_feedback": "Отправить",
+    "feedback_sent": "Спасибо за обратную связь!",
+    "feedback_title": "Обратная связь",
+    "status_new": "Новый",
+    "status_in_progress": "В работе",
+    "status_resolved": "Решён",
+    "status_closed": "Закрыт",
+    "admin_notes": "Заметки администратора",
+    "no_feedback": "Обращений пока нет"
+  }
 }

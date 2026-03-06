@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/select";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { toast } from "@/components/ui/use-toast";
-import { Users, Calendar, BarChart3, ShieldAlert } from "lucide-react";
+import { Users, Calendar, BarChart3, ShieldAlert, MessageSquare, Tags } from "lucide-react";
+import { FeedbackTab } from "@/components/admin/FeedbackTab";
+import { MoodTagsTab } from "@/components/admin/MoodTagsTab";
 
 const ROLES: UserRole[] = ["player", "organizer", "club_owner", "admin"];
 
@@ -52,16 +54,24 @@ export default function AdminPage() {
       <Tabs defaultValue="report">
         <TabsList className="bg-surface-card">
           <TabsTrigger value="report">
-            <BarChart3 className="mr-1 h-4 w-4" />
+            <BarChart3 className="me-1 h-4 w-4" />
             {t("common:report", "Report")}
           </TabsTrigger>
           <TabsTrigger value="users">
-            <Users className="mr-1 h-4 w-4" />
+            <Users className="me-1 h-4 w-4" />
             {t("common:users", "Users")}
           </TabsTrigger>
           <TabsTrigger value="events">
-            <Calendar className="mr-1 h-4 w-4" />
+            <Calendar className="me-1 h-4 w-4" />
             {t("common:events")}
+          </TabsTrigger>
+          <TabsTrigger value="feedback">
+            <MessageSquare className="me-1 h-4 w-4" />
+            {t("common:feedback", "Feedback")}
+          </TabsTrigger>
+          <TabsTrigger value="mood-tags">
+            <Tags className="me-1 h-4 w-4" />
+            {t("common:mood_tags", "Mood Tags")}
           </TabsTrigger>
         </TabsList>
 
@@ -73,6 +83,12 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="events">
           <EventsTab />
+        </TabsContent>
+        <TabsContent value="feedback">
+          <FeedbackTab />
+        </TabsContent>
+        <TabsContent value="mood-tags">
+          <MoodTagsTab />
         </TabsContent>
       </Tabs>
     </div>

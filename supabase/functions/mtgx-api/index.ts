@@ -11,6 +11,8 @@ const VALID_FORMATS = ["pauper", "commander", "standard", "draft"] as const;
 const HOURS_24_MS = 24 * 60 * 60 * 1000;
 const DAILY_INVITE_LIMIT = 5;
 const MAX_INVITE_MESSAGE_LEN = 200;
+const MAX_EVENT_MESSAGE_LEN = 500;
+const MAX_FEEDBACK_BODY_LEN = 2000;
 
 async function parseRequestBody(req: Request): Promise<Record<string, unknown> | Response> {
   try {
@@ -79,6 +81,12 @@ Deno.serve(async (req: Request) => {
         return jsonResponse({ error: "Method not allowed" }, 405);
       case "/invites/respond":
         return await handleRespondInvite(req, supabaseAdmin, user.id);
+      case "/event-message":
+        return await handleEventMessage(req, supabaseAdmin, user.id);
+      case "/confirm-attendance":
+        return await handleConfirmAttendance(req, supabaseAdmin, user.id);
+      case "/feedback":
+        return await handleFeedback(req, supabaseAdmin, user.id);
       default:
         return jsonResponse({ error: "Not found" }, 404);
     }
@@ -147,7 +155,28 @@ async function handleRsvp(
           .eq("status", "going");
 
         if (count !== null && count >= event.max_players) {
-          return jsonResponse({ error: "Event is full" }, 409);
+          // Event is full — automatically waitlist the player
+          const nextPosition = await getNextQueuePosition(supabase, event_id);
+          const { data: rsvp, error: rsvpError } = await supabase
+            .from("rsvps")
+            .upsert(
+              {
+                event_id,
+                user_id: userId,
+                status: "waitlisted",
+                queue_position: nextPosition,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "event_id,user_id" },
+            )
+            .select()
+            .single();
+
+          if (rsvpError) {
+            return jsonResponse({ error: rsvpError.message }, 500);
+          }
+
+          return jsonResponse({ rsvp, waitlisted: true });
         }
       }
 
@@ -174,13 +203,68 @@ async function handleRsvp(
   }
 
   if (error) {
+    // Handle event_full: automatically waitlist the player
     if (error.message === "event_full") {
-      return jsonResponse({ error: "Event is full" }, 409);
+      const nextPosition = await getNextQueuePosition(supabase, event_id);
+      const { data: rsvp, error: waitlistError } = await supabase
+        .from("rsvps")
+        .upsert(
+          {
+            event_id,
+            user_id: userId,
+            status: "waitlisted",
+            queue_position: nextPosition,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "event_id,user_id" },
+        )
+        .select()
+        .single();
+
+      if (waitlistError) {
+        return jsonResponse({ error: waitlistError.message }, 500);
+      }
+
+      // Create outbox entry for waitlist notification
+      await supabase.from("notification_outbox").insert({
+        event_id,
+        type: "rsvp_waitlisted",
+        payload: {
+          event_id,
+          user_id: userId,
+          queue_position: nextPosition,
+          recipients: [userId],
+        },
+      });
+
+      return jsonResponse({ rsvp, waitlisted: true });
     }
+
+    if (error.message === "event_not_found") {
+      return jsonResponse({ error: "Event not found" }, 404);
+    }
+
     return jsonResponse({ error: error.message }, 500);
   }
 
   return jsonResponse({ rsvp: data });
+}
+
+// Get next queue position for waitlist
+async function getNextQueuePosition(
+  supabase: ReturnType<typeof createClient>,
+  eventId: string,
+): Promise<number> {
+  const { data } = await supabase
+    .from("rsvps")
+    .select("queue_position")
+    .eq("event_id", eventId)
+    .eq("status", "waitlisted")
+    .order("queue_position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return (data?.queue_position ?? 0) + 1;
 }
 
 // Event creation handler
@@ -620,6 +704,182 @@ async function handleGetInvites(
   }
 
   return jsonResponse({ invites: data });
+}
+
+// Organizer sends message to event participants
+async function handleEventMessage(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
+  const { event_id, message } = body as { event_id?: string; message?: string };
+
+  if (!event_id || !message) {
+    return jsonResponse({ error: "event_id and message are required" }, 400);
+  }
+
+  if (message.length > MAX_EVENT_MESSAGE_LEN) {
+    return jsonResponse({ error: `Message must be ${MAX_EVENT_MESSAGE_LEN} characters or less` }, 400);
+  }
+
+  // Verify user is the organizer of this event
+  const { data: event, error: eventError } = await supabase
+    .from("events")
+    .select("id, organizer_id, title")
+    .eq("id", event_id)
+    .single();
+
+  if (eventError || !event) {
+    return jsonResponse({ error: "Event not found" }, 404);
+  }
+
+  if (event.organizer_id !== userId) {
+    return jsonResponse({ error: "Only the event organizer can send messages" }, 403);
+  }
+
+  // Create organizer message
+  const { data: msg, error: msgError } = await supabase
+    .from("organizer_messages")
+    .insert({
+      event_id,
+      organizer_id: userId,
+      body: message,
+    })
+    .select()
+    .single();
+
+  if (msgError) {
+    return jsonResponse({ error: msgError.message }, 500);
+  }
+
+  // Get all going/maybe participants
+  const { data: rsvps } = await supabase
+    .from("rsvps")
+    .select("user_id")
+    .eq("event_id", event_id)
+    .in("status", ["going", "maybe"]);
+
+  if (rsvps && rsvps.length > 0) {
+    const recipientIds = rsvps.map((r: { user_id: string }) => r.user_id);
+
+    // Create outbox entry for push notifications
+    await supabase.from("notification_outbox").insert({
+      event_id,
+      type: "organizer_message",
+      payload: {
+        event_id,
+        organizer_id: userId,
+        message,
+        title: event.title,
+        recipients: recipientIds,
+      },
+    });
+  }
+
+  return jsonResponse({ message: msg }, 201);
+}
+
+// Player confirms attendance
+async function handleConfirmAttendance(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
+  const { event_id } = body as { event_id?: string };
+
+  if (!event_id) {
+    return jsonResponse({ error: "event_id is required" }, 400);
+  }
+
+  // Verify user has RSVP for this event
+  const { data: rsvp, error: rsvpError } = await supabase
+    .from("rsvps")
+    .select("id, status")
+    .eq("event_id", event_id)
+    .eq("user_id", userId)
+    .single();
+
+  if (rsvpError || !rsvp) {
+    return jsonResponse({ error: "RSVP not found" }, 404);
+  }
+
+  if (rsvp.status !== "going") {
+    return jsonResponse({ error: "Only 'going' RSVPs can be confirmed" }, 400);
+  }
+
+  // Update RSVP to confirmed status
+  const { data: updated, error: updateError } = await supabase
+    .from("rsvps")
+    .update({
+      status: "pending_confirmation" as string === rsvp.status ? "going" : rsvp.status,
+      confirmed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", rsvp.id)
+    .select()
+    .single();
+
+  if (updateError) {
+    return jsonResponse({ error: updateError.message }, 500);
+  }
+
+  // Bump reliability score slightly (max 1.0)
+  await supabase.rpc("increment_reliability_score" as never, {
+    p_user_id: userId,
+    p_delta: 0.01,
+  } as never).maybeSingle();
+
+  return jsonResponse({ rsvp: updated });
+}
+
+// Submit feedback report
+async function handleFeedback(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
+  const { type, message, screenshot_url, page_url, user_agent, app_version } = body as Record<string, unknown>;
+
+  if (!type || !message) {
+    return jsonResponse({ error: "type and message are required" }, 400);
+  }
+
+  if (!["bug", "suggestion", "question"].includes(type as string)) {
+    return jsonResponse({ error: "type must be 'bug', 'suggestion', or 'question'" }, 400);
+  }
+
+  if (typeof message === "string" && message.length > MAX_FEEDBACK_BODY_LEN) {
+    return jsonResponse({ error: `Message must be ${MAX_FEEDBACK_BODY_LEN} characters or less` }, 400);
+  }
+
+  const { data: report, error } = await supabase
+    .from("feedback_reports")
+    .insert({
+      user_id: userId,
+      type,
+      body: message,
+      screenshot_url: screenshot_url || null,
+      page_url: page_url || null,
+      user_agent: user_agent || null,
+      app_version: app_version || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return jsonResponse({ error: error.message }, 500);
+  }
+
+  return jsonResponse({ report }, 201);
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {

@@ -54,5 +54,32 @@
   "invites_tab": "Invites",
   "notifications_tab": "Notifications",
   "big_event": "Big event",
-  "quick_meetup": "Quick meetup"
+  "quick_meetup": "Quick meetup",
+  "errors": {
+    "event_full": "This event is full",
+    "event_not_found": "Event not found",
+    "already_registered": "You are already registered",
+    "not_authenticated": "Please log in",
+    "network_error": "Network error. Check your connection",
+    "rate_limited": "Too many requests. Try later",
+    "unknown_error": "Something went wrong",
+    "try_again": "Try again"
+  },
+  "feedback": {
+    "report_problem": "Report a problem",
+    "type_bug": "Bug",
+    "type_suggestion": "Suggestion",
+    "type_question": "Question",
+    "describe_issue": "Describe the issue...",
+    "attach_screenshot": "Attach screenshot",
+    "submit_feedback": "Submit",
+    "feedback_sent": "Thank you for your feedback!",
+    "feedback_title": "Feedback",
+    "status_new": "New",
+    "status_in_progress": "In Progress",
+    "status_resolved": "Resolved",
+    "status_closed": "Closed",
+    "admin_notes": "Admin notes",
+    "no_feedback": "No feedback reports yet"
+  }
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { useEvents } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
 import { EventFormFields } from "@/components/events/EventFormFields";
+import { useFormAutosave } from "@/hooks/useFormAutosave";
 import type { MtgFormat } from "@/types/database.types";
 
 interface QuickMeetupFormProps {
@@ -15,6 +16,13 @@ interface QuickMeetupFormProps {
     min_players: number;
   }>;
   onCreated?: (eventId: string) => void;
+}
+
+interface QuickFormState {
+  format: MtgFormat;
+  startsAt: string;
+  city: string;
+  minPlayers: number;
 }
 
 export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormProps) {
@@ -27,6 +35,26 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
   const [startsAt, setStartsAt] = useState("");
   const [city, setCity] = useState(defaultValues?.city ?? "");
   const [minPlayers, setMinPlayers] = useState(defaultValues?.min_players ?? 2);
+
+  // Autosave
+  const formState = useMemo<QuickFormState>(() => ({
+    format, startsAt, city, minPlayers,
+  }), [format, startsAt, city, minPlayers]);
+
+  const autosaveKey = `event-draft-${user?.id ?? "anon"}-quick`;
+  const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
+
+  // Restore from draft
+  useEffect(() => {
+    if (hasSaved && savedState && !defaultValues) {
+      setFormat(savedState.format);
+      setStartsAt(savedState.startsAt);
+      setCity(savedState.city);
+      setMinPlayers(savedState.minPlayers);
+      toast({ title: t("draft_restored", "Draft restored") });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +85,7 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         // Quick meetups auto-expire 24h after start (DB trigger also handles this)
         expires_at: new Date(startsAtDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       });
+      clearSaved();
       toast({ title: t("event_created") });
       if (onCreated) {
         onCreated(data.id);

@@ -16,7 +16,7 @@ export function NotificationBell() {
       {count > 0 && (
         <span
           className={cn(
-            "absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-white"
+            "absolute end-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-white"
           )}
         >
           {count > 99 ? "99+" : count}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +17,12 @@ import { useAuthStore } from "@/store/authStore";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
 import { EventFormFields } from "@/components/events/EventFormFields";
-import type { MtgFormat } from "@/types/database.types";
+import { MoodTagSelector } from "@/components/events/MoodTagSelector";
+import { ProxyPolicySelector } from "@/components/events/ProxyPolicySelector";
+import { RecurrencePicker } from "@/components/events/RecurrencePicker";
+import type { RecurrenceConfig } from "@/components/events/RecurrencePicker";
+import { useFormAutosave } from "@/hooks/useFormAutosave";
+import type { MtgFormat, ProxyPolicy, DayOfWeek } from "@/types/database.types";
 
 interface BigEventFormProps {
   defaultValues?: Partial<{
@@ -35,6 +40,21 @@ interface BigEventFormProps {
   onCreated?: (eventId: string) => void;
 }
 
+interface BigFormState {
+  title: string;
+  format: MtgFormat;
+  startsAt: string;
+  venueId: string;
+  city: string;
+  minPlayers: number;
+  maxPlayers: number;
+  feeText: string;
+  description: string;
+  moodTags: string[];
+  proxyPolicy: ProxyPolicy;
+  recurrence: RecurrenceConfig | null;
+}
+
 export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventFormProps) {
   const { t } = useTranslation("events");
   const navigate = useNavigate();
@@ -50,6 +70,38 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
   const [maxPlayers, setMaxPlayers] = useState(defaultValues?.max_players ?? 16);
   const [feeText, setFeeText] = useState(defaultValues?.fee_text ?? "");
   const [description, setDescription] = useState(defaultValues?.description ?? "");
+  const [moodTags, setMoodTags] = useState<string[]>([]);
+  const [proxyPolicy, setProxyPolicy] = useState<ProxyPolicy>("none");
+  const [recurrence, setRecurrence] = useState<RecurrenceConfig | null>(null);
+
+  // Autosave
+  const formState = useMemo<BigFormState>(() => ({
+    title, format, startsAt, venueId, city, minPlayers, maxPlayers,
+    feeText, description, moodTags, proxyPolicy, recurrence,
+  }), [title, format, startsAt, venueId, city, minPlayers, maxPlayers, feeText, description, moodTags, proxyPolicy, recurrence]);
+
+  const autosaveKey = `event-draft-${user?.id ?? "anon"}-big`;
+  const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
+
+  // Restore from draft (only once, when no defaultValues are provided)
+  useEffect(() => {
+    if (hasSaved && savedState && !defaultValues) {
+      setTitle(savedState.title);
+      setFormat(savedState.format);
+      setStartsAt(savedState.startsAt);
+      setVenueId(savedState.venueId);
+      setCity(savedState.city);
+      setMinPlayers(savedState.minPlayers);
+      setMaxPlayers(savedState.maxPlayers);
+      setFeeText(savedState.feeText);
+      setDescription(savedState.description);
+      setMoodTags(savedState.moodTags ?? []);
+      setProxyPolicy(savedState.proxyPolicy ?? "none");
+      setRecurrence(savedState.recurrence ?? null);
+      toast({ title: t("draft_restored", "Draft restored") });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: venues } = useQuery({
     queryKey: ["venues", city],
@@ -83,7 +135,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
     }
 
     try {
-      const data = await createEvent({
+      const eventData: Parameters<typeof createEvent>[0] = {
         organizer_id: user.id,
         type: "big",
         title,
@@ -96,7 +148,42 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         fee_text: feeText || null,
         description: description || null,
         cloned_from: clonedFrom ?? null,
-      });
+        mood_tags: moodTags.length > 0 ? moodTags : [],
+        proxy_policy: proxyPolicy,
+      };
+
+      const data = await createEvent(eventData);
+
+      // If recurrence is set, also create an event_template
+      if (recurrence && recurrence.days.length > 0) {
+        const dayMap: Record<DayOfWeek, string> = {
+          sun: "SU", mon: "MO", tue: "TU", wed: "WE", thu: "TH", fri: "FR", sat: "SA",
+        };
+        const byDay = recurrence.days.map((d) => dayMap[d]).join(",");
+        let rrule = `FREQ=WEEKLY;BYDAY=${byDay}`;
+        if (recurrence.until) {
+          rrule += `;UNTIL=${recurrence.until.replace(/-/g, "")}T235959Z`;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase.from("event_templates") as any).insert({
+          organizer_id: user.id,
+          venue_id: venueId || null,
+          recurrence_rule: rrule,
+          template_data: {
+            title, format, city, min_players: minPlayers, max_players: maxPlayers,
+            fee_text: feeText || null, description: description || null,
+            mood_tags: moodTags, proxy_policy: proxyPolicy,
+          },
+        });
+
+        // Update the event with template reference (best effort)
+        const eventId = (data as { id: string }).id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase.from("events") as any).update({ template_id: eventId }).eq("id", eventId);
+      }
+
+      clearSaved();
       toast({ title: t("event_created") });
       if (onCreated) {
         onCreated(data.id);
@@ -171,6 +258,12 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         />
       </div>
 
+      {/* Mood Tags */}
+      <MoodTagSelector value={moodTags} onChange={setMoodTags} />
+
+      {/* Proxy Policy */}
+      <ProxyPolicySelector value={proxyPolicy} onChange={setProxyPolicy} />
+
       <div className="space-y-2">
         <Label htmlFor="description">{t("description")}</Label>
         <textarea
@@ -181,6 +274,9 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
           className="flex w-full rounded-md border border-gray-600 bg-primary px-4 py-3 text-base text-gray-100 placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         />
       </div>
+
+      {/* Recurring events */}
+      <RecurrencePicker value={recurrence} onChange={setRecurrence} />
 
       <Button type="submit" className="w-full min-h-[44px]" disabled={isCreating}>
         {isCreating ? t("common:loading") : t("create_big_event")}

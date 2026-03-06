@@ -149,9 +149,9 @@ export function InvitePlayerDialog({
           </Button>
           <Button onClick={handleSend} disabled={isSending} className="min-h-[44px]">
             {isSending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : (
-              <Send className="mr-2 h-4 w-4" />
+              <Send className="me-2 h-4 w-4" />
             )}
             {t("invite_send")}
           </Button>

@@ -1,0 +1,12 @@
+{
+  "venue_info": "מידע על המקום",
+  "address": "כתובת",
+  "hours": "שעות פעילות",
+  "capacity": "קיבולת",
+  "contacts": "יצירת קשר",
+  "supported_formats": "פורמטים נתמכים",
+  "upcoming_events": "אירועים קרובים",
+  "no_upcoming_events": "אין אירועים קרובים במקום זה",
+  "subscribe_venue": "הירשם למקום זה",
+  "players_capacity": "{{count}} שחקנים"
+}

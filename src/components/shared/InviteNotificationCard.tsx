@@ -39,7 +39,7 @@ export function InviteNotificationCard({
     <Card
       className={cn(
         "bg-surface-card border-surface-hover transition-colors",
-        invite.status === "pending" && "border-l-2 border-l-accent"
+        invite.status === "pending" && "border-s-2 border-s-accent"
       )}
     >
       <CardContent className="p-4">
@@ -80,7 +80,7 @@ export function InviteNotificationCard({
             )}
 
             <p className="text-xs text-text-secondary">
-              <Clock className="mr-1 inline h-3 w-3" />
+              <Clock className="me-1 inline h-3 w-3" />
               {timeAgo(invite.created_at)}
             </p>
           </div>

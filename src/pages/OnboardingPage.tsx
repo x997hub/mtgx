@@ -228,7 +228,7 @@ export default function OnboardingPage() {
                 ))}
                 {DAYS.map((day) => (
                   <Fragment key={day}>
-                    <div className="text-base text-text-secondary font-medium pr-2">
+                    <div className="text-base text-text-secondary font-medium pe-2">
                       {t(`profile:${day}`)}
                     </div>
                     {SLOTS.map((slot) => {

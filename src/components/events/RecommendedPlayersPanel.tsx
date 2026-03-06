@@ -121,7 +121,7 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
                         <AvatarFallback>{initials}</AvatarFallback>
                       )}
                     </Avatar>
-                    <div className="flex-1 text-left">
+                    <div className="flex-1 text-start">
                       <p className="text-base font-medium text-gray-100">{player.display_name}</p>
                       <div className="flex flex-wrap gap-1">
                         {player.formats.map((f) => (
@@ -156,9 +156,9 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
                 disabled={selected.size === 0 || isSending}
               >
                 {isSending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="mr-2 h-4 w-4" />
+                  <Send className="me-2 h-4 w-4" />
                 )}
                 {t("send_invitations")} ({selected.size})
               </Button>

@@ -5,7 +5,7 @@ export type UserRole = "player" | "organizer" | "club_owner" | "admin";
 export type MtgFormat = "pauper" | "commander" | "standard" | "draft";
 export type EventType = "big" | "quick";
 export type EventStatus = "active" | "cancelled" | "confirmed" | "expired";
-export type RsvpStatus = "going" | "maybe" | "not_going";
+export type RsvpStatus = "going" | "maybe" | "not_going" | "waitlisted" | "pending_confirmation";
 export type SubscriptionTarget = "organizer" | "venue" | "format_city";
 export type DayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 export type TimeSlot = "morning" | "day" | "evening";
@@ -16,6 +16,9 @@ export type MatchDayPref = "always" | "if_free" | "never";
 export type InviteVisibility = "all" | "played_together" | "my_venues" | "none";
 export type InviteStatus = "pending" | "accepted" | "declined" | "expired";
 export type MatchRadius = "my_city" | "nearby" | "all";
+export type ProxyPolicy = "none" | "partial" | "full";
+export type FeedbackStatus = "new" | "in_progress" | "resolved" | "closed";
+export type FeedbackType = "bug" | "suggestion" | "question";
 
 export interface Database {
   public: {
@@ -165,6 +168,11 @@ export interface Database {
           status: EventStatus;
           cloned_from: string | null;
           expires_at: string | null;
+          confirmation_sent_24h: boolean;
+          confirmation_sent_3h: boolean;
+          mood_tags: string[];
+          proxy_policy: ProxyPolicy;
+          template_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -184,6 +192,11 @@ export interface Database {
           status?: EventStatus;
           cloned_from?: string | null;
           expires_at?: string | null;
+          confirmation_sent_24h?: boolean;
+          confirmation_sent_3h?: boolean;
+          mood_tags?: string[];
+          proxy_policy?: ProxyPolicy;
+          template_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -203,6 +216,11 @@ export interface Database {
           status?: EventStatus;
           cloned_from?: string | null;
           expires_at?: string | null;
+          confirmation_sent_24h?: boolean;
+          confirmation_sent_3h?: boolean;
+          mood_tags?: string[];
+          proxy_policy?: ProxyPolicy;
+          template_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -213,6 +231,8 @@ export interface Database {
           event_id: string;
           user_id: string;
           status: RsvpStatus;
+          queue_position: number | null;
+          power_level: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -220,6 +240,8 @@ export interface Database {
           event_id: string;
           user_id: string;
           status: RsvpStatus;
+          queue_position?: number | null;
+          power_level?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -227,6 +249,8 @@ export interface Database {
           event_id?: string;
           user_id?: string;
           status?: RsvpStatus;
+          queue_position?: number | null;
+          power_level?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -298,6 +322,8 @@ export interface Database {
           city: string;
           formats: MtgFormat[];
           preferred_slot: TimeSlot | null;
+          duration_hours: number;
+          is_instant: boolean;
           expires_at: string;
           created_at: string;
         };
@@ -306,6 +332,8 @@ export interface Database {
           city: string;
           formats: MtgFormat[];
           preferred_slot?: TimeSlot | null;
+          duration_hours?: number;
+          is_instant?: boolean;
           expires_at?: string;
           created_at?: string;
         };
@@ -314,6 +342,8 @@ export interface Database {
           city?: string;
           formats?: MtgFormat[];
           preferred_slot?: TimeSlot | null;
+          duration_hours?: number;
+          is_instant?: boolean;
           expires_at?: string;
           created_at?: string;
         };
@@ -556,8 +586,141 @@ export interface Database {
         };
         Relationships: [];
       };
+      organizer_messages: {
+        Row: {
+          id: number;
+          event_id: string;
+          organizer_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          event_id: string;
+          organizer_id: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          event_id?: string;
+          organizer_id?: string;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      feedback_reports: {
+        Row: {
+          id: number;
+          user_id: string | null;
+          type: FeedbackType;
+          body: string;
+          screenshot_url: string | null;
+          page_url: string | null;
+          user_agent: string | null;
+          app_version: string | null;
+          status: FeedbackStatus;
+          admin_notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id?: string | null;
+          type: FeedbackType;
+          body: string;
+          screenshot_url?: string | null;
+          page_url?: string | null;
+          user_agent?: string | null;
+          app_version?: string | null;
+          status?: FeedbackStatus;
+          admin_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string | null;
+          type?: FeedbackType;
+          body?: string;
+          screenshot_url?: string | null;
+          page_url?: string | null;
+          user_agent?: string | null;
+          app_version?: string | null;
+          status?: FeedbackStatus;
+          admin_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      mood_tags: {
+        Row: {
+          id: number;
+          slug: string;
+          label_en: string;
+          label_ru: string;
+          label_he: string | null;
+          is_active: boolean;
+        };
+        Insert: {
+          slug: string;
+          label_en: string;
+          label_ru: string;
+          label_he?: string | null;
+          is_active?: boolean;
+        };
+        Update: {
+          slug?: string;
+          label_en?: string;
+          label_ru?: string;
+          label_he?: string | null;
+          is_active?: boolean;
+        };
+        Relationships: [];
+      };
+      event_templates: {
+        Row: {
+          id: string;
+          organizer_id: string;
+          venue_id: string | null;
+          recurrence_rule: string;
+          template_data: Record<string, unknown>;
+          last_generated_at: string | null;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organizer_id: string;
+          venue_id?: string | null;
+          recurrence_rule: string;
+          template_data: Record<string, unknown>;
+          last_generated_at?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organizer_id?: string;
+          venue_id?: string | null;
+          recurrence_rule?: string;
+          template_data?: Record<string, unknown>;
+          last_generated_at?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
-    Views: Record<string, never>;
+    Views: {
+      organizer_stats: {
+        Row: {
+          organizer_id: string;
+          events_total: number;
+          events_cancelled: number;
+          cancel_rate: number;
+          avg_attendance: number;
+        };
+      };
+    };
     Functions: {
       availability_match: {
         Args: { p_event_id: string };
@@ -587,6 +750,14 @@ export interface Database {
         Args: { p_city: string; p_format: MtgFormat; p_day: string; p_slot: string };
         Returns: number;
       };
+      rsvp_with_lock: {
+        Args: { p_event_id: string; p_user_id: string; p_status: string };
+        Returns: Record<string, unknown>;
+      };
+      promote_from_waitlist: {
+        Args: { p_event_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: UserRole;
@@ -600,6 +771,9 @@ export interface Database {
       car_access: CarAccess;
       availability_level: AvailabilityLevel;
       outbox_status: OutboxStatus;
+      proxy_policy: ProxyPolicy;
+      feedback_status: FeedbackStatus;
+      feedback_type: FeedbackType;
     };
     CompositeTypes: Record<string, never>;
   };
@@ -654,3 +828,19 @@ export type PlayerInvite = Database["public"]["Tables"]["player_invites"]["Row"]
 export type PlayerInviteInsert = Database["public"]["Tables"]["player_invites"]["Insert"];
 
 export type RecommendedPlayer = Database["public"]["Functions"]["get_recommended_invites"]["Returns"][number];
+
+export type OrganizerMessage = Database["public"]["Tables"]["organizer_messages"]["Row"];
+export type OrganizerMessageInsert = Database["public"]["Tables"]["organizer_messages"]["Insert"];
+
+export type FeedbackReport = Database["public"]["Tables"]["feedback_reports"]["Row"];
+export type FeedbackReportInsert = Database["public"]["Tables"]["feedback_reports"]["Insert"];
+export type FeedbackReportUpdate = Database["public"]["Tables"]["feedback_reports"]["Update"];
+
+export type MoodTag = Database["public"]["Tables"]["mood_tags"]["Row"];
+export type MoodTagInsert = Database["public"]["Tables"]["mood_tags"]["Insert"];
+
+export type EventTemplate = Database["public"]["Tables"]["event_templates"]["Row"];
+export type EventTemplateInsert = Database["public"]["Tables"]["event_templates"]["Insert"];
+export type EventTemplateUpdate = Database["public"]["Tables"]["event_templates"]["Update"];
+
+export type OrganizerStats = Database["public"]["Views"]["organizer_stats"]["Row"];

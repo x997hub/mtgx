@@ -111,5 +111,11 @@
   "send_invitations": "Отправить приглашения",
   "invitations_sent": "{{count}} приглашений отправлено!",
   "no_recommended_players": "Нет рекомендуемых игроков сейчас",
-  "played_together": "Играли вместе"
+  "played_together": "Играли вместе",
+
+  "organizer_stats": "Статистика организатора",
+  "events_organized": "Событий организовано",
+  "cancel_rate": "Процент отмен",
+  "avg_attendance": "Средняя посещаемость",
+  "no_stats": "Событий пока нет"
 }

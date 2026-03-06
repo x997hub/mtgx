@@ -1,4 +1,4 @@
-import type { MtgFormat, DayOfWeek, TimeSlot, CarAccess } from "@/types/database.types";
+import type { MtgFormat, DayOfWeek, TimeSlot, CarAccess, ProxyPolicy, FeedbackType, FeedbackStatus } from "@/types/database.types";
 
 export const FORMATS: MtgFormat[] = ["pauper", "commander", "standard", "draft"];
 
@@ -25,3 +25,39 @@ export const FORMAT_BADGE_COLORS: Record<MtgFormat, string> = {
   standard: "bg-blue-700 text-blue-100",
   draft: "bg-amber-700 text-amber-100",
 };
+
+/** Default mood tag slugs (matching DB seed) */
+export const MOOD_TAG_SLUGS = ["casual", "competitive", "deck_test", "training"] as const;
+export type MoodTagSlug = (typeof MOOD_TAG_SLUGS)[number];
+
+/** Proxy policy options */
+export const PROXY_POLICIES: ProxyPolicy[] = ["none", "partial", "full"];
+
+/** Proxy policy display colors */
+export const PROXY_POLICY_COLORS: Record<ProxyPolicy, string> = {
+  none: "bg-red-700/60 text-red-100",
+  partial: "bg-yellow-700/60 text-yellow-100",
+  full: "bg-green-700/60 text-green-100",
+};
+
+/** Commander power levels (1-5) */
+export const POWER_LEVELS = [1, 2, 3, 4, 5] as const;
+export type PowerLevel = (typeof POWER_LEVELS)[number];
+
+/** Power level display labels */
+export const POWER_LEVEL_LABELS: Record<number, string> = {
+  1: "Jank / Precon",
+  2: "Low",
+  3: "Mid",
+  4: "High",
+  5: "cEDH",
+};
+
+/** LFG duration options (hours) for "Going Today" */
+export const LFG_DURATION_OPTIONS = [1, 2, 3, 4, 5] as const;
+
+/** Feedback report types */
+export const FEEDBACK_TYPES: FeedbackType[] = ["bug", "suggestion", "question"];
+
+/** Feedback report statuses */
+export const FEEDBACK_STATUSES: FeedbackStatus[] = ["new", "in_progress", "resolved", "closed"];

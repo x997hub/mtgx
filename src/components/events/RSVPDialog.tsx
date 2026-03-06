@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -6,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { PowerLevelPicker } from "@/components/events/PowerLevelPicker";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "@/components/ui/use-toast";
 import type { Database } from "@/types/database.types";
@@ -17,6 +19,8 @@ interface RSVPDialogProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   currentStatus?: RsvpStatus | null;
+  /** When format is 'commander', show power level picker */
+  eventFormat?: string;
 }
 
 const OPTIONS: { status: RsvpStatus; variant: "default" | "secondary" | "outline" }[] = [
@@ -25,14 +29,21 @@ const OPTIONS: { status: RsvpStatus; variant: "default" | "secondary" | "outline
   { status: "not_going", variant: "outline" },
 ];
 
-export function RSVPDialog({ open, onOpenChange, eventId, currentStatus }: RSVPDialogProps) {
+export function RSVPDialog({ open, onOpenChange, eventId, currentStatus, eventFormat }: RSVPDialogProps) {
   const { t } = useTranslation("events");
   const rsvpMutation = useRSVP();
+  const [powerLevel, setPowerLevel] = useState<number | null>(null);
+  const isCommander = eventFormat === "commander";
 
   const handleRSVP = async (status: RsvpStatus) => {
     try {
-      await rsvpMutation.mutateAsync({ eventId, status });
+      await rsvpMutation.mutateAsync({
+        eventId,
+        status,
+        powerLevel: isCommander && status === "going" ? powerLevel : undefined,
+      });
       onOpenChange(false);
+      setPowerLevel(null);
     } catch {
       toast({ title: t("common:error"), variant: "destructive" });
     }
@@ -45,6 +56,11 @@ export function RSVPDialog({ open, onOpenChange, eventId, currentStatus }: RSVPD
           <DialogTitle>{t("rsvp")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3">
+          {/* Power Level picker for Commander format */}
+          {isCommander && (
+            <PowerLevelPicker value={powerLevel} onChange={setPowerLevel} />
+          )}
+
           {OPTIONS.map(({ status, variant }) => (
             <Button
               key={status}

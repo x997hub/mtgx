@@ -80,7 +80,7 @@ export default function NotificationsPage() {
         >
           {t("notifications_tab", "Notifications")}
           {unreadCount > 0 && (
-            <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-xs text-white px-1">
+            <span className="ms-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-xs text-white px-1">
               {unreadCount}
             </span>
           )}
@@ -97,7 +97,7 @@ export default function NotificationsPage() {
         >
           {t("invites_tab", "Invites")}
           {pendingCount > 0 && (
-            <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-xs text-white px-1">
+            <span className="ms-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-xs text-white px-1">
               {pendingCount}
             </span>
           )}
@@ -117,7 +117,7 @@ export default function NotificationsPage() {
                 key={notification.id}
                 className={cn(
                   "bg-surface-card border-surface-hover transition-colors",
-                  !notification.is_read && "border-l-2 border-l-accent"
+                  !notification.is_read && "border-s-2 border-s-accent"
                 )}
               >
                 <CardContent className="p-4">

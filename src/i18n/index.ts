@@ -10,6 +10,10 @@ import ruCommon from "@/locales/ru/common.json";
 import ruEvents from "@/locales/ru/events.json";
 import ruProfile from "@/locales/ru/profile.json";
 import ruVenue from "@/locales/ru/venue.json";
+import heCommon from "@/locales/he/common.json";
+import heEvents from "@/locales/he/events.json";
+import heProfile from "@/locales/he/profile.json";
+import heVenue from "@/locales/he/venue.json";
 
 i18n
   .use(LanguageDetector)
@@ -27,6 +31,12 @@ i18n
         events: ruEvents,
         profile: ruProfile,
         venue: ruVenue,
+      },
+      he: {
+        common: heCommon,
+        events: heEvents,
+        profile: heProfile,
+        venue: heVenue,
       },
     },
     lng: "en",

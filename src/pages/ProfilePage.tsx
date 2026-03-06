@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
 import { getInitials } from "@/lib/utils";
+import { OrganizerStatsCard } from "@/components/profile/OrganizerStatsCard";
 import { Car, MessageCircle, Pencil, Repeat, Shield, Bell, UserPlus } from "lucide-react";
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
@@ -38,7 +39,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
       <table className="min-w-[320px] w-full text-sm">
         <thead>
           <tr>
-            <th className="p-1 text-left text-gray-400" />
+            <th className="p-1 text-start text-gray-400" />
             {DAYS.map((day) => (
               <th key={day} className="p-1 text-center text-gray-400 font-normal">
                 {t(day)}
@@ -208,7 +209,7 @@ export default function ProfilePage() {
               className="w-full min-h-[44px]"
               onClick={() => setShowInviteDialog(true)}
             >
-              <UserPlus className="mr-2 h-4 w-4" />
+              <UserPlus className="me-2 h-4 w-4" />
               {t("invite_to_play")}
             </Button>
             <InvitePlayerDialog
@@ -253,6 +254,11 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Organizer Stats (Feature #18) */}
+        {(profile.role === "organizer" || profile.role === "club_owner") && (
+          <OrganizerStatsCard organizerId={profile.id} />
         )}
 
         {/* Formats */}
@@ -317,7 +323,7 @@ export default function ProfilePage() {
         {isOwn && (
           <Button className="w-full" asChild>
             <Link to="/profile/edit">
-              <Pencil className="mr-2 h-4 w-4" />
+              <Pencil className="me-2 h-4 w-4" />
               {t("edit_profile")}
             </Link>
           </Button>

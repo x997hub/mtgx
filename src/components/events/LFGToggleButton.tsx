@@ -191,7 +191,7 @@ export function LFGToggleButton() {
               onClick={handleActivate}
               disabled={isActivating || !selectedCity || selectedFormats.length === 0}
             >
-              <Zap className="h-4 w-4 mr-2" />
+              <Zap className="h-4 w-4 me-2" />
               {isActivating ? t("common:loading") : t("events:lfg_activate")}
             </Button>
           </div>

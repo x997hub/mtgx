@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { PowerLevelBadge } from "@/components/events/PowerLevelPicker";
 import type { Database } from "@/types/database.types";
 
 type RsvpStatus = Database["public"]["Enums"]["rsvp_status"];
@@ -9,6 +10,7 @@ type RsvpStatus = Database["public"]["Enums"]["rsvp_status"];
 interface Attendee {
   user_id: string;
   status: RsvpStatus;
+  power_level?: number | null;
   profiles?: { display_name: string } | null;
 }
 
@@ -16,25 +18,31 @@ interface AttendeeListProps {
   attendees: Attendee[];
 }
 
-const STATUS_COLORS: Record<RsvpStatus, string> = {
+const STATUS_COLORS: Record<string, string> = {
   going: "bg-emerald-700",
   maybe: "bg-amber-700",
   not_going: "bg-gray-600",
+  waitlisted: "bg-indigo-700",
+  pending_confirmation: "bg-yellow-700",
 };
 
-const STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going"];
+const STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going", "waitlisted", "pending_confirmation"];
 
 export function AttendeeList({ attendees }: AttendeeListProps) {
   const { t } = useTranslation(["events", "common"]);
 
   const grouped = useMemo(() => {
-    const groups: Record<RsvpStatus, Attendee[]> = {
+    const groups: Record<string, Attendee[]> = {
       going: [],
       maybe: [],
       not_going: [],
+      waitlisted: [],
+      pending_confirmation: [],
     };
     for (const a of attendees) {
-      groups[a.status]?.push(a);
+      if (groups[a.status]) {
+        groups[a.status].push(a);
+      }
     }
     return groups;
   }, [attendees]);
@@ -68,8 +76,11 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
                   <span className="flex-1 text-base text-gray-200">
                     {attendee.profiles?.display_name || t("common:unknown")}
                   </span>
+                  {attendee.power_level != null && attendee.power_level >= 1 && attendee.power_level <= 5 && (
+                    <PowerLevelBadge level={attendee.power_level} />
+                  )}
                   <Badge
-                    className={`border-none text-white ${STATUS_COLORS[attendee.status]}`}
+                    className={`border-none text-white ${STATUS_COLORS[attendee.status] ?? "bg-gray-600"}`}
                   >
                     {t(attendee.status)}
                   </Badge>

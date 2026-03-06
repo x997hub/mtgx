@@ -111,5 +111,11 @@
   "send_invitations": "Send Invitations",
   "invitations_sent": "{{count}} invitations sent!",
   "no_recommended_players": "No players to recommend right now",
-  "played_together": "Played together"
+  "played_together": "Played together",
+
+  "organizer_stats": "Organizer stats",
+  "events_organized": "Events organized",
+  "cancel_rate": "Cancellation rate",
+  "avg_attendance": "Avg. attendance",
+  "no_stats": "No events yet"
 }

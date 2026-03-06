@@ -1,18 +1,27 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, Copy } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Copy, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { FormatBadge } from "@/components/shared/FormatBadge";
+import { CircularProgress } from "@/components/shared/CircularProgress";
 import { WhatsAppShareButton } from "@/components/shared/WhatsAppShareButton";
+import { ShareButton } from "@/components/events/ShareButton";
+import { MoodTagBadge } from "@/components/events/MoodTagBadge";
+import { ProxyPolicyBadge } from "@/components/events/ProxyPolicyBadge";
+import { RecurringBadge } from "@/components/events/RecurringBadge";
 import { RSVPButton } from "@/components/events/RSVPButton";
 import { AttendeeList } from "@/components/events/AttendeeList";
+import { MessageComposer } from "@/components/events/MessageComposer";
+import { OrganizerMessagesList } from "@/components/events/OrganizerMessagesList";
 import { useEvent, useEventRsvps } from "@/hooks/useEvents";
+import { useWaitlist } from "@/hooks/useWaitlist";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
 import type { RsvpStatus } from "@/types/database.types";
 
 export default function EventDetailPage() {
@@ -20,9 +29,12 @@ export default function EventDetailPage() {
   const { id: eventId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const session = useAuthStore((s) => s.session);
 
   const { data: event, isLoading: eventLoading } = useEvent(eventId ?? "");
   const { data: rsvps, isLoading: rsvpsLoading } = useEventRsvps(eventId ?? "");
+  const { position: waitlistPosition } = useWaitlist(eventId ?? "");
+  const [confirming, setConfirming] = useState(false);
 
   const currentUserRsvp = useMemo(() => {
     if (!rsvps || !user) return null;
@@ -40,10 +52,49 @@ export default function EventDetailPage() {
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return { days, hours, minutes };
+    return { days, hours, minutes, totalHours: diff / (1000 * 60 * 60) };
   }, [event]);
 
   const isOrganizer = event && user && event.organizer_id === user.id;
+  const goingCount = rsvps?.filter((r) => r.status === "going").length ?? 0;
+  const isFull = event?.max_players ? goingCount >= event.max_players : false;
+  const isParticipant = currentUserRsvp === "going" || currentUserRsvp === "maybe";
+
+  // Confirmation: show button when user is "going" and event is within 24 hours
+  const canConfirmAttendance =
+    currentUserRsvp === "going" &&
+    countdown &&
+    countdown.totalHours <= 24 &&
+    countdown.totalHours > 0;
+
+  const handleConfirmAttendance = async () => {
+    if (!eventId || !session?.access_token) return;
+    setConfirming(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${supabaseUrl}/functions/v1/mtgx-api`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "confirm-attendance", event_id: eventId }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to confirm attendance");
+      }
+      toast({ title: t("events:attendance_confirmed", "Attendance confirmed!") });
+    } catch (err) {
+      toast({
+        title: t("common:error_occurred"),
+        description: err instanceof Error ? err.message : undefined,
+        variant: "destructive",
+      });
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   if (eventLoading) {
     return (
@@ -77,7 +128,6 @@ export default function EventDetailPage() {
 
   const eventUrl = `${window.location.origin}${window.location.pathname}`;
   const eventTitle = event.title || t(event.type === "big" ? "events:big_event" : "events:quick_meetup");
-  const goingCount = rsvps?.filter((r) => r.status === "going").length ?? 0;
   const spotsLeft = event.max_players ? event.max_players - goingCount : null;
 
   return (
@@ -86,6 +136,10 @@ export default function EventDetailPage() {
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <FormatBadge format={event.format} />
+          {event.proxy_policy && event.proxy_policy !== "none" && (
+            <ProxyPolicyBadge policy={event.proxy_policy} />
+          )}
+          {event.template_id && <RecurringBadge />}
           {event.status === "cancelled" && (
             <Badge variant="destructive">{t("events:event_cancelled")}</Badge>
           )}
@@ -96,6 +150,14 @@ export default function EventDetailPage() {
           )}
         </div>
         <h1 className="text-2xl font-bold text-text-primary">{eventTitle}</h1>
+        {/* Mood tags */}
+        {event.mood_tags && event.mood_tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {event.mood_tags.map((tag) => (
+              <MoodTagBadge key={tag} tag={tag} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Countdown */}
@@ -152,14 +214,17 @@ export default function EventDetailPage() {
               {event.min_players}
               {event.max_players ? `–${event.max_players}` : "+"} {t("events:players", "players")}
               {spotsLeft !== null && spotsLeft > 0 && (
-                <span className="text-accent ml-2">
+                <span className="text-accent ms-2">
                   ({t("events:spots_left", { count: spotsLeft })})
                 </span>
               )}
               {spotsLeft !== null && spotsLeft <= 0 && (
-                <span className="text-red-400 ml-2">({t("events:event_full")})</span>
+                <span className="text-red-400 ms-2">({t("events:event_full")})</span>
               )}
             </span>
+            {event.max_players && (
+              <CircularProgress value={goingCount} max={event.max_players} size={44} />
+            )}
           </div>
 
           {event.fee_text && (
@@ -192,9 +257,13 @@ export default function EventDetailPage() {
           <RSVPButton
             eventId={event.id}
             currentStatus={currentUserRsvp}
+            isFull={isFull}
+            waitlistPosition={waitlistPosition}
+            eventFormat={event.format}
           />
         )}
         <WhatsAppShareButton eventTitle={eventTitle} eventUrl={eventUrl} />
+        <ShareButton eventId={event.id} title={eventTitle} />
         {isOrganizer && (
           <Button
             variant="outline"
@@ -212,6 +281,32 @@ export default function EventDetailPage() {
         )}
       </div>
 
+      {/* Confirm attendance (Feature #12) */}
+      {canConfirmAttendance && (
+        <Card className="bg-surface-card border-emerald-600/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-base font-medium text-text-primary">
+                  {t("events:confirm_attendance_title", "Confirm your attendance")}
+                </p>
+                <p className="text-sm text-text-secondary">
+                  {t("events:confirm_attendance_desc", "The event starts soon. Please confirm you are coming.")}
+                </p>
+              </div>
+              <Button
+                onClick={handleConfirmAttendance}
+                disabled={confirming}
+                className="gap-2 min-h-[44px] shrink-0"
+              >
+                <CheckCircle className="h-4 w-4" />
+                {t("events:confirm", "Confirm")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Attendees */}
       {rsvpsLoading ? (
         <Skeleton className="h-24 rounded-lg" />
@@ -222,6 +317,20 @@ export default function EventDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Organizer Messages (Feature #15) */}
+      {isOrganizer && eventId && (
+        <MessageComposer eventId={eventId} />
+      )}
+
+      {isParticipant && eventId && (
+        <OrganizerMessagesList eventId={eventId} />
+      )}
+
+      {/* Show messages to organizer too (they should see what they sent) */}
+      {isOrganizer && eventId && (
+        <OrganizerMessagesList eventId={eventId} />
+      )}
     </div>
   );
 }

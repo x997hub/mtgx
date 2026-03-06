@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Building2, Home, Plus, Settings, Shield, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
+import { FeedbackModal } from "@/components/shared/FeedbackModal";
 import { useAuthStore } from "@/store/authStore";
 
 const NAV_ITEMS = [
@@ -23,7 +24,7 @@ export function AppShell() {
   return (
     <div className="flex min-h-screen bg-primary text-gray-100">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-gray-700 md:bg-secondary">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:border-e md:border-gray-700 md:bg-secondary">
         <div className="flex h-16 items-center px-6">
           <Link to="/" className="text-xl font-bold text-accent">
             MTGX
@@ -89,8 +90,11 @@ export function AppShell() {
         </main>
       </div>
 
+      {/* Feedback button (Feature #36) */}
+      <FeedbackModal />
+
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-[72px] items-center justify-around border-t border-gray-700 bg-secondary md:hidden">
+      <nav className="fixed bottom-0 start-0 end-0 z-40 flex h-[72px] items-center justify-around border-t border-gray-700 bg-secondary md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, labelKey }) => (
           <Link
             key={to}

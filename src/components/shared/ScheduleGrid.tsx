@@ -35,7 +35,7 @@ export function ScheduleGrid<TState extends string>({
       <table className="w-full text-base">
         <thead>
           <tr>
-            <th className="p-1 text-left text-gray-400" />
+            <th className="p-1 text-start text-gray-400" />
             {days.map((day) => (
               <th key={day} className="p-1 text-center text-gray-400 font-normal">
                 {t(day)}

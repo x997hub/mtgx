@@ -63,6 +63,13 @@ export default function SettingsPage() {
           >
             RU
           </Button>
+          <Button
+            variant={currentLang.startsWith("he") ? "default" : "outline"}
+            onClick={() => i18n.changeLanguage("he")}
+            className="min-h-[44px]"
+          >
+            HE
+          </Button>
         </CardContent>
       </Card>
 
@@ -99,7 +106,7 @@ export default function SettingsPage() {
               onClick={requestPermission}
               className="min-h-[44px]"
             >
-              <Bell className="mr-2 h-4 w-4" />
+              <Bell className="me-2 h-4 w-4" />
               {t("profile:push_enable", "Enable Push Notifications")}
             </Button>
           )}
@@ -154,7 +161,7 @@ export default function SettingsPage() {
         onClick={logout}
         className="w-full min-h-[44px]"
       >
-        <LogOut className="mr-2 h-4 w-4" />
+        <LogOut className="me-2 h-4 w-4" />
         {t("common:logout")}
       </Button>
     </div>

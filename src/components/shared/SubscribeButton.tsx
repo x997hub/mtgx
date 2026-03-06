@@ -55,12 +55,12 @@ export function SubscribeButton({
     >
       {existing ? (
         <>
-          <BellOff className="mr-1 h-4 w-4" />
+          <BellOff className="me-1 h-4 w-4" />
           {t("unsubscribe")}
         </>
       ) : (
         <>
-          <Bell className="mr-1 h-4 w-4" />
+          <Bell className="me-1 h-4 w-4" />
           {t("subscribe")}
         </>
       )}

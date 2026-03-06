@@ -1,9 +1,13 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
+import { CircularProgress } from "@/components/shared/CircularProgress";
+import { MoodTagBadge } from "@/components/events/MoodTagBadge";
+import { ProxyPolicyBadge } from "@/components/events/ProxyPolicyBadge";
+import { RecurringBadge } from "@/components/events/RecurringBadge";
 import type { EventWithRelations } from "@/hooks/useEvents";
 
 interface EventCardProps {
@@ -14,7 +18,7 @@ export function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation("events");
 
   const goingCount = event.rsvps?.[0]?.count ?? 0;
-  const spotsLeft = event.max_players != null ? event.max_players - goingCount : null;
+  const maxPlayers = event.max_players;
 
   const date = new Date(event.starts_at);
   const timeStr = date.toLocaleDateString(undefined, {
@@ -36,10 +40,22 @@ export function EventCard({ event }: EventCardProps) {
               <div className="flex flex-wrap items-center gap-2">
                 <FormatBadge format={event.format} />
                 <CityBadge city={event.city} />
+                {event.proxy_policy && event.proxy_policy !== "none" && (
+                  <ProxyPolicyBadge policy={event.proxy_policy} />
+                )}
+                {event.template_id && <RecurringBadge />}
               </div>
               <h3 className="text-lg font-semibold text-gray-100">
                 {event.title || t(event.type === "big" ? "big_event" : "quick_meetup")}
               </h3>
+              {/* Mood tags */}
+              {event.mood_tags && event.mood_tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {event.mood_tags.map((tag) => (
+                    <MoodTagBadge key={tag} tag={tag} />
+                  ))}
+                </div>
+              )}
               <div className="flex flex-col gap-1 text-base text-gray-400">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
@@ -53,15 +69,11 @@ export function EventCard({ event }: EventCardProps) {
                 )}
               </div>
             </div>
-            <div className="flex flex-col items-center gap-0.5 text-base text-gray-400">
-              <Users className="h-5 w-5" />
-              <span>{goingCount}</span>
-              {spotsLeft != null && (
-                <span className={`text-xs ${spotsLeft <= 0 ? "text-red-400" : "text-gray-500"}`}>
-                  {spotsLeft <= 0
-                    ? t("event_full")
-                    : t("spots_left", { count: spotsLeft })}
-                </span>
+            <div className="flex flex-col items-center gap-0.5">
+              {maxPlayers != null ? (
+                <CircularProgress value={goingCount} max={maxPlayers} size={44} />
+              ) : (
+                <span className="text-base text-gray-400">{goingCount}</span>
               )}
             </div>
           </div>

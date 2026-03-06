@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { CalendarPlus, Flame, Search } from "lucide-react";
+import { CalendarPlus, Flame, Search, Zap } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,9 +15,11 @@ import { EventCard } from "@/components/events/EventCard";
 import { LFGBanner } from "@/components/events/LFGBanner";
 import { LFGToggleButton } from "@/components/events/LFGToggleButton";
 import { LFGSignalList } from "@/components/events/LFGSignalList";
+import { GoingTodaySheet } from "@/components/events/GoingTodaySheet";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FAB } from "@/components/shared/FAB";
 import { useEvents } from "@/hooks/useEvents";
+import { useGoingToday } from "@/hooks/useGoingToday";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/store/authStore";
 import { useFilterStore } from "@/store/filterStore";
@@ -33,6 +35,8 @@ export default function EventFeedPage() {
   const { format, city, setFormat, setCity } = useFilterStore();
   const { events, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
+  const { instantCount } = useGoingToday(profile?.city ?? undefined);
+  const [goingTodayOpen, setGoingTodayOpen] = useState(false);
 
   const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
@@ -118,11 +122,22 @@ export default function EventFeedPage() {
         </div>
       )}
 
-      {/* FAB for LFG */}
-      <FAB onClick={() => navigate("/events/new")}>
-        <CalendarPlus className="h-5 w-5 mr-2" />
+      {/* FABs */}
+      <FAB onClick={() => navigate("/events/new")} className="bottom-[140px] md:hidden">
+        <CalendarPlus className="h-5 w-5 me-2" />
         {t("common:create")}
       </FAB>
+      <FAB onClick={() => setGoingTodayOpen(true)} className="bottom-[80px] md:hidden bg-amber-600 hover:bg-amber-700 shadow-amber-600/25">
+        <Zap className="h-5 w-5 me-2" />
+        {t("events:going_today", "Going Today")}
+        {instantCount > 0 && (
+          <Badge className="ms-1 bg-white/20 text-white border-none text-xs px-1.5 py-0">
+            {instantCount}
+          </Badge>
+        )}
+      </FAB>
+
+      <GoingTodaySheet open={goingTodayOpen} onOpenChange={setGoingTodayOpen} />
     </div>
   );
 }
