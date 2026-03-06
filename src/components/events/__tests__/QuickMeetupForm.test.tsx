@@ -44,6 +44,11 @@ vi.mock("@/store/authStore", () => ({
     selector({ user: { id: "user-1", email: "test@test.com" } }),
 }));
 
+// Mock AvailablePlayersHint (added to EventFormFields; needs QueryClient + RPC)
+vi.mock("@/components/events/AvailablePlayersHint", () => ({
+  AvailablePlayersHint: () => null,
+}));
+
 function renderForm(defaultValues?: any) {
   return render(
     <MemoryRouter>

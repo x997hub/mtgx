@@ -58,6 +58,11 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 
+// Mock AvailablePlayersHint (added to EventFormFields; needs QueryClient + RPC)
+vi.mock("@/components/events/AvailablePlayersHint", () => ({
+  AvailablePlayersHint: () => null,
+}));
+
 // Mock react-query useQuery for venues
 vi.mock("@tanstack/react-query", async () => {
   const actual = await vi.importActual("@tanstack/react-query");

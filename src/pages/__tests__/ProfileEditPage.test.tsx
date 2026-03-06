@@ -83,6 +83,14 @@ vi.mock("@/store/authStore", () => ({
   ),
 }));
 
+// Mock child components that need QueryClient (AutoMatch + InvitePreferences)
+vi.mock("@/components/profile/AutoMatchSettings", () => ({
+  AutoMatchSettings: () => null,
+}));
+vi.mock("@/components/profile/InvitePreferencesSettings", () => ({
+  InvitePreferencesSettings: () => null,
+}));
+
 function renderPage() {
   return render(
     <MemoryRouter>
