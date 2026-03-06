@@ -8,6 +8,29 @@ const corsHeaders = {
 };
 
 const VALID_FORMATS = ["pauper", "commander", "standard", "draft"] as const;
+const HOURS_24_MS = 24 * 60 * 60 * 1000;
+const DAILY_INVITE_LIMIT = 5;
+const MAX_INVITE_MESSAGE_LEN = 200;
+
+async function parseRequestBody(req: Request): Promise<Record<string, unknown> | Response> {
+  try {
+    return await req.json();
+  } catch {
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
+  }
+}
+
+async function checkDailyInviteLimit(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<boolean> {
+  const { count } = await supabase
+    .from("player_invites")
+    .select("*", { count: "exact", head: true })
+    .eq("from_user_id", userId)
+    .gte("created_at", new Date(Date.now() - HOURS_24_MS).toISOString());
+  return count !== null && count >= DAILY_INVITE_LIMIT;
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -71,12 +94,9 @@ async function handleRsvp(
   supabase: ReturnType<typeof createClient>,
   userId: string,
 ) {
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
-  }
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
   const { event_id, status } = body as { event_id?: string; status?: string };
 
   if (!event_id || !status) {
@@ -169,12 +189,9 @@ async function handleCreateEvent(
   supabase: ReturnType<typeof createClient>,
   userId: string,
 ) {
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
-  }
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
   const { type, title, format, city, starts_at, venue_id, duration_min, min_players, max_players, fee_text, description, cloned_from } = body as Record<string, unknown>;
 
   if (!format || !city || !starts_at || !type) {
@@ -242,12 +259,9 @@ async function handleLfg(
   supabase: ReturnType<typeof createClient>,
   userId: string,
 ) {
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
-  }
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
   const { city, formats } = body as { city?: string; formats?: string[] };
 
   if (!city || !formats || !Array.isArray(formats) || formats.length === 0) {
@@ -260,7 +274,7 @@ async function handleLfg(
     return jsonResponse({ error: `Invalid formats: ${invalidFormats.join(", ")}. Must be one of: ${VALID_FORMATS.join(", ")}` }, 400);
   }
 
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + HOURS_24_MS).toISOString();
 
   const { data: lfg, error } = await supabase
     .from("looking_for_game")
@@ -301,12 +315,9 @@ async function handleAssignRole(
     return jsonResponse({ error: "Admin access required" }, 403);
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
-  }
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
   const { user_id, role } = body as { user_id?: string; role?: string };
 
   if (!user_id || !role) {
@@ -337,12 +348,9 @@ async function handleSendInvite(
   supabase: ReturnType<typeof createClient>,
   userId: string,
 ) {
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
-  }
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
   const { to_user_id, event_id, format, message, proposed_time } = body as Record<string, unknown>;
 
   if (!to_user_id) {
@@ -353,8 +361,8 @@ async function handleSendInvite(
     return jsonResponse({ error: "Cannot invite yourself" }, 400);
   }
 
-  if (message && typeof message === "string" && message.length > 200) {
-    return jsonResponse({ error: "Message must be 200 characters or less" }, 400);
+  if (message && typeof message === "string" && message.length > MAX_INVITE_MESSAGE_LEN) {
+    return jsonResponse({ error: `Message must be ${MAX_INVITE_MESSAGE_LEN} characters or less` }, 400);
   }
 
   // Check recipient's invite preferences
@@ -410,37 +418,19 @@ async function handleSendInvite(
     }
   }
 
-  // Rate limit: 5 invites per day for non-organizers
+  // Rate limit: organizers skip limit for their own events
+  let skipRateLimit = false;
   if (event_id) {
     const { data: event } = await supabase
       .from("events")
       .select("organizer_id")
       .eq("id", event_id)
       .single();
+    skipRateLimit = !!event && event.organizer_id === userId;
+  }
 
-    if (!event || event.organizer_id !== userId) {
-      // Check daily limit
-      const { count } = await supabase
-        .from("player_invites")
-        .select("*", { count: "exact", head: true })
-        .eq("from_user_id", userId)
-        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-      if (count !== null && count >= 5) {
-        return jsonResponse({ error: "Daily invite limit reached (5 per day)" }, 429);
-      }
-    }
-  } else {
-    // No event — always check limit
-    const { count } = await supabase
-      .from("player_invites")
-      .select("*", { count: "exact", head: true })
-      .eq("from_user_id", userId)
-      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-    if (count !== null && count >= 5) {
-      return jsonResponse({ error: "Daily invite limit reached (5 per day)" }, 429);
-    }
+  if (!skipRateLimit && await checkDailyInviteLimit(supabase, userId)) {
+    return jsonResponse({ error: `Daily invite limit reached (${DAILY_INVITE_LIMIT} per day)` }, 429);
   }
 
   // Create invite
@@ -502,12 +492,9 @@ async function handleRespondInvite(
   supabase: ReturnType<typeof createClient>,
   userId: string,
 ) {
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
-  }
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
   const { invite_id, status } = body as { invite_id?: number; status?: string };
 
   if (!invite_id || !status) {

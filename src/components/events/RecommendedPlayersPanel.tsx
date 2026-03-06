@@ -8,6 +8,7 @@ import { FormatBadge } from "@/components/shared/FormatBadge";
 import { useRecommendedPlayers } from "@/hooks/useRecommendedPlayers";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getInitials } from "@/lib/utils";
 import { Loader2, Send, UserPlus } from "lucide-react";
 
 interface RecommendedPlayersPanelProps {
@@ -87,12 +88,7 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
 
             <div className="max-h-80 space-y-2 overflow-y-auto">
               {players.map((player) => {
-                const initials = player.display_name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2);
+                const initials = getInitials(player.display_name);
 
                 return (
                   <button
@@ -134,7 +130,7 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
                       </div>
                     </div>
                     {player.played_together && (
-                      <span className="text-xs text-emerald-400">Played together</span>
+                      <span className="text-xs text-emerald-400">{t("played_together")}</span>
                     )}
                   </button>
                 );

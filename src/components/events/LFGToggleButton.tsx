@@ -21,15 +21,8 @@ import { FormatBadge } from "@/components/shared/FormatBadge";
 import { useLFG } from "@/hooks/useLFG";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
-import { FORMATS, CITIES, SLOTS } from "@/lib/constants";
+import { FORMATS, CITIES, SLOTS, FORMAT_TOGGLE_COLORS } from "@/lib/constants";
 import type { MtgFormat, TimeSlot } from "@/types/database.types";
-
-const FORMAT_COLORS: Record<MtgFormat, { active: string; inactive: string }> = {
-  pauper: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  commander: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
-  standard: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
-  draft: { active: "bg-amber-700 text-amber-100", inactive: "bg-gray-700 text-gray-400" },
-};
 
 export function LFGToggleButton() {
   const { t } = useTranslation(["events", "profile"]);
@@ -153,7 +146,7 @@ export function LFGToggleButton() {
               <div className="flex flex-wrap gap-2">
                 {FORMATS.map((format) => {
                   const active = selectedFormats.includes(format);
-                  const colors = FORMAT_COLORS[format];
+                  const colors = FORMAT_TOGGLE_COLORS[format];
                   return (
                     <button
                       key={format}

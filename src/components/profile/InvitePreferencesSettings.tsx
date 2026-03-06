@@ -14,7 +14,7 @@ import { useInvitePreferences } from "@/hooks/useInvitePreferences";
 import { useAuth } from "@/hooks/useAuth";
 import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
 import { useToast } from "@/components/ui/use-toast";
-import { FORMATS, DAYS } from "@/lib/constants";
+import { FORMATS, DAYS, FORMAT_TOGGLE_COLORS } from "@/lib/constants";
 import { Loader2, Save, UserPlus, Moon } from "lucide-react";
 import type { MtgFormat, InviteVisibility } from "@/types/database.types";
 
@@ -23,13 +23,6 @@ const BOOL_STATES = ["true", "false"] as const;
 const BOOL_COLORS: Record<string, string> = {
   true: "bg-emerald-600 hover:bg-emerald-500",
   false: "bg-gray-700 hover:bg-gray-600",
-};
-
-const FORMAT_COLORS: Record<MtgFormat, { active: string; inactive: string }> = {
-  pauper: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  commander: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
-  standard: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
-  draft: { active: "bg-amber-700 text-amber-100", inactive: "bg-gray-700 text-gray-400" },
 };
 
 export function InvitePreferencesSettings() {
@@ -162,7 +155,7 @@ export function InvitePreferencesSettings() {
               <div className="flex flex-wrap gap-2">
                 {FORMATS.map((format) => {
                   const active = formats.includes(format);
-                  const colors = FORMAT_COLORS[format];
+                  const colors = FORMAT_TOGGLE_COLORS[format];
                   return (
                     <button
                       key={format}

@@ -16,6 +16,7 @@ import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
+import { getInitials } from "@/lib/utils";
 import { Car, MessageCircle, Pencil, Repeat, Shield, Bell, UserPlus } from "lucide-react";
 
 const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
@@ -126,12 +127,7 @@ export default function ProfilePage() {
     );
   }
 
-  const initials = profile.display_name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getInitials(profile.display_name);
 
   const avatarUrl = profile.avatar_url;
   const whatsappUrl = profile.whatsapp

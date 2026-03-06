@@ -116,7 +116,8 @@ export function useLFG(city?: string) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lfg-my"] });
+      const uid = useAuthStore.getState().user?.id;
+      queryClient.invalidateQueries({ queryKey: ["lfg-my", uid] });
       queryClient.invalidateQueries({ queryKey: ["lfg-signals"] });
       queryClient.invalidateQueries({ queryKey: ["lfg-count"] });
     },
@@ -133,7 +134,8 @@ export function useLFG(city?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lfg-my"] });
+      const uid = useAuthStore.getState().user?.id;
+      queryClient.invalidateQueries({ queryKey: ["lfg-my", uid] });
       queryClient.invalidateQueries({ queryKey: ["lfg-signals"] });
       queryClient.invalidateQueries({ queryKey: ["lfg-count"] });
     },

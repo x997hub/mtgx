@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { DAYS, SLOTS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import type { Database, AvailabilityLevel } from "@/types/database.types";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
@@ -32,12 +32,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
     availMap.set(`${a.day}-${a.slot}`, a.level);
   }
 
-  const initials = player.display_name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getInitials(player.display_name);
 
   return (
     <Link to={`/profile/${player.id}`}>

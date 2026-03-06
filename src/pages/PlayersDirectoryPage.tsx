@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Users } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PlayerCard } from "@/components/players/PlayerCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { usePlayers, useVenuesList } from "@/hooks/usePlayers";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/store/authStore";
 import { FORMATS, CITIES, DAYS } from "@/lib/constants";
 import type { MtgFormat, DayOfWeek } from "@/types/database.types";
@@ -41,27 +42,7 @@ export default function PlayersDirectoryPage() {
     setVenueId(null);
   };
 
-  // Infinite scroll
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const sentinelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (observerRef.current) observerRef.current.disconnect();
-      if (!node || !hasNextPage) return;
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      });
-      observerRef.current.observe(node);
-    },
-    [hasNextPage, isFetchingNextPage, fetchNextPage]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
-  }, []);
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   return (
     <div className="space-y-4 p-4 pb-24">

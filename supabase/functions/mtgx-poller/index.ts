@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const HOURS_24_MS = 24 * 60 * 60 * 1000;
+const DAILY_REPORT_HOUR = 8;
+const OUTBOX_BATCH_LIMIT = 50;
+
 const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") || "*";
 
 const corsHeaders = {
@@ -71,7 +75,7 @@ async function processOutbox(supabase: ReturnType<typeof createClient>): Promise
     .eq("status", "pending")
     .lt("attempts", 3)
     .order("created_at", { ascending: true })
-    .limit(50);
+    .limit(OUTBOX_BATCH_LIMIT);
 
   if (error || !entries || entries.length === 0) return 0;
 
@@ -260,7 +264,7 @@ async function expireLfgSignals(supabase: ReturnType<typeof createClient>): Prom
 
 async function sendReminders(supabase: ReturnType<typeof createClient>): Promise<number> {
   const now = new Date();
-  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const in24h = new Date(now.getTime() + HOURS_24_MS);
   const in23h = new Date(now.getTime() + 23 * 60 * 60 * 1000);
 
   // Find events starting between 23h and 24h from now
@@ -355,7 +359,7 @@ async function maybeGenerateDailyReport(supabase: ReturnType<typeof createClient
   const hour = now.getUTCHours();
 
   // Only generate at ~08:00 UTC (approximate, since poller runs every minute)
-  if (hour !== 8) return false;
+  if (hour !== DAILY_REPORT_HOUR) return false;
 
   const today = now.toISOString().split("T")[0];
 
@@ -368,7 +372,7 @@ async function maybeGenerateDailyReport(supabase: ReturnType<typeof createClient
 
   if (existing) return false;
 
-  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+  const yesterday = new Date(now.getTime() - HOURS_24_MS).toISOString();
 
   // Gather stats
   const { count: newUsers } = await supabase
@@ -433,7 +437,7 @@ async function expireInvites(supabase: ReturnType<typeof createClient>): Promise
     .from("player_invites")
     .update({ status: "expired" })
     .eq("status", "pending")
-    .lt("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+    .lt("created_at", new Date(Date.now() - HOURS_24_MS).toISOString())
     .select("id");
 
   if (error) {

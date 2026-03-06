@@ -110,5 +110,6 @@
   "select_all": "Выбрать всех",
   "send_invitations": "Отправить приглашения",
   "invitations_sent": "{{count}} приглашений отправлено!",
-  "no_recommended_players": "Нет рекомендуемых игроков сейчас"
+  "no_recommended_players": "Нет рекомендуемых игроков сейчас",
+  "played_together": "Играли вместе"
 }

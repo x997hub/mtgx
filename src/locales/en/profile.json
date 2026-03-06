@@ -110,5 +110,6 @@
   "select_all": "Select all",
   "send_invitations": "Send Invitations",
   "invitations_sent": "{{count}} invitations sent!",
-  "no_recommended_players": "No players to recommend right now"
+  "no_recommended_players": "No players to recommend right now",
+  "played_together": "Played together"
 }

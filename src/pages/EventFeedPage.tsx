@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { CalendarPlus, Flame, Search } from "lucide-react";
@@ -18,9 +18,11 @@ import { LFGSignalList } from "@/components/events/LFGSignalList";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FAB } from "@/components/shared/FAB";
 import { useEvents } from "@/hooks/useEvents";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/store/authStore";
 import { useFilterStore } from "@/store/filterStore";
 import { FORMATS, CITIES } from "@/lib/constants";
+import { isToday } from "@/lib/utils";
 import type { MtgFormat } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
 
@@ -32,26 +34,7 @@ export default function EventFeedPage() {
   const { events, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
 
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const sentinelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (observerRef.current) observerRef.current.disconnect();
-      if (!node || !hasNextPage) return;
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      });
-      observerRef.current.observe(node);
-    },
-    [hasNextPage, isFetchingNextPage, fetchNextPage]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
-  }, []);
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   return (
     <div className="space-y-4 pb-24">
@@ -141,16 +124,6 @@ export default function EventFeedPage() {
         {t("common:create")}
       </FAB>
     </div>
-  );
-}
-
-function isToday(dateStr: string): boolean {
-  const d = new Date(dateStr);
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
   );
 }
 
