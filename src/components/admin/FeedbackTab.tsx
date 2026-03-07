@@ -21,28 +21,18 @@ import {
   type FeedbackStatus,
   type FeedbackReport,
 } from "@/hooks/useFeedback";
+import {
+  FEEDBACK_TYPE_COLORS as TYPE_COLORS,
+  FEEDBACK_STATUS_COLORS as STATUS_COLORS,
+  FEEDBACK_STATUSES as STATUSES,
+  FEEDBACK_TYPES as TYPES,
+} from "@/lib/constants";
 
 const TYPE_ICONS: Record<FeedbackType, typeof Bug> = {
   bug: Bug,
   suggestion: Lightbulb,
   question: HelpCircle,
 };
-
-const TYPE_COLORS: Record<FeedbackType, string> = {
-  bug: "bg-red-700/20 text-red-400",
-  suggestion: "bg-blue-700/20 text-blue-400",
-  question: "bg-amber-700/20 text-amber-400",
-};
-
-const STATUS_COLORS: Record<FeedbackStatus, string> = {
-  new: "bg-blue-700 text-blue-100",
-  in_progress: "bg-amber-700 text-amber-100",
-  resolved: "bg-emerald-700 text-emerald-100",
-  closed: "bg-gray-700 text-gray-300",
-};
-
-const STATUSES: FeedbackStatus[] = ["new", "in_progress", "resolved", "closed"];
-const TYPES: FeedbackType[] = ["bug", "suggestion", "question"];
 
 export function FeedbackTab() {
   const { t } = useTranslation(["common"]);

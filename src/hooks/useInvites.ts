@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import type { InviteStatus, MtgFormat, PlayerInvite } from "@/types/database.types";
 
 export type InviteWithRelations = PlayerInvite & {
@@ -25,9 +25,8 @@ interface RespondInviteParams {
 
 export function useInvites() {
   const user = useAuthStore((s) => s.user);
+  const session = useAuthStore((s) => s.session);
   const queryClient = useQueryClient();
-  const queryClientRef = useRef(queryClient);
-  queryClientRef.current = queryClient;
 
   const incomingQuery = useQuery({
     queryKey: ["invites-incoming", user?.id],
@@ -87,40 +86,26 @@ export function useInvites() {
   });
 
   // Realtime for incoming invites
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel("invites:" + user.id)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "player_invites",
-          filter: `to_user_id=eq.${user.id}`,
-        },
-        () => {
-          queryClientRef.current.invalidateQueries({ queryKey: ["invites-incoming", user.id] });
-        }
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
+  useRealtimeSubscription({
+    channelName: `invites:${user?.id}`,
+    table: "player_invites",
+    filter: `to_user_id=eq.${user?.id}`,
+    enabled: !!user,
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["invites-incoming", user?.id] });
+    },
+  });
 
   const sendInviteMutation = useMutation({
     mutationFn: async (params: SendInviteParams) => {
-      const currentUser = useAuthStore.getState().user;
-      if (!currentUser) throw new Error("Not authenticated");
-      const session = (await supabase.auth.getSession()).data.session;
+      if (!user || !session) throw new Error("Not authenticated");
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mtgx-api/invites`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(params),
         }
@@ -132,21 +117,20 @@ export function useInvites() {
       return res.json();
     },
     onSettled: () => {
-      const uid = useAuthStore.getState().user?.id;
-      queryClient.invalidateQueries({ queryKey: ["invites-outgoing", uid] });
+      queryClient.invalidateQueries({ queryKey: ["invites-outgoing", user?.id] });
     },
   });
 
   const respondInviteMutation = useMutation({
     mutationFn: async ({ invite_id, status }: RespondInviteParams) => {
-      const session = (await supabase.auth.getSession()).data.session;
+      if (!session) throw new Error("Not authenticated");
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mtgx-api/invites/respond`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ invite_id, status }),
         }
@@ -158,9 +142,8 @@ export function useInvites() {
       return res.json();
     },
     onSettled: () => {
-      const uid = useAuthStore.getState().user?.id;
-      queryClient.invalidateQueries({ queryKey: ["invites-incoming", uid] });
-      queryClient.invalidateQueries({ queryKey: ["invites-outgoing", uid] });
+      queryClient.invalidateQueries({ queryKey: ["invites-incoming", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["invites-outgoing", user?.id] });
     },
   });
 

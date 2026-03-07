@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import type { MtgFormat, TimeSlot } from "@/types/database.types";
 
 interface LFGSignal {
@@ -69,29 +69,15 @@ export function useLFG(city?: string) {
   });
 
   // Realtime subscription for LFG signals
-  useEffect(() => {
-    if (!city) return;
-
-    const channel = supabase
-      .channel(`lfg:${city}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "looking_for_game",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["lfg-signals", city] });
-          queryClient.invalidateQueries({ queryKey: ["lfg-count", city] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [city, queryClient]);
+  useRealtimeSubscription({
+    channelName: `lfg:${city}`,
+    table: "looking_for_game",
+    enabled: !!city,
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["lfg-signals", city] });
+      queryClient.invalidateQueries({ queryKey: ["lfg-count", city] });
+    },
+  });
 
   // Activate LFG signal (upsert — one signal per user via UNIQUE constraint)
   const activateMutation = useMutation({

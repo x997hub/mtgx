@@ -26,18 +26,7 @@ import { InvitePreferencesSettings } from "@/components/profile/InvitePreference
 
 const LEVELS: AvailabilityLevel[] = ["available", "sometimes", "unavailable"];
 
-const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
-  available: "bg-emerald-600 hover:bg-emerald-500",
-  sometimes: "bg-amber-600 hover:bg-amber-500",
-  unavailable: "bg-gray-700 hover:bg-gray-600",
-};
-
-const FORMAT_COLORS: Record<MtgFormat, { active: string; inactive: string }> = {
-  pauper: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  commander: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
-  standard: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
-  draft: { active: "bg-amber-700 text-amber-100", inactive: "bg-gray-700 text-gray-400" },
-};
+import { FORMAT_TOGGLE_COLORS as FORMAT_COLORS, AVAILABILITY_LEVEL_COLORS as LEVEL_COLORS } from "@/lib/constants";
 
 export default function ProfileEditPage() {
   const { t } = useTranslation("profile");

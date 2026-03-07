@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { MOOD_TAG_TOGGLE_COLORS } from "@/lib/constants";
 import type { Database } from "@/types/database.types";
 
 type MoodTag = Database["public"]["Tables"]["mood_tags"]["Row"];
@@ -11,13 +12,6 @@ interface MoodTagSelectorProps {
   value: string[];
   onChange: (tags: string[]) => void;
 }
-
-const TAG_COLORS: Record<string, { active: string; inactive: string }> = {
-  casual: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  competitive: { active: "bg-red-700 text-red-100", inactive: "bg-gray-700 text-gray-400" },
-  deck_test: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
-  training: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
-};
 
 const DEFAULT_COLORS = { active: "bg-accent text-white", inactive: "bg-gray-700 text-gray-400" };
 
@@ -60,7 +54,7 @@ export function MoodTagSelector({ value, onChange }: MoodTagSelectorProps) {
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => {
           const active = value.includes(tag.slug);
-          const colors = TAG_COLORS[tag.slug] ?? DEFAULT_COLORS;
+          const colors = MOOD_TAG_TOGGLE_COLORS[tag.slug] ?? DEFAULT_COLORS;
           return (
             <button
               key={tag.slug}

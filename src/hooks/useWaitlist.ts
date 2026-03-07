@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 
 interface WaitlistEntry {
   queue_position: number | null;
@@ -13,30 +13,16 @@ export function useWaitlist(eventId: string) {
   const user = useAuthStore((s) => s.user);
 
   // Realtime subscription for waitlist position updates
-  useEffect(() => {
-    if (!eventId) return;
-
-    const channel = supabase
-      .channel(`waitlist:${eventId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "rsvps",
-          filter: `event_id=eq.${eventId}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["waitlist", eventId] });
-          queryClient.invalidateQueries({ queryKey: ["rsvps", eventId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [eventId, queryClient]);
+  useRealtimeSubscription({
+    channelName: `waitlist:${eventId}`,
+    table: "rsvps",
+    filter: `event_id=eq.${eventId}`,
+    enabled: !!eventId,
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["waitlist", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["rsvps", eventId] });
+    },
+  });
 
   const waitlistQuery = useQuery({
     queryKey: ["waitlist", eventId, user?.id],

@@ -19,15 +19,9 @@ import { toast } from "@/components/ui/use-toast";
 import { Users, Calendar, BarChart3, ShieldAlert, MessageSquare, Tags } from "lucide-react";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { MoodTagsTab } from "@/components/admin/MoodTagsTab";
+import { EVENT_STATUS_COLORS as STATUS_COLORS } from "@/lib/constants";
 
 const ROLES: UserRole[] = ["player", "organizer", "club_owner", "admin"];
-
-const STATUS_COLORS: Record<EventStatus, string> = {
-  active: "bg-emerald-700 text-emerald-100",
-  confirmed: "bg-blue-700 text-blue-100",
-  cancelled: "bg-red-700 text-red-100",
-  expired: "bg-gray-700 text-gray-300",
-};
 
 export default function AdminPage() {
   const { t } = useTranslation(["common", "events"]);

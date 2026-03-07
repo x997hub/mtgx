@@ -55,7 +55,7 @@ export function useFeedback() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback"] });
     },
   });
@@ -129,7 +129,7 @@ export function useAdminFeedback(filters?: {
         .eq(idColumn, id as unknown as string) as unknown as Promise<{ error: { message: string } | null }>);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback", "admin"] });
     },
   });
@@ -149,7 +149,7 @@ export function useAdminFeedback(filters?: {
         .eq(idColumn, id as unknown as string) as unknown as Promise<{ error: { message: string } | null }>);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback", "admin"] });
     },
   });

@@ -105,7 +105,11 @@ async function handleRsvp(
   const bodyOrError = await parseRequestBody(req);
   if (bodyOrError instanceof Response) return bodyOrError;
   const body = bodyOrError;
-  const { event_id, status } = body as { event_id?: string; status?: string };
+  const { event_id, status, power_level } = body as {
+    event_id?: string;
+    status?: string;
+    power_level?: number;
+  };
 
   if (!event_id || !status) {
     return jsonResponse({ error: "event_id and status are required" }, 400);
@@ -121,6 +125,7 @@ async function handleRsvp(
     p_event_id: event_id,
     p_user_id: userId,
     p_status: status,
+    p_power_level: power_level ?? null,
   });
 
   // Best-effort fallback: if the RPC doesn't exist yet, do it in application code.
@@ -468,10 +473,10 @@ async function handleSendInvite(
       return jsonResponse({ error: "Player is not accepting invites" }, 403);
     }
     if (prefs.visibility === "played_together") {
-      const { data: played } = await supabase.rpc("check_played_together" as never, {
+      const { data: played } = await supabase.rpc("check_played_together", {
         p_user1: userId,
         p_user2: to_user_id,
-      } as never).maybeSingle();
+      }).maybeSingle();
       // Fallback: check directly
       if (!played) {
         const { data: directCheck } = await supabase
@@ -813,14 +818,13 @@ async function handleConfirmAttendance(
     return jsonResponse({ error: "Only 'going' RSVPs can be confirmed" }, 400);
   }
 
-  // Update RSVP to confirmed status
+  // Update RSVP confirmed_at timestamp
   const { data: updated, error: updateError } = await supabase
     .from("rsvps")
     .update({
-      status: "pending_confirmation" as string === rsvp.status ? "going" : rsvp.status,
       confirmed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    })
+    } as Record<string, string>)
     .eq("id", rsvp.id)
     .select()
     .single();
@@ -830,10 +834,10 @@ async function handleConfirmAttendance(
   }
 
   // Bump reliability score slightly (max 1.0)
-  await supabase.rpc("increment_reliability_score" as never, {
+  await supabase.rpc("increment_reliability_score", {
     p_user_id: userId,
     p_delta: 0.01,
-  } as never).maybeSingle();
+  }).maybeSingle();
 
   return jsonResponse({ rsvp: updated });
 }

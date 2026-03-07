@@ -233,6 +233,7 @@ export interface Database {
           status: RsvpStatus;
           queue_position: number | null;
           power_level: number | null;
+          confirmed_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -242,6 +243,7 @@ export interface Database {
           status: RsvpStatus;
           queue_position?: number | null;
           power_level?: number | null;
+          confirmed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -251,6 +253,7 @@ export interface Database {
           status?: RsvpStatus;
           queue_position?: number | null;
           power_level?: number | null;
+          confirmed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

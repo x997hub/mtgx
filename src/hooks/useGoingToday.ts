@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import type { MtgFormat } from "@/types/database.types";
 
 interface InstantLFGSignal {
@@ -89,30 +89,16 @@ export function useGoingToday(city?: string) {
   });
 
   // Realtime subscription
-  useEffect(() => {
-    if (!city) return;
-
-    const channel = supabase
-      .channel(`lfg-instant:${city}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "looking_for_game",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["lfg-instant-count", city] });
-          queryClient.invalidateQueries({ queryKey: ["lfg-instant-signals", city] });
-          queryClient.invalidateQueries({ queryKey: ["lfg-count", city] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [city, queryClient]);
+  useRealtimeSubscription({
+    channelName: `lfg-instant:${city}`,
+    table: "looking_for_game",
+    enabled: !!city,
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["lfg-instant-count", city] });
+      queryClient.invalidateQueries({ queryKey: ["lfg-instant-signals", city] });
+      queryClient.invalidateQueries({ queryKey: ["lfg-count", city] });
+    },
+  });
 
   // Activate instant LFG
   const activateMutation = useMutation({
@@ -138,7 +124,7 @@ export function useGoingToday(city?: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSettled: () => {
       const uid = useAuthStore.getState().user?.id;
       queryClient.invalidateQueries({ queryKey: ["lfg-my-instant", uid] });
       queryClient.invalidateQueries({ queryKey: ["lfg-my", uid] });
@@ -159,7 +145,7 @@ export function useGoingToday(city?: string) {
         .eq("user_id", user.id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSettled: () => {
       const uid = useAuthStore.getState().user?.id;
       queryClient.invalidateQueries({ queryKey: ["lfg-my-instant", uid] });
       queryClient.invalidateQueries({ queryKey: ["lfg-my", uid] });

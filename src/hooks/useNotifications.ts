@@ -1,15 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useUIStore } from "@/store/uiStore";
 
 export function useNotifications() {
   const user = useAuthStore((s) => s.user);
   const setNotificationsCount = useUIStore((s) => s.setNotificationsCount);
   const queryClient = useQueryClient();
-  const queryClientRef = useRef(queryClient);
-  queryClientRef.current = queryClient;
 
   const notificationsQuery = useQuery({
     queryKey: ["notifications", user?.id],
@@ -34,29 +33,16 @@ export function useNotifications() {
   }, [notificationsQuery.data, setNotificationsCount]);
 
   // Realtime subscription for new notifications
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel("notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          queryClientRef.current.invalidateQueries({ queryKey: ["notifications", user.id] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
+  useRealtimeSubscription({
+    channelName: "notifications",
+    table: "notifications",
+    filter: `user_id=eq.${user?.id}`,
+    event: "INSERT",
+    enabled: !!user,
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
+    },
+  });
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {

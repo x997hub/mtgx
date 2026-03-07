@@ -1,4 +1,7 @@
-import type { MtgFormat, DayOfWeek, TimeSlot, CarAccess, ProxyPolicy, FeedbackType, FeedbackStatus } from "@/types/database.types";
+import type {
+  MtgFormat, DayOfWeek, TimeSlot, CarAccess, ProxyPolicy,
+  FeedbackType, FeedbackStatus, EventStatus, RsvpStatus, AvailabilityLevel,
+} from "@/types/database.types";
 
 export const FORMATS: MtgFormat[] = ["pauper", "commander", "standard", "draft"];
 
@@ -61,3 +64,69 @@ export const FEEDBACK_TYPES: FeedbackType[] = ["bug", "suggestion", "question"];
 
 /** Feedback report statuses */
 export const FEEDBACK_STATUSES: FeedbackStatus[] = ["new", "in_progress", "resolved", "closed"];
+
+/** Event status badge colors */
+export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
+  active: "bg-emerald-700 text-emerald-100",
+  confirmed: "bg-blue-700 text-blue-100",
+  cancelled: "bg-red-700 text-red-100",
+  expired: "bg-gray-700 text-gray-300",
+};
+
+/** RSVP status badge colors */
+export const RSVP_STATUS_COLORS: Record<RsvpStatus, string> = {
+  going: "bg-emerald-700",
+  maybe: "bg-amber-700",
+  not_going: "bg-gray-600",
+  waitlisted: "bg-indigo-700",
+  pending_confirmation: "bg-yellow-700",
+};
+
+/** RSVP display order */
+export const RSVP_STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going", "waitlisted", "pending_confirmation"];
+
+/** Feedback type badge colors */
+export const FEEDBACK_TYPE_COLORS: Record<FeedbackType, string> = {
+  bug: "bg-red-700/20 text-red-400",
+  suggestion: "bg-blue-700/20 text-blue-400",
+  question: "bg-amber-700/20 text-amber-400",
+};
+
+/** Feedback status badge colors */
+export const FEEDBACK_STATUS_COLORS: Record<FeedbackStatus, string> = {
+  new: "bg-blue-700 text-blue-100",
+  in_progress: "bg-amber-700 text-amber-100",
+  resolved: "bg-emerald-700 text-emerald-100",
+  closed: "bg-gray-700 text-gray-300",
+};
+
+/** Availability level colors (interactive, with hover) */
+export const AVAILABILITY_LEVEL_COLORS: Record<AvailabilityLevel, string> = {
+  available: "bg-emerald-600 hover:bg-emerald-500",
+  sometimes: "bg-amber-600 hover:bg-amber-500",
+  unavailable: "bg-gray-700 hover:bg-gray-600",
+};
+
+/** Mood tag toggle colors (for selector buttons) */
+export const MOOD_TAG_TOGGLE_COLORS: Record<string, { active: string; inactive: string }> = {
+  casual: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
+  competitive: { active: "bg-red-700 text-red-100", inactive: "bg-gray-700 text-gray-400" },
+  deck_test: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
+  training: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
+};
+
+/** Mood tag badge colors */
+export const MOOD_TAG_COLORS: Record<string, string> = {
+  casual: "bg-emerald-700/30 text-emerald-300 border-emerald-700/50",
+  competitive: "bg-red-700/30 text-red-300 border-red-700/50",
+  deck_test: "bg-blue-700/30 text-blue-300 border-blue-700/50",
+  training: "bg-purple-700/30 text-purple-300 border-purple-700/50",
+};
+
+/** Mood tag display labels */
+export const MOOD_TAG_LABELS: Record<string, string> = {
+  casual: "Casual",
+  competitive: "Competitive",
+  deck_test: "Deck Test",
+  training: "Training",
+};

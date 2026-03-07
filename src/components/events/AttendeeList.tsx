@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { PowerLevelBadge } from "@/components/events/PowerLevelPicker";
+import { RSVP_STATUS_COLORS as STATUS_COLORS, RSVP_STATUS_ORDER as STATUS_ORDER } from "@/lib/constants";
 import type { Database } from "@/types/database.types";
 
 type RsvpStatus = Database["public"]["Enums"]["rsvp_status"];
@@ -17,16 +18,6 @@ interface Attendee {
 interface AttendeeListProps {
   attendees: Attendee[];
 }
-
-const STATUS_COLORS: Record<string, string> = {
-  going: "bg-emerald-700",
-  maybe: "bg-amber-700",
-  not_going: "bg-gray-600",
-  waitlisted: "bg-indigo-700",
-  pending_confirmation: "bg-yellow-700",
-};
-
-const STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going", "waitlisted", "pending_confirmation"];
 
 export function AttendeeList({ attendees }: AttendeeListProps) {
   const { t } = useTranslation(["events", "common"]);
