@@ -12,7 +12,6 @@ import { toast } from "@/components/ui/use-toast";
 import type { Database } from "@/types/database.types";
 
 type MoodTag = Database["public"]["Tables"]["mood_tags"]["Row"];
-type MoodTagInsert = Database["public"]["Tables"]["mood_tags"]["Insert"];
 
 interface EditState {
   slug: string;
@@ -39,50 +38,48 @@ export function MoodTagsTab() {
   const { data: tags, isLoading, isError } = useQuery({
     queryKey: ["admin-mood-tags"],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase.from("mood_tags") as any)
+      const { data, error } = await supabase
+        .from("mood_tags")
         .select("*")
         .order("id");
       if (error) throw error;
-      return data as MoodTag[];
+      return data;
     },
   });
 
+  const invalidateTags = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-mood-tags"] });
+    queryClient.invalidateQueries({ queryKey: ["mood-tags"] });
+  };
+
   const upsertMutation = useMutation({
     mutationFn: async ({ id, ...tag }: EditState & { id?: number }) => {
+      const payload = {
+        slug: tag.slug,
+        label_en: tag.label_en,
+        label_ru: tag.label_ru,
+        label_he: tag.label_he || null,
+        is_active: tag.is_active,
+      };
       if (id) {
-        const updatePayload = {
-          slug: tag.slug,
-          label_en: tag.label_en,
-          label_ru: tag.label_ru,
-          label_he: tag.label_he || null,
-          is_active: tag.is_active,
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase.from("mood_tags") as any)
-          .update(updatePayload)
+        const { error } = await supabase
+          .from("mood_tags")
+          .update(payload)
           .eq("id", id);
         if (error) throw error;
       } else {
-        const insert: MoodTagInsert = {
-          slug: tag.slug,
-          label_en: tag.label_en,
-          label_ru: tag.label_ru,
-          label_he: tag.label_he || null,
-          is_active: tag.is_active,
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase.from("mood_tags") as any).insert(insert);
+        const { error } = await supabase
+          .from("mood_tags")
+          .insert(payload);
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-mood-tags"] });
-      queryClient.invalidateQueries({ queryKey: ["mood-tags"] });
       setEditingId(null);
       setEditState(emptyTag);
       toast({ title: t("common:saved", "Saved") });
     },
+    onSettled: invalidateTags,
     onError: () => {
       toast({ title: t("common:error_occurred"), variant: "destructive" });
     },
@@ -90,19 +87,25 @@ export function MoodTagsTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.from("mood_tags") as any).delete().eq("id", id);
+      const { error } = await supabase
+        .from("mood_tags")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-mood-tags"] });
-      queryClient.invalidateQueries({ queryKey: ["mood-tags"] });
       toast({ title: t("common:deleted", "Deleted") });
     },
+    onSettled: invalidateTags,
     onError: () => {
       toast({ title: t("common:error_occurred"), variant: "destructive" });
     },
   });
+
+  const handleDelete = (tag: MoodTag) => {
+    if (!window.confirm(t("common:confirm_delete", { name: tag.slug }))) return;
+    deleteMutation.mutate(tag.id);
+  };
 
   const startEdit = (tag: MoodTag) => {
     setEditingId(tag.id);
@@ -157,7 +160,6 @@ export function MoodTagsTab() {
         </Button>
       </div>
 
-      {/* New tag form */}
       {editingId === "new" && (
         <Card className="bg-surface-card border-accent/40">
           <CardContent className="p-4">
@@ -172,7 +174,6 @@ export function MoodTagsTab() {
         </Card>
       )}
 
-      {/* Existing tags */}
       {tags?.map((tag) => (
         <Card key={tag.id} className="bg-surface-card border-surface-hover">
           <CardContent className="p-4">
@@ -212,7 +213,7 @@ export function MoodTagsTab() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deleteMutation.mutate(tag.id)}
+                    onClick={() => handleDelete(tag)}
                     disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="h-4 w-4 text-red-400" />
@@ -244,6 +245,7 @@ function TagEditRow({
   onCancel: () => void;
   isSaving: boolean;
 }) {
+  const { t } = useTranslation(["common"]);
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
@@ -259,7 +261,7 @@ function TagEditRow({
             onChange={(e) => onChange({ ...state, is_active: e.target.checked })}
             className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-accent"
           />
-          Active
+          {t("common:active", "Active")}
         </label>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -282,11 +284,11 @@ function TagEditRow({
       <div className="flex gap-2 justify-end">
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
           <X className="h-4 w-4 me-1" />
-          Cancel
+          {t("common:cancel", "Cancel")}
         </Button>
         <Button size="sm" onClick={onSave} disabled={isSaving}>
           <Check className="h-4 w-4 me-1" />
-          {isSaving ? "..." : "Save"}
+          {isSaving ? "..." : t("common:save", "Save")}
         </Button>
       </div>
     </div>
