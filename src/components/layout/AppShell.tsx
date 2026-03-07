@@ -24,7 +24,7 @@ export function AppShell() {
   return (
     <div className="flex min-h-screen bg-primary text-gray-100">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:border-e md:border-gray-700 md:bg-secondary">
+      <aside className="hidden md:flex md:w-48 md:flex-col md:border-e md:border-gray-700 md:bg-secondary">
         <div className="flex h-16 items-center px-6">
           <Link to="/" className="text-xl font-bold text-accent">
             MTGX
