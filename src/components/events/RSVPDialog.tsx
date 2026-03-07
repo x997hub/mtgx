@@ -23,7 +23,9 @@ interface RSVPDialogProps {
   eventFormat?: string;
 }
 
-const OPTIONS: { status: RsvpStatus; variant: "default" | "secondary" | "outline" }[] = [
+type UserRsvpStatus = "going" | "maybe" | "not_going";
+
+const OPTIONS: { status: UserRsvpStatus; variant: "default" | "secondary" | "outline" }[] = [
   { status: "going", variant: "default" },
   { status: "maybe", variant: "secondary" },
   { status: "not_going", variant: "outline" },
@@ -35,7 +37,7 @@ export function RSVPDialog({ open, onOpenChange, eventId, currentStatus, eventFo
   const [powerLevel, setPowerLevel] = useState<number | null>(null);
   const isCommander = eventFormat === "commander";
 
-  const handleRSVP = async (status: RsvpStatus) => {
+  const handleRSVP = async (status: "going" | "maybe" | "not_going") => {
     try {
       await rsvpMutation.mutateAsync({
         eventId,

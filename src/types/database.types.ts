@@ -722,6 +722,7 @@ export interface Database {
           cancel_rate: number;
           avg_attendance: number;
         };
+        Relationships: [];
       };
     };
     Functions: {
