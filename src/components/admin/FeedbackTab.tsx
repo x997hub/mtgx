@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bug, Lightbulb, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Bug, Lightbulb, HelpCircle, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,16 @@ const TYPE_ICONS: Record<FeedbackType, typeof Bug> = {
   question: HelpCircle,
 };
 
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
+
 export function FeedbackTab() {
   const { t } = useTranslation(["common"]);
   const [filterType, setFilterType] = useState<FeedbackType | "all">("all");
@@ -44,6 +54,10 @@ export function FeedbackTab() {
     type: filterType === "all" ? undefined : filterType,
     status: filterStatus === "all" ? undefined : filterStatus,
   });
+
+  // Get counts for "all" view
+  const { feedback: allFeedback } = useAdminFeedback({});
+  const newCount = allFeedback.filter((f) => f.status === "new").length;
 
   if (isLoading) {
     return (
@@ -63,16 +77,22 @@ export function FeedbackTab() {
           value={filterType}
           onValueChange={(v) => setFilterType(v as FeedbackType | "all")}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[150px]">
             <SelectValue placeholder={t("common:type", "Type")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("common:all", "All")}</SelectItem>
-            {TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
+            {TYPES.map((type) => {
+              const Icon = TYPE_ICONS[type];
+              return (
+                <SelectItem key={type} value={type}>
+                  <span className="flex items-center gap-2">
+                    <Icon className="h-3.5 w-3.5" />
+                    {t(`common:feedback.type_${type}`, type)}
+                  </span>
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
 
@@ -80,19 +100,31 @@ export function FeedbackTab() {
           value={filterStatus}
           onValueChange={(v) => setFilterStatus(v as FeedbackStatus | "all")}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[150px]">
             <SelectValue placeholder={t("common:status", "Status")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("common:all", "All")}</SelectItem>
             {STATUSES.map((status) => (
               <SelectItem key={status} value={status}>
-                {status}
+                {t(`common:feedback.status_${status}`, status)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
+        {/* New count badge */}
+        {newCount > 0 && (
+          <Badge className="bg-red-600 text-white border-none self-center">
+            {newCount} {t("common:feedback.status_new", "new")}
+          </Badge>
+        )}
       </div>
+
+      {/* Count */}
+      <p className="text-sm text-text-secondary">
+        {feedback.length} {t("common:feedback.feedback_title", "feedback").toLowerCase()}
+      </p>
 
       {/* Feedback list */}
       {feedback.length === 0 && (
@@ -146,30 +178,43 @@ function FeedbackItem({
   const TypeIcon = TYPE_ICONS[item.type];
 
   const truncatedBody =
-    item.body.length > 100 ? item.body.slice(0, 100) + "..." : item.body;
+    item.body.length > 120 ? item.body.slice(0, 120) + "..." : item.body;
 
   return (
-    <Card className="bg-surface-card border-surface-hover">
+    <Card className={cn(
+      "bg-surface-card transition-colors",
+      item.status === "new" ? "border-accent/40" : "border-surface-hover"
+    )}>
       <CardContent className="p-4">
         {/* Summary row */}
         <div
-          className="flex items-center justify-between gap-3 cursor-pointer"
+          className="flex items-start justify-between gap-3 cursor-pointer"
           onClick={onToggle}
         >
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Badge className={cn("border-none shrink-0", TYPE_COLORS[item.type])}>
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <Badge className={cn("border-none shrink-0 mt-0.5", TYPE_COLORS[item.type])}>
               <TypeIcon className="h-3.5 w-3.5 me-1" />
-              {item.type}
+              {t(`common:feedback.type_${item.type}`, item.type)}
             </Badge>
-            <p className="text-base text-text-primary truncate">{truncatedBody}</p>
+            <div className="min-w-0">
+              <p className="text-base text-text-primary">{truncatedBody}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <Clock className="h-3 w-3 text-text-secondary" />
+                <span className="text-xs text-text-secondary">
+                  {timeAgo(item.created_at)}
+                </span>
+                {item.admin_notes && (
+                  <Badge className="bg-blue-700/20 text-blue-400 border-none text-xs">
+                    {t("common:feedback.admin_notes", "notes")}
+                  </Badge>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Badge className={cn("border-none", STATUS_COLORS[item.status])}>
-              {item.status}
+              {t(`common:feedback.status_${item.status}`, item.status)}
             </Badge>
-            <span className="text-xs text-text-secondary whitespace-nowrap">
-              {new Date(item.created_at).toLocaleDateString()}
-            </span>
             {isExpanded ? (
               <ChevronUp className="h-4 w-4 text-text-secondary" />
             ) : (
@@ -186,7 +231,7 @@ function FeedbackItem({
               <p className="text-sm font-medium text-text-secondary mb-1">
                 {t("common:description", "Description")}
               </p>
-              <p className="text-base text-text-primary whitespace-pre-wrap">
+              <p className="text-base text-text-primary whitespace-pre-wrap bg-surface-hover/50 rounded-lg p-3">
                 {item.body}
               </p>
             </div>
@@ -209,12 +254,12 @@ function FeedbackItem({
             )}
 
             {/* Meta info */}
-            <div className="text-xs text-text-secondary space-y-0.5">
-              {item.page_url && <p>URL: {item.page_url}</p>}
-              {item.user_agent && (
-                <p>UA: {item.user_agent.slice(0, 80)}...</p>
-              )}
-            </div>
+            {(item.page_url || item.user_agent) && (
+              <div className="text-xs text-text-secondary bg-surface-hover/30 rounded p-2 space-y-0.5 font-mono">
+                {item.page_url && <p>URL: {item.page_url}</p>}
+                {item.user_agent && <p>UA: {item.user_agent.slice(0, 100)}</p>}
+              </div>
+            )}
 
             {/* Status change */}
             <div className="flex items-center gap-3">
@@ -225,13 +270,13 @@ function FeedbackItem({
                 value={item.status}
                 onValueChange={(v) => onStatusChange(v as FeedbackStatus)}
               >
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[160px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {t(`common:feedback.status_${s}`, s)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -241,7 +286,7 @@ function FeedbackItem({
             {/* Admin notes */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-text-secondary">
-                {t("common:admin_notes", "Admin notes")}
+                {t("common:feedback.admin_notes", "Admin notes")}
               </p>
               <Textarea
                 value={notes}
@@ -255,7 +300,7 @@ function FeedbackItem({
                 disabled={notes === (item.admin_notes ?? "")}
                 className="min-h-[36px]"
               >
-                {t("common:save", "Save notes")}
+                {t("common:save", "Save")}
               </Button>
             </div>
           </div>
