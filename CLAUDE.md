@@ -90,6 +90,10 @@ SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE_KEY, RESEND_API_KEY, ADMIN_EMAIL, CRON_
 - **ESLint:** no-explicit-any и no-unused-vars = warn; `^_` prefixed vars игнорируются
 - **Tailwind v4** — используется CSS-based конфигурация (@import), не JS config
 
+## Workflow
+
+- **Всегда пушить по завершению задачи** — после коммита сразу `git push`
+
 ## Code Style
 
 - Компоненты: PascalCase. Хуки/утилиты: camelCase. ESM (`"type": "module"`)
