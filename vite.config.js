@@ -10,15 +10,10 @@ export default defineConfig({
         VitePWA({
             registerType: "autoUpdate",
             workbox: {
+                skipWaiting: true,
+                clientsClaim: true,
+                navigateFallback: "index.html",
                 runtimeCaching: [
-                    {
-                        urlPattern: /\/rest\/v1\//,
-                        handler: "NetworkFirst",
-                        options: {
-                            cacheName: "api-cache",
-                            expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-                        },
-                    },
                     {
                         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
                         handler: "CacheFirst",

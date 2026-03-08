@@ -17,7 +17,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-surface p-4">
       <Card className="w-full max-w-sm bg-surface-card border-surface-hover">
         <CardHeader className="text-center">
-          <div className="text-4xl font-bold text-accent mb-2">MTGX</div>
+          <h1 className="text-4xl font-bold text-accent mb-2">MTGX</h1>
           <CardTitle className="text-text-primary text-lg">
             {t("common:app_tagline", "Find MTG games. Fill tables.")}
           </CardTitle>
