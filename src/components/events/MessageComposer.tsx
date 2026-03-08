@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/store/authStore";
+import { apiFetch } from "@/lib/api";
 
 const MAX_CHARS = 500;
 
@@ -28,17 +29,15 @@ export function MessageComposer({ eventId }: MessageComposerProps) {
 
     setSending(true);
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const res = await fetch(`${supabaseUrl}/functions/v1/mtgx-api`, {
+      const res = await apiFetch("/event-message", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          action: "event-message",
           event_id: eventId,
-          body: body.trim(),
+          message: body.trim(),
         }),
       });
 

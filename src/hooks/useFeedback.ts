@@ -1,33 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
+import type {
+  FeedbackType,
+  FeedbackStatus,
+  FeedbackReport,
+  FeedbackReportInsert,
+  FeedbackReportUpdate,
+} from "@/types/database.types";
 
-export type FeedbackType = "bug" | "suggestion" | "question";
-export type FeedbackStatus = "new" | "in_progress" | "resolved" | "closed";
-
-export interface FeedbackReport {
-  id: number;
-  user_id: string | null;
-  type: FeedbackType;
-  body: string;
-  screenshot_url: string | null;
-  page_url: string | null;
-  user_agent: string | null;
-  app_version: string | null;
-  status: FeedbackStatus;
-  admin_notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type { FeedbackType, FeedbackStatus, FeedbackReport };
 
 interface SubmitFeedbackParams {
   type: FeedbackType;
   body: string;
   screenshot_url?: string | null;
 }
-
-// The feedback_reports table may not yet be in database.types.ts
-// (handled by another agent), so we use explicit typing here.
 
 export function useFeedback() {
   const queryClient = useQueryClient();
@@ -37,23 +26,28 @@ export function useFeedback() {
     mutationFn: async ({ type, body, screenshot_url }: SubmitFeedbackParams) => {
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await (supabase
-        .from("feedback_reports" as "profiles") // Cast to avoid 'never' until types are updated
-        .insert({
-          user_id: user.id,
-          type,
-          body,
-          screenshot_url: screenshot_url ?? null,
-          page_url: window.location.href,
-          user_agent: navigator.userAgent,
-          app_version: null,
-          status: "new",
-        } as never)
+      const row: FeedbackReportInsert = {
+        user_id: user.id,
+        type,
+        body,
+        screenshot_url: screenshot_url ?? null,
+        page_url: window.location.href,
+        user_agent: navigator.userAgent,
+        app_version: null,
+        status: "new",
+      };
+
+      const { data, error } = await supabase
+        .from("feedback_reports")
+        .insert(row)
         .select()
-        .single() as unknown as Promise<{ data: FeedbackReport | null; error: { message: string } | null }>);
+        .single();
 
       if (error) throw error;
-      return data;
+      return data as FeedbackReport;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback"] });
@@ -65,11 +59,11 @@ export function useFeedback() {
     queryKey: ["feedback", "own", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await (supabase
-        .from("feedback_reports" as "profiles")
+      const { data, error } = await supabase
+        .from("feedback_reports")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false }) as unknown as Promise<{ data: FeedbackReport[] | null; error: { message: string } | null }>);
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as FeedbackReport[];
     },
@@ -97,18 +91,18 @@ export function useAdminFeedback(filters?: {
     queryKey: ["feedback", "admin", filters?.type, filters?.status],
     queryFn: async () => {
       let query = supabase
-        .from("feedback_reports" as "profiles")
+        .from("feedback_reports")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (filters?.type) {
-        query = query.eq("type" as "id", filters.type);
+        query = query.eq("type", filters.type);
       }
       if (filters?.status) {
-        query = query.eq("status" as "id", filters.status);
+        query = query.eq("status", filters.status);
       }
 
-      const { data, error } = await (query as unknown as Promise<{ data: FeedbackReport[] | null; error: { message: string } | null }>);
+      const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as FeedbackReport[];
     },
@@ -122,12 +116,18 @@ export function useAdminFeedback(filters?: {
       id: number;
       status: FeedbackStatus;
     }) => {
-      const idColumn = "id" as string as "id";
-      const { error } = await (supabase
-        .from("feedback_reports" as "profiles")
-        .update({ status, updated_at: new Date().toISOString() } as never)
-        .eq(idColumn, id as unknown as string) as unknown as Promise<{ error: { message: string } | null }>);
+      const updates: FeedbackReportUpdate = {
+        status,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await supabase
+        .from("feedback_reports")
+        .update(updates)
+        .eq("id", id);
       if (error) throw error;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback", "admin"] });
@@ -142,12 +142,18 @@ export function useAdminFeedback(filters?: {
       id: number;
       admin_notes: string;
     }) => {
-      const idColumn = "id" as string as "id";
-      const { error } = await (supabase
-        .from("feedback_reports" as "profiles")
-        .update({ admin_notes, updated_at: new Date().toISOString() } as never)
-        .eq(idColumn, id as unknown as string) as unknown as Promise<{ error: { message: string } | null }>);
+      const updates: FeedbackReportUpdate = {
+        admin_notes,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await supabase
+        .from("feedback_reports")
+        .update(updates)
+        .eq("id", id);
       if (error) throw error;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback", "admin"] });

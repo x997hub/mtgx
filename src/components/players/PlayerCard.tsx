@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,11 +27,14 @@ const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
 export function PlayerCard({ player, availability, showReliability }: PlayerCardProps) {
   const { t } = useTranslation(["profile", "common"]);
 
-  // Build availability lookup: "day-slot" → level
-  const availMap = new Map<string, AvailabilityLevel>();
-  for (const a of availability) {
-    availMap.set(`${a.day}-${a.slot}`, a.level);
-  }
+  // Build availability lookup: "day-slot" → level (memoized)
+  const availMap = useMemo(() => {
+    const map = new Map<string, AvailabilityLevel>();
+    for (const a of availability) {
+      map.set(`${a.day}-${a.slot}`, a.level);
+    }
+    return map;
+  }, [availability]);
 
   const initials = getInitials(player.display_name);
 

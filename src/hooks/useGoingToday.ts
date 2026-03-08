@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { toast } from "@/components/ui/use-toast";
 import type { MtgFormat } from "@/types/database.types";
 
 interface InstantLFGSignal {
@@ -47,7 +48,8 @@ export function useGoingToday(city?: string) {
       return count ?? 0;
     },
     enabled: !!city,
-    refetchInterval: 30000,
+    // Realtime subscription handles live updates; polling is a fallback only
+    refetchInterval: 5 * 60 * 1000,
   });
 
   // All instant signals in the city (for details display)
@@ -66,7 +68,8 @@ export function useGoingToday(city?: string) {
       return (data ?? []) as unknown as InstantLFGSignal[];
     },
     enabled: !!city,
-    refetchInterval: 30000,
+    // Realtime subscription handles live updates; polling is a fallback only
+    refetchInterval: 5 * 60 * 1000,
   });
 
   // Current user's instant signal
@@ -88,10 +91,11 @@ export function useGoingToday(city?: string) {
     refetchInterval: 60000,
   });
 
-  // Realtime subscription
+  // Realtime subscription — scoped to city
   useRealtimeSubscription({
     channelName: `lfg-instant:${city}`,
     table: "looking_for_game",
+    filter: city ? `city=eq.${city}` : undefined,
     enabled: !!city,
     onChange: () => {
       queryClient.invalidateQueries({ queryKey: ["lfg-instant-count", city] });
@@ -124,6 +128,9 @@ export function useGoingToday(city?: string) {
       if (error) throw error;
       return data;
     },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
+    },
     onSettled: () => {
       const uid = useAuthStore.getState().user?.id;
       queryClient.invalidateQueries({ queryKey: ["lfg-my-instant", uid] });
@@ -144,6 +151,9 @@ export function useGoingToday(city?: string) {
         .delete()
         .eq("user_id", user.id);
       if (error) throw error;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       const uid = useAuthStore.getState().user?.id;

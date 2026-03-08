@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
 import type { InvitePreferencesInsert, InvitePreferencesUpdate } from "@/types/database.types";
 
 export function useInvitePreferences(userId?: string) {
@@ -35,6 +36,9 @@ export function useInvitePreferences(userId?: string) {
       if (error) throw error;
       return data;
     },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
+    },
     onSettled: () => {
       const uid = useAuthStore.getState().user?.id;
       queryClient.invalidateQueries({ queryKey: ["invite-prefs", uid] });
@@ -55,6 +59,9 @@ export function useInvitePreferences(userId?: string) {
         .single();
       if (error) throw error;
       return data;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       const uid = useAuthStore.getState().user?.id;

@@ -26,6 +26,16 @@ export function isToday(dateStr: string): boolean {
   );
 }
 
+/** Validate whether a string is a valid URL */
+export function isValidUrl(str: string): boolean {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Human-readable relative time (e.g. "5m", "3h", "2d") */
 export function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();

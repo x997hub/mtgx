@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
-import type { InviteStatus, MtgFormat, PlayerInvite } from "@/types/database.types";
+import { toast } from "@/components/ui/use-toast";
+import { apiFetch } from "@/lib/api";
+import type { MtgFormat, PlayerInvite } from "@/types/database.types";
 
 export type InviteWithRelations = PlayerInvite & {
   from_profile?: { display_name: string; avatar_url: string | null } | null;
@@ -38,7 +40,7 @@ export function useInvites() {
         .eq("to_user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      // Fetch sender profiles separately since hand-written types lack Relationships
+      // Fetch sender profiles in a batch (player_invites has two profile FKs so we query separately)
       const invites = data as unknown as InviteWithRelations[];
       const senderIds = [...new Set(invites.map((i) => i.from_user_id))];
       if (senderIds.length > 0) {
@@ -99,22 +101,23 @@ export function useInvites() {
   const sendInviteMutation = useMutation({
     mutationFn: async (params: SendInviteParams) => {
       if (!user || !session) throw new Error("Not authenticated");
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mtgx-api/invites`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify(params),
-        }
-      );
+      const res = await apiFetch("/invites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(params),
+        signal: AbortSignal.timeout(15000),
+      });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Failed to send invite");
       }
       return res.json();
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["invites-outgoing", user?.id] });
@@ -124,22 +127,23 @@ export function useInvites() {
   const respondInviteMutation = useMutation({
     mutationFn: async ({ invite_id, status }: RespondInviteParams) => {
       if (!session) throw new Error("Not authenticated");
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mtgx-api/invites/respond`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ invite_id, status }),
-        }
-      );
+      const res = await apiFetch("/invites/respond", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ invite_id, status }),
+        signal: AbortSignal.timeout(15000),
+      });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Failed to respond");
       }
       return res.json();
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["invites-incoming", user?.id] });

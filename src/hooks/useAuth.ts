@@ -11,7 +11,9 @@ let listenerInitialized = false;
  * Call this hook in a single top-level component (e.g. App.tsx or ProtectedRoute).
  */
 export function useAuthListener() {
-  const { setSession, setProfile, setLoading } = useAuthStore();
+  const setSession = useAuthStore((s) => s.setSession);
+  const setProfile = useAuthStore((s) => s.setProfile);
+  const setLoading = useAuthStore((s) => s.setLoading);
 
   useEffect(() => {
     if (listenerInitialized) return;
@@ -84,8 +86,13 @@ export function useAuthListener() {
  * Does NOT register any auth listeners -- call useAuthListener() once in a top-level component.
  */
 export function useAuth() {
-  const { session, user, profile, isLoading, profileChecked, isAuthenticated, reset } =
-    useAuthStore();
+  const session = useAuthStore((s) => s.session);
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const profileChecked = useAuthStore((s) => s.profileChecked);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const reset = useAuthStore((s) => s.reset);
 
   async function loginWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({

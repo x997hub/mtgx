@@ -32,7 +32,10 @@ export default function EventFeedPage() {
   const { t } = useTranslation(["events", "common"]);
   const navigate = useNavigate();
   const profile = useAuthStore((s) => s.profile);
-  const { format, city, setFormat, setCity } = useFilterStore();
+  const format = useFilterStore((s) => s.format);
+  const city = useFilterStore((s) => s.city);
+  const setFormat = useFilterStore((s) => s.setFormat);
+  const setCity = useFilterStore((s) => s.setCity);
   const { events, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
   const { instantCount } = useGoingToday(profile?.city ?? undefined);

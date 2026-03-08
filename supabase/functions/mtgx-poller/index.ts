@@ -5,10 +5,14 @@ const DAILY_REPORT_HOUR = 8;
 const OUTBOX_BATCH_LIMIT = 50;
 
 const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") || "*";
+if (allowedOrigin === "*") {
+  console.warn("[mtgx-poller] ALLOWED_ORIGIN not set — CORS is open to all origins. Set ALLOWED_ORIGIN env var in production.");
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 Deno.serve(async (req: Request) => {
@@ -910,7 +914,8 @@ async function createVapidJwt(
     { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["sign"],
-  ).catch(async () => {
+  ).catch(async (pkcs8Err) => {
+    console.error("[WebPush] PKCS8 key import failed, trying raw import:", pkcs8Err);
     // Try JWK import if PKCS8 fails (raw 32-byte key)
     const jwk = {
       kty: "EC",

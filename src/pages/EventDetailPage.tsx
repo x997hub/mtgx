@@ -22,6 +22,7 @@ import { useEvent, useEventRsvps } from "@/hooks/useEvents";
 import { useWaitlist } from "@/hooks/useWaitlist";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
+import { apiFetch } from "@/lib/api";
 import type { RsvpStatus } from "@/types/database.types";
 
 export default function EventDetailPage() {
@@ -71,14 +72,13 @@ export default function EventDetailPage() {
     if (!eventId || !session?.access_token) return;
     setConfirming(true);
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const res = await fetch(`${supabaseUrl}/functions/v1/mtgx-api`, {
+      const res = await apiFetch("/confirm-attendance", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: "confirm-attendance", event_id: eventId }),
+        body: JSON.stringify({ event_id: eventId }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));

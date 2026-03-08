@@ -45,7 +45,7 @@ export function UsersTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, display_name, city, role, reliability_score, formats, created_at")
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;

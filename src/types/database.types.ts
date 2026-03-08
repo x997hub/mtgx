@@ -66,7 +66,7 @@ export interface Database {
           interested_in_trading?: boolean;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: []; // root table — no foreign keys
       };
       availability: {
         Row: {
@@ -88,7 +88,9 @@ export interface Database {
           slot?: TimeSlot;
           level?: AvailabilityLevel;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "availability_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       venues: {
         Row: {
@@ -127,7 +129,9 @@ export interface Database {
           supported_formats?: MtgFormat[];
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "venues_owner_id_fkey"; columns: ["owner_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       venue_photos: {
         Row: {
@@ -148,7 +152,9 @@ export interface Database {
           storage_path?: string;
           is_primary?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "venue_photos_venue_id_fkey"; columns: ["venue_id"]; referencedRelation: "venues"; referencedColumns: ["id"] },
+        ];
       };
       events: {
         Row: {
@@ -223,7 +229,11 @@ export interface Database {
           template_id?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "events_organizer_id_fkey"; columns: ["organizer_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "events_venue_id_fkey"; columns: ["venue_id"]; referencedRelation: "venues"; referencedColumns: ["id"] },
+          { foreignKeyName: "events_template_id_fkey"; columns: ["template_id"]; referencedRelation: "event_templates"; referencedColumns: ["id"] },
+        ];
       };
       rsvps: {
         Row: {
@@ -257,7 +267,10 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "rsvps_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+          { foreignKeyName: "rsvps_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       rsvp_history: {
         Row: {
@@ -288,7 +301,11 @@ export interface Database {
           hours_before_event?: number | null;
           recorded_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "rsvp_history_rsvp_id_fkey"; columns: ["rsvp_id"]; referencedRelation: "rsvps"; referencedColumns: ["id"] },
+          { foreignKeyName: "rsvp_history_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "rsvp_history_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+        ];
       };
       subscriptions: {
         Row: {
@@ -316,7 +333,9 @@ export interface Database {
           city?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "subscriptions_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       looking_for_game: {
         Row: {
@@ -350,7 +369,9 @@ export interface Database {
           expires_at?: string;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "looking_for_game_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       push_subscriptions: {
         Row: {
@@ -377,7 +398,9 @@ export interface Database {
           auth?: string;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "push_subscriptions_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       notification_outbox: {
         Row: {
@@ -410,7 +433,9 @@ export interface Database {
           last_attempt_at?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "notification_outbox_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+        ];
       };
       notification_sent: {
         Row: {
@@ -431,7 +456,10 @@ export interface Database {
           reason?: string;
           sent_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "notification_sent_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "notification_sent_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+        ];
       };
       notifications: {
         Row: {
@@ -462,7 +490,10 @@ export interface Database {
           is_read?: boolean;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "notifications_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "notifications_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+        ];
       };
       admin_reports: {
         Row: {
@@ -481,7 +512,7 @@ export interface Database {
           payload?: Record<string, unknown>;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: []; // standalone table — no foreign keys
       };
       auto_match_preferences: {
         Row: {
@@ -517,7 +548,9 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "auto_match_preferences_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       invite_preferences: {
         Row: {
@@ -550,7 +583,9 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "invite_preferences_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       player_invites: {
         Row: {
@@ -587,7 +622,11 @@ export interface Database {
           created_at?: string;
           responded_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "player_invites_from_user_id_fkey"; columns: ["from_user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "player_invites_to_user_id_fkey"; columns: ["to_user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "player_invites_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+        ];
       };
       organizer_messages: {
         Row: {
@@ -609,7 +648,10 @@ export interface Database {
           body?: string;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "organizer_messages_event_id_fkey"; columns: ["event_id"]; referencedRelation: "events"; referencedColumns: ["id"] },
+          { foreignKeyName: "organizer_messages_organizer_id_fkey"; columns: ["organizer_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       feedback_reports: {
         Row: {
@@ -652,7 +694,9 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "feedback_reports_user_id_fkey"; columns: ["user_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       mood_tags: {
         Row: {
@@ -677,7 +721,7 @@ export interface Database {
           label_he?: string | null;
           is_active?: boolean;
         };
-        Relationships: [];
+        Relationships: []; // standalone table — no foreign keys
       };
       event_templates: {
         Row: {
@@ -710,7 +754,10 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "event_templates_organizer_id_fkey"; columns: ["organizer_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "event_templates_venue_id_fkey"; columns: ["venue_id"]; referencedRelation: "venues"; referencedColumns: ["id"] },
+        ];
       };
     };
     Views: {
@@ -722,7 +769,9 @@ export interface Database {
           cancel_rate: number;
           avg_attendance: number;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "events_organizer_id_fkey"; columns: ["organizer_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
     };
     Functions: {

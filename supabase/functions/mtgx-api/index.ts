@@ -1,23 +1,33 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") || "*";
+if (allowedOrigin === "*") {
+  console.warn("[mtgx-api] ALLOWED_ORIGIN not set — CORS is open to all origins. Set ALLOWED_ORIGIN env var in production.");
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
 };
 
 const VALID_FORMATS = ["pauper", "commander", "standard", "draft"] as const;
+const VALID_EVENT_STATUSES = ["active", "confirmed", "cancelled", "expired", "completed"] as const;
+const VALID_RSVP_STATUSES = ["going", "maybe", "not_going"] as const;
 const HOURS_24_MS = 24 * 60 * 60 * 1000;
 const DAILY_INVITE_LIMIT = 5;
 const MAX_INVITE_MESSAGE_LEN = 200;
 const MAX_EVENT_MESSAGE_LEN = 500;
 const MAX_FEEDBACK_BODY_LEN = 2000;
+const MAX_TITLE_LEN = 200;
+const MAX_DESCRIPTION_LEN = 5000;
+const MAX_FEE_TEXT_LEN = 200;
 
 async function parseRequestBody(req: Request): Promise<Record<string, unknown> | Response> {
   try {
     return await req.json();
-  } catch {
+  } catch (err) {
+    console.error("Failed to parse request body:", err);
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 }
@@ -115,8 +125,8 @@ async function handleRsvp(
     return jsonResponse({ error: "event_id and status are required" }, 400);
   }
 
-  if (!["going", "maybe", "not_going"].includes(status)) {
-    return jsonResponse({ error: "Invalid status" }, 400);
+  if (!VALID_RSVP_STATUSES.includes(status as typeof VALID_RSVP_STATUSES[number])) {
+    return jsonResponse({ error: `Invalid status. Must be one of: ${VALID_RSVP_STATUSES.join(", ")}` }, 400);
   }
 
   // Use RPC for pessimistic locking within a single transaction
@@ -127,85 +137,6 @@ async function handleRsvp(
     p_status: status,
     p_power_level: power_level ?? null,
   });
-
-  // Best-effort fallback: if the RPC doesn't exist yet, do it in application code.
-  // NOTE: This path does count-then-upsert without database-level locking, so it is
-  // susceptible to a TOCTOU race condition (two concurrent requests could both pass
-  // the max_players check). The RPC path (rsvp_with_lock) handles atomicity properly.
-  // This fallback uses a simple retry-on-conflict pattern to mitigate the race.
-  if (error?.message?.includes("function") && error?.message?.includes("does not exist")) {
-    const MAX_RETRIES = 2;
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      // Check event exists and is active
-      const { data: event, error: eventError } = await supabase
-        .from("events")
-        .select("id, max_players, status")
-        .eq("id", event_id)
-        .single();
-
-      if (eventError || !event) {
-        return jsonResponse({ error: "Event not found" }, 404);
-      }
-
-      if (event.status !== "active" && event.status !== "confirmed") {
-        return jsonResponse({ error: "Event is not active" }, 400);
-      }
-
-      // Check max_players for 'going' status
-      if (status === "going" && event.max_players) {
-        const { count } = await supabase
-          .from("rsvps")
-          .select("*", { count: "exact", head: true })
-          .eq("event_id", event_id)
-          .eq("status", "going");
-
-        if (count !== null && count >= event.max_players) {
-          // Event is full — automatically waitlist the player
-          const nextPosition = await getNextQueuePosition(supabase, event_id);
-          const { data: rsvp, error: rsvpError } = await supabase
-            .from("rsvps")
-            .upsert(
-              {
-                event_id,
-                user_id: userId,
-                status: "waitlisted",
-                queue_position: nextPosition,
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: "event_id,user_id" },
-            )
-            .select()
-            .single();
-
-          if (rsvpError) {
-            return jsonResponse({ error: rsvpError.message }, 500);
-          }
-
-          return jsonResponse({ rsvp, waitlisted: true });
-        }
-      }
-
-      // Upsert RSVP
-      const { data: rsvp, error: rsvpError } = await supabase
-        .from("rsvps")
-        .upsert(
-          { event_id, user_id: userId, status, updated_at: new Date().toISOString() },
-          { onConflict: "event_id,user_id" },
-        )
-        .select()
-        .single();
-
-      if (rsvpError) {
-        // On conflict or constraint violation, retry
-        if (attempt < MAX_RETRIES && (rsvpError.code === "23505" || rsvpError.code === "23514")) {
-          continue;
-        }
-        return jsonResponse({ error: rsvpError.message }, 500);
-      }
-
-      return jsonResponse({ rsvp });
-    }
-  }
 
   if (error) {
     // Handle event_full: automatically waitlist the player
@@ -285,6 +216,17 @@ async function handleCreateEvent(
 
   if (!format || !city || !starts_at || !type) {
     return jsonResponse({ error: "type, format, city, and starts_at are required" }, 400);
+  }
+
+  // Validate field lengths
+  if (typeof title === "string" && title.length > MAX_TITLE_LEN) {
+    return jsonResponse({ error: `title must be ${MAX_TITLE_LEN} characters or less` }, 400);
+  }
+  if (typeof description === "string" && description.length > MAX_DESCRIPTION_LEN) {
+    return jsonResponse({ error: `description must be ${MAX_DESCRIPTION_LEN} characters or less` }, 400);
+  }
+  if (typeof fee_text === "string" && fee_text.length > MAX_FEE_TEXT_LEN) {
+    return jsonResponse({ error: `fee_text must be ${MAX_FEE_TEXT_LEN} characters or less` }, 400);
   }
 
   // Validate format is one of the allowed MTG formats
@@ -625,22 +567,18 @@ async function handleRespondInvite(
     return jsonResponse({ error: updateError.message }, 500);
   }
 
-  // If accepted and has event_id, auto-RSVP
+  // If accepted and has event_id, auto-RSVP via rsvp_with_lock to respect capacity limits
   if (status === "accepted" && invite.event_id) {
-    try {
-      await supabase.rpc("rsvp_with_lock", {
-        p_event_id: invite.event_id,
-        p_user_id: userId,
-        p_status: "going",
-      });
-    } catch {
-      // If RPC doesn't exist, fallback to direct upsert
-      await supabase
-        .from("rsvps")
-        .upsert(
-          { event_id: invite.event_id, user_id: userId, status: "going", updated_at: new Date().toISOString() },
-          { onConflict: "event_id,user_id" }
-        );
+    const { error: rsvpError } = await supabase.rpc("rsvp_with_lock", {
+      p_event_id: invite.event_id,
+      p_user_id: userId,
+      p_status: "going",
+      p_power_level: null,
+    });
+
+    if (rsvpError) {
+      // If the event is full, the player gets waitlisted — log but don't fail the invite response
+      console.error("Auto-RSVP on invite accept failed:", rsvpError.message);
     }
   }
 

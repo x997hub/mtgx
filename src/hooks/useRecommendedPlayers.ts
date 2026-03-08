@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 
 export function useRecommendedPlayers(eventId: string | null) {
   const queryClient = useQueryClient();
@@ -34,6 +35,9 @@ export function useRecommendedPlayers(eventId: string | null) {
       });
       if (error) throw error;
       return data as unknown as { invited: number };
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       if (eventId) {

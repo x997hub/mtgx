@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
@@ -21,6 +21,7 @@ import type {
   CarAccess,
 } from "@/types/database.types";
 import { Car, Loader2, Repeat, Save } from "lucide-react";
+import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { AutoMatchSettings } from "@/components/profile/AutoMatchSettings";
 import { InvitePreferencesSettings } from "@/components/profile/InvitePreferencesSettings";
 
@@ -69,11 +70,8 @@ export default function ProfileEditPage() {
     }
   }, [availability]);
 
-  function toggleFormat(format: MtgFormat) {
-    setFormats((prev) =>
-      prev.includes(format) ? prev.filter((f) => f !== format) : [...prev, format]
-    );
-  }
+  const onFormatsChange = useCallback((fmts: MtgFormat[]) => setFormats(fmts), []);
+  const toggleFormat = useFormatToggle(formats, onFormatsChange);
 
   function cycleLevel(day: DayOfWeek, slot: TimeSlot) {
     const key = `${day}-${slot}`;

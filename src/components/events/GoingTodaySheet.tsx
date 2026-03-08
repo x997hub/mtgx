@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Zap } from "lucide-react";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useGoingToday } from "@/hooks/useGoingToday";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
+import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { FORMATS, FORMAT_TOGGLE_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { MtgFormat } from "@/types/database.types";
@@ -39,11 +40,8 @@ export function GoingTodaySheet({ open, onOpenChange }: GoingTodaySheetProps) {
   );
   const [duration, setDuration] = useState<number>(3);
 
-  const toggleFormat = (format: MtgFormat) => {
-    setSelectedFormats((prev) =>
-      prev.includes(format) ? prev.filter((f) => f !== format) : [...prev, format]
-    );
-  };
+  const onFormatsChange = useCallback((fmts: MtgFormat[]) => setSelectedFormats(fmts), []);
+  const toggleFormat = useFormatToggle(selectedFormats, onFormatsChange);
 
   // Show suggestion toast when 3+ players are looking
   useEffect(() => {

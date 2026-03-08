@@ -20,33 +20,39 @@ export function usePlayers(filters: PlayerFilters) {
   const playersQuery = useInfiniteQuery({
     queryKey: ["players", { format, city, day, venueId }],
     queryFn: async ({ pageParam = 0 }) => {
+      // Run sub-filter queries in parallel when both are needed
+      const [availUserIds, venueUserIds] = await Promise.all([
+        day
+          ? supabase
+              .from("availability")
+              .select("user_id")
+              .eq("day", day)
+              .in("level", ["available", "sometimes"])
+              .then(({ data }) => data?.map((a) => a.user_id) ?? [])
+          : Promise.resolve(null as string[] | null),
+        venueId
+          ? supabase
+              .from("rsvps")
+              .select("user_id, events!inner(venue_id)" as "user_id")
+              .eq("events.venue_id" as "user_id", venueId)
+              .eq("status", "going")
+              .then(({ data }) => [
+                ...new Set(
+                  (data as unknown as { user_id: string }[])?.map((r) => r.user_id) ?? [],
+                ),
+              ])
+          : Promise.resolve(null as string[] | null),
+      ]);
+
+      // Merge sub-filter results
       let userIdFilter: string[] | null = null;
-
-      // Filter by availability day
-      if (day) {
-        const { data: avail } = await supabase
-          .from("availability")
-          .select("user_id")
-          .eq("day", day)
-          .in("level", ["available", "sometimes"]);
-        userIdFilter = avail?.map((a) => a.user_id) ?? [];
-      }
-
-      // Filter by venue (players who RSVP'd to events at this venue)
-      if (venueId) {
-        const { data: rsvps } = await supabase
-          .from("rsvps")
-          .select("user_id, events!inner(venue_id)" as "user_id")
-          .eq("events.venue_id" as "user_id", venueId)
-          .eq("status", "going");
-        const venueUserIds = [
-          ...new Set((rsvps as unknown as { user_id: string }[])?.map((r) => r.user_id) ?? []),
-        ];
-        if (userIdFilter) {
-          userIdFilter = userIdFilter.filter((id) => venueUserIds.includes(id));
-        } else {
-          userIdFilter = venueUserIds;
-        }
+      if (availUserIds !== null && venueUserIds !== null) {
+        const venueSet = new Set(venueUserIds);
+        userIdFilter = availUserIds.filter((id) => venueSet.has(id));
+      } else if (availUserIds !== null) {
+        userIdFilter = availUserIds;
+      } else if (venueUserIds !== null) {
+        userIdFilter = venueUserIds;
       }
 
       // No matching users for sub-filters — return empty

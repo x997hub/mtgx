@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { RouteErrorBoundary } from "@/components/shared/RouteErrorBoundary";
 
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
@@ -20,15 +21,17 @@ const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 function LazyPage({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[50vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-        </div>
-      }
-    >
-      {children}
-    </Suspense>
+    <RouteErrorBoundary>
+      <Suspense
+        fallback={
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          </div>
+        }
+      >
+        {children}
+      </Suspense>
+    </RouteErrorBoundary>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
 import type { AutoMatchPreferencesInsert, AutoMatchPreferencesUpdate } from "@/types/database.types";
 
 export function useAutoMatch() {
@@ -33,6 +34,9 @@ export function useAutoMatch() {
         .single();
       if (error) throw error;
       return data;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       const uid = useAuthStore.getState().user?.id;

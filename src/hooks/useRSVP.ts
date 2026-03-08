@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "@/components/ui/use-toast";
+import { apiFetch } from "@/lib/api";
 
 interface RSVPParams {
   eventId: string;
@@ -33,17 +35,15 @@ export function useRSVP() {
         body.power_level = powerLevel;
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mtgx-api/rsvp`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
+      const response = await apiFetch("/rsvp", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      });
 
       const data: RSVPResponse = await response.json();
 
@@ -112,6 +112,7 @@ export function useRSVP() {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(["rsvps", eventId], context.previous);
       }
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: (_data, _err, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: ["rsvps", eventId] });

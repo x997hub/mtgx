@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, Fragment, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "@/components/ui/use-toast";
+import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { FORMATS, CITIES, DAYS, SLOTS } from "@/lib/constants";
 import type { MtgFormat, DayOfWeek, TimeSlot, AvailabilityInsert } from "@/types/database.types";
 
@@ -41,11 +42,8 @@ export default function OnboardingPage() {
   const [formats, setFormats] = useState<MtgFormat[]>([]);
   const [availability, setAvailability] = useState<Record<string, boolean>>({});
 
-  const toggleFormat = (format: MtgFormat) => {
-    setFormats((prev) =>
-      prev.includes(format) ? prev.filter((f) => f !== format) : [...prev, format]
-    );
-  };
+  const onFormatsChange = useCallback((fmts: MtgFormat[]) => setFormats(fmts), []);
+  const toggleFormat = useFormatToggle(formats, onFormatsChange);
 
   const toggleAvailability = (day: DayOfWeek, slot: TimeSlot) => {
     const key = `${day}-${slot}`;

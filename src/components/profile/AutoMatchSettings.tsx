@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useAutoMatch } from "@/hooks/useAutoMatch";
 import { useAuth } from "@/hooks/useAuth";
 import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
 import { useToast } from "@/components/ui/use-toast";
+import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { FORMATS, DAYS, FORMAT_TOGGLE_COLORS } from "@/lib/constants";
 import { Loader2, Save, Zap } from "lucide-react";
 import type { MtgFormat, MatchDayPref, MatchRadius } from "@/types/database.types";
@@ -51,11 +52,8 @@ export function AutoMatchSettings() {
     }
   }, [prefs]);
 
-  function toggleFormat(format: MtgFormat) {
-    setFormats((prev) =>
-      prev.includes(format) ? prev.filter((f) => f !== format) : [...prev, format]
-    );
-  }
+  const onFormatsChange = useCallback((fmts: MtgFormat[]) => setFormats(fmts), []);
+  const toggleFormat = useFormatToggle(formats, onFormatsChange);
 
   function toggleEventType(type: string) {
     setEventTypes((prev) =>

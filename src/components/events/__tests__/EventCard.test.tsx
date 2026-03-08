@@ -78,24 +78,24 @@ describe("EventCard", () => {
     expect(screen.getByText("Herzliya")).toBeInTheDocument();
   });
 
-  it("shows going count from rsvps", () => {
-    renderEventCard(makeEvent({ rsvps: [{ count: 8 }] }));
-    expect(screen.getByText("8")).toBeInTheDocument();
+  it("shows going count in CircularProgress when max_players set", () => {
+    renderEventCard(makeEvent({ rsvps: [{ count: 8 }], max_players: 16 }));
+    expect(screen.getByText("8/16")).toBeInTheDocument();
   });
 
-  it("shows 0 going when rsvps array is empty", () => {
-    renderEventCard(makeEvent({ rsvps: [] }));
-    expect(screen.getByText("0")).toBeInTheDocument();
+  it("shows 0 going when rsvps array is empty and max_players set", () => {
+    renderEventCard(makeEvent({ rsvps: [], max_players: 16 }));
+    expect(screen.getByText("0/16")).toBeInTheDocument();
   });
 
-  it('shows "event_full" when going >= max_players', () => {
+  it("shows full progress when going >= max_players", () => {
     renderEventCard(makeEvent({ rsvps: [{ count: 16 }], max_players: 16 }));
-    expect(screen.getByText("event_full")).toBeInTheDocument();
+    expect(screen.getByText("16/16")).toBeInTheDocument();
   });
 
-  it("shows spots_left when max_players set and spots remain", () => {
-    renderEventCard(makeEvent({ rsvps: [{ count: 10 }], max_players: 16 }));
-    expect(screen.getByText("spots_left 6")).toBeInTheDocument();
+  it("shows plain going count when max_players is null", () => {
+    renderEventCard(makeEvent({ rsvps: [{ count: 10 }], max_players: null }));
+    expect(screen.getByText("10")).toBeInTheDocument();
   });
 
   it("does not show spots info when max_players is null", () => {

@@ -2,6 +2,9 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { supabase } from "@/lib/supabase";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useFilterStore } from "@/store/filterStore";
+import { useAuthStore } from "@/store/authStore";
+import { apiFetch } from "@/lib/api";
+import { toast } from "@/components/ui/use-toast";
 import type { Database } from "@/types/database.types";
 
 type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
@@ -15,7 +18,8 @@ export type EventWithRelations = Database["public"]["Tables"]["events"]["Row"] &
 const PAGE_SIZE = 20;
 
 export function useEvents() {
-  const { format, city } = useFilterStore();
+  const format = useFilterStore((s) => s.format);
+  const city = useFilterStore((s) => s.city);
   const queryClient = useQueryClient();
 
   const eventsQuery = useInfiniteQuery({
@@ -45,13 +49,27 @@ export function useEvents() {
 
   const createEventMutation = useMutation({
     mutationFn: async (event: EventInsert) => {
-      const { data, error } = await supabase
-        .from("events")
-        .insert(event)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      const session = useAuthStore.getState().session;
+      if (!session) throw new Error("Not authenticated");
+
+      const res = await apiFetch("/events", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(event),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create event");
+      }
+      return data.event;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Zap, ZapOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { FormatBadge } from "@/components/shared/FormatBadge";
 import { useLFG } from "@/hooks/useLFG";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
+import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { FORMATS, CITIES, SLOTS, FORMAT_TOGGLE_COLORS } from "@/lib/constants";
 import type { MtgFormat, TimeSlot } from "@/types/database.types";
 
@@ -38,11 +39,8 @@ export function LFGToggleButton() {
   const [selectedCity, setSelectedCity] = useState(profile?.city ?? "");
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | "">("");
 
-  const toggleFormat = (format: MtgFormat) => {
-    setSelectedFormats((prev) =>
-      prev.includes(format) ? prev.filter((f) => f !== format) : [...prev, format]
-    );
-  };
+  const onFormatsChange = useCallback((fmts: MtgFormat[]) => setSelectedFormats(fmts), []);
+  const toggleFormat = useFormatToggle(selectedFormats, onFormatsChange);
 
   const handleActivate = () => {
     if (selectedFormats.length === 0) {

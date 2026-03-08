@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { toast } from "@/components/ui/use-toast";
 import type { MtgFormat, TimeSlot } from "@/types/database.types";
 
 interface LFGSignal {
@@ -65,13 +66,15 @@ export function useLFG(city?: string) {
       return (data ?? []) as unknown as LFGSignal[];
     },
     enabled: !!city,
-    refetchInterval: 30000,
+    // Realtime subscription handles live updates; polling is a fallback only
+    refetchInterval: 5 * 60 * 1000,
   });
 
-  // Realtime subscription for LFG signals
+  // Realtime subscription for LFG signals — scoped to city
   useRealtimeSubscription({
     channelName: `lfg:${city}`,
     table: "looking_for_game",
+    filter: city ? `city=eq.${city}` : undefined,
     enabled: !!city,
     onChange: () => {
       queryClient.invalidateQueries({ queryKey: ["lfg-signals", city] });
@@ -101,6 +104,9 @@ export function useLFG(city?: string) {
       if (error) throw error;
       return data;
     },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
+    },
     onSuccess: () => {
       const uid = useAuthStore.getState().user?.id;
       queryClient.invalidateQueries({ queryKey: ["lfg-my", uid] });
@@ -118,6 +124,9 @@ export function useLFG(city?: string) {
         .delete()
         .eq("user_id", user.id);
       if (error) throw error;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     },
     onSuccess: () => {
       const uid = useAuthStore.getState().user?.id;

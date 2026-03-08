@@ -73,6 +73,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
   const [moodTags, setMoodTags] = useState<string[]>([]);
   const [proxyPolicy, setProxyPolicy] = useState<ProxyPolicy>("none");
   const [recurrence, setRecurrence] = useState<RecurrenceConfig | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Autosave
   const formState = useMemo<BigFormState>(() => ({
@@ -116,7 +117,8 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSubmitting) return;
+    setIsSubmitting(true);
     if (!city) {
       toast({ title: t("city_required", "City is required"), variant: "destructive" });
       return;
@@ -166,7 +168,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from("event_templates") as any).insert({
+        const { data: templateData } = await (supabase.from("event_templates") as any).insert({
           organizer_id: user.id,
           venue_id: venueId || null,
           recurrence_rule: rrule,
@@ -175,12 +177,15 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
             fee_text: feeText || null, description: description || null,
             mood_tags: moodTags, proxy_policy: proxyPolicy,
           },
-        });
+        }).select("id").single();
 
         // Update the event with template reference (best effort)
         const eventId = (data as { id: string }).id;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from("events") as any).update({ template_id: eventId }).eq("id", eventId);
+        const templateId = templateData?.id;
+        if (templateId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase.from("events") as any).update({ template_id: templateId }).eq("id", eventId);
+        }
       }
 
       clearSaved();
@@ -192,6 +197,8 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
       }
     } catch {
       toast({ title: t("common:error"), variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -278,8 +285,8 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
       {/* Recurring events */}
       <RecurrencePicker value={recurrence} onChange={setRecurrence} />
 
-      <Button type="submit" className="w-full min-h-[44px]" disabled={isCreating}>
-        {isCreating ? t("common:loading") : t("create_big_event")}
+      <Button type="submit" className="w-full min-h-[44px]" disabled={isCreating || isSubmitting}>
+        {isCreating || isSubmitting ? t("common:loading") : t("create_big_event")}
       </Button>
     </form>
   );
