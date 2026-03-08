@@ -93,6 +93,7 @@ SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE_KEY, RESEND_API_KEY, ADMIN_EMAIL, CRON_
 ## Workflow
 
 - **Всегда пушить по завершению задачи** — после коммита сразу `git push`
+- **Навигация по коду через cclsp (MCP LSP)** — для поиска определений, ссылок и вызовов ОБЯЗАТЕЛЬНО используй cclsp tools: `find_definition`, `find_references`, `rename_symbol`, `get_diagnostics`. Grep допустим только для текстового поиска, не связанного со структурой кода.
 
 ## Code Style
 
