@@ -32,7 +32,7 @@ supabase functions deploy         # Деплой Edge Functions
 
 ```
 components/    # По доменам: events/, players/, profile/, venue/, layout/, shared/, ui/
-hooks/         # Бизнес-логика: useEvents, useRSVP, useLFG, useAuth, useProfile, usePlayers
+hooks/         # Бизнес-логика: useEvents, useRSVP, useLFG, useAuth, useProfile, usePlayers, useVenues
 store/         # Zustand: authStore (сессия/профиль), uiStore (язык/тема), filterStore
 pages/         # Lazy-loaded через React.lazy()
 lib/           # supabase.ts (клиент), queryClient.ts, constants.ts, utils.ts
