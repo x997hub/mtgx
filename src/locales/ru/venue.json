@@ -8,5 +8,10 @@
   "upcoming_events": "Ближайшие события",
   "no_upcoming_events": "Ближайших событий на этой площадке нет",
   "subscribe_venue": "Подписаться на площадку",
-  "players_capacity": "{{count}} игроков"
+  "players_capacity": "{{count}} игроков",
+  "no_clubs": "Клубов пока нет",
+  "events_count_one": "событие",
+  "events_count_few": "события",
+  "events_count_many": "событий",
+  "events_count_other": "событий"
 }

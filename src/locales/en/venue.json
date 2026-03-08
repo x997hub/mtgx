@@ -8,5 +8,8 @@
   "upcoming_events": "Upcoming Events",
   "no_upcoming_events": "No upcoming events at this venue",
   "subscribe_venue": "Subscribe to this venue",
-  "players_capacity": "{{count}} players"
+  "players_capacity": "{{count}} players",
+  "no_clubs": "No clubs yet",
+  "events_count_one": "event",
+  "events_count_other": "events"
 }
