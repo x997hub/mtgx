@@ -7,13 +7,14 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
-import { Building2 } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { VenueCard } from "@/components/venue/VenueCard";
 import { useVenues } from "@/hooks/useVenues";
+import { useAuthStore } from "@/store/authStore";
 
 // Fix Leaflet default marker icons
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,6 +49,8 @@ function FlyToUser() {
 export default function ClubsPage() {
   const { t } = useTranslation(["common", "venue"]);
   const { data: venues, isLoading, isError, refetch } = useVenues();
+  const profile = useAuthStore((s) => s.profile);
+  const canCreate = profile?.role === "club_owner" || profile?.role === "admin";
   const [mapReady, setMapReady] = useState(false);
 
   const venuesWithCoords = venues?.filter(
@@ -56,9 +59,19 @@ export default function ClubsPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-4 p-4">
-      <h1 className="text-2xl font-bold text-text-primary">
-        {t("venue:clubs_map")}
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-text-primary">
+          {t("venue:clubs_map")}
+        </h1>
+        {canCreate && (
+          <Link to="/venues/new">
+            <Button size="sm">
+              <Plus className="me-1 h-4 w-4" />
+              {t("venue:add_venue")}
+            </Button>
+          </Link>
+        )}
+      </div>
 
       {/* Map */}
       <div className="h-[400px] w-full overflow-hidden rounded-lg border border-border">

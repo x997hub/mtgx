@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -15,7 +16,7 @@ import type { Venue, VenuePhoto } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
 import { VenueAnalytics } from "@/components/venue/VenueAnalytics";
-import { MapPin, Clock, Users, Phone, Calendar } from "lucide-react";
+import { MapPin, Clock, Users, Phone, Calendar, Pencil } from "lucide-react";
 
 const VENUE_IMAGES_BUCKET = "venue-images";
 
@@ -24,6 +25,7 @@ export default function VenuePage() {
   const { t: tc } = useTranslation("common");
   const { id: venueId } = useParams<{ id: string }>();
   const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
 
   const venueQuery = useQuery({
     queryKey: ["venue", venueId],
@@ -124,7 +126,16 @@ export default function VenuePage() {
                 <h1 className="text-2xl font-bold text-text-primary">{venue.name}</h1>
                 <CityBadge city={venue.city} />
               </div>
-              <SubscribeButton targetType="venue" targetId={venue.id} />
+              <div className="flex items-center gap-2">
+                {user && (venue.owner_id === user.id || profile?.role === "admin") && (
+                  <Link to={`/venues/${venue.id}/edit`}>
+                    <Button variant="outline" size="sm">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
+                <SubscribeButton targetType="venue" targetId={venue.id} />
+              </div>
             </div>
           </CardContent>
         </Card>
