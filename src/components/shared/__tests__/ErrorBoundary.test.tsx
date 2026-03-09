@@ -60,7 +60,7 @@ describe("ErrorBoundary", () => {
       return <div data-testid="child">Recovered</div>;
     }
 
-    const { rerender } = render(
+    render(
       <ErrorBoundary>
         <ConditionalChild />
       </ErrorBoundary>

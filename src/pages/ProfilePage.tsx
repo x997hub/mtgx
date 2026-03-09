@@ -20,7 +20,7 @@ import { getInitials } from "@/lib/utils";
 import { OrganizerStatsCard } from "@/components/profile/OrganizerStatsCard";
 import { Car, MessageCircle, Pencil, Repeat, Shield, Bell, UserPlus } from "lucide-react";
 
-const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
+const AVAIL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600",
   sometimes: "bg-amber-600",
   unavailable: "bg-gray-700",
@@ -58,7 +58,7 @@ function AvailabilityGrid({ availability }: { availability: Availability[] }) {
                 return (
                   <td key={day} className="p-1 text-center">
                     <div
-                      className={`mx-auto h-6 w-6 rounded ${LEVEL_COLORS[level]}`}
+                      className={`mx-auto h-6 w-6 rounded ${AVAIL_COLORS[level]}`}
                       title={t(level)}
                     />
                   </td>
@@ -132,7 +132,7 @@ export default function ProfilePage() {
 
   const avatarUrl = profile.avatar_url;
   const whatsappUrl = profile.whatsapp
-    ? `https://wa.me/${profile.whatsapp.replace(/[\s\-()+ ]/g, "")}`
+    ? `https://wa.me/${encodeURIComponent(profile.whatsapp.replace(/[\s\-()+ ]/g, ""))}`
     : null;
 
   const CAR_LABELS: Record<string, string> = {

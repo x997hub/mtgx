@@ -100,6 +100,13 @@ export const FEEDBACK_STATUS_COLORS: Record<FeedbackStatus, string> = {
   closed: "bg-gray-700 text-gray-300",
 };
 
+/** Player skill level badge colors */
+export const LEVEL_COLORS: Record<string, string> = {
+  casual: "bg-green-700/30 text-green-300",
+  regular: "bg-blue-700/30 text-blue-300",
+  competitive: "bg-red-700/30 text-red-300",
+};
+
 /** Availability level colors (interactive, with hover) */
 export const AVAILABILITY_LEVEL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600 hover:bg-emerald-500",

@@ -18,7 +18,7 @@ interface PlayerCardProps {
   showReliability?: boolean;
 }
 
-const LEVEL_COLORS: Record<AvailabilityLevel, string> = {
+const AVAIL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-500",
   sometimes: "bg-amber-500",
   unavailable: "bg-transparent",
@@ -94,7 +94,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
                             "h-1.5 rounded-full mx-auto mb-0.5",
                             level === "unavailable"
                               ? "bg-gray-700 w-2"
-                              : cn(LEVEL_COLORS[level], "w-3")
+                              : cn(AVAIL_COLORS[level], "w-3")
                           )}
                           title={`${t(`profile:${day}`)} ${t(`profile:${slot}_slot`)}: ${t(`profile:${level}`)}`}
                         />

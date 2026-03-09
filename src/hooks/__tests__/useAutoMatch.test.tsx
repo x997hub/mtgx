@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderHook, waitFor } from "@testing-library/react";
 import { useAutoMatch } from "../useAutoMatch";
 import { useAuthStore } from "@/store/authStore";

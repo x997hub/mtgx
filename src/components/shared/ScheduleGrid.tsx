@@ -56,6 +56,7 @@ export function ScheduleGrid<TState extends string>({
                   <td key={day} className="p-1 text-center">
                     <button
                       type="button"
+                      aria-label={`${t(day)} ${t(`${slot}_slot`)}: ${stateLabels[state]}`}
                       onClick={() => handleClick(day, slot)}
                       disabled={!onChange}
                       className={`mx-auto h-10 w-10 rounded transition-colors ${stateColors[state]} ${onChange ? "cursor-pointer" : "cursor-default"}`}

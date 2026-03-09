@@ -149,7 +149,7 @@ export default function NotificationsPage() {
                         size="sm"
                         onClick={() => markAsRead(notification.id)}
                         className="min-h-[44px] min-w-[44px] shrink-0"
-                        aria-label="Mark as read"
+                        aria-label={t("mark_read")}
                       >
                         <Check className="h-4 w-4" />
                       </Button>

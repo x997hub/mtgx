@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -123,7 +124,7 @@ describe("ProfileEditPage", () => {
     renderPage();
 
     // Skeleton elements should be present (they have a specific class)
-    const skeletons = document.querySelectorAll('[class*="animate-pulse"], [class*="skeleton"]');
+    document.querySelectorAll('[class*="animate-pulse"], [class*="skeleton"]');
     // The Skeleton component renders divs; check for the container
     expect(document.querySelector(".space-y-4")).toBeInTheDocument();
     // Should NOT show the form

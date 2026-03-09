@@ -1,4 +1,5 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createTestQueryClient } from "@/test/renderWithProviders";
 import { useRSVP } from "../useRSVP";
