@@ -13,6 +13,7 @@ interface QuickMeetupFormProps {
   defaultValues?: Partial<{
     format: MtgFormat;
     city: string;
+    venue_id: string;
     min_players: number;
   }>;
   onCreated?: (eventId: string) => void;
@@ -21,6 +22,7 @@ interface QuickMeetupFormProps {
 interface QuickFormState {
   format: MtgFormat;
   startsAt: string;
+  venueId: string;
   city: string;
   minPlayers: number;
 }
@@ -33,13 +35,14 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
 
   const [format, setFormat] = useState<MtgFormat>(defaultValues?.format ?? "pauper");
   const [startsAt, setStartsAt] = useState("");
+  const [venueId, setVenueId] = useState(defaultValues?.venue_id ?? "");
   const [city, setCity] = useState(defaultValues?.city ?? "");
   const [minPlayers, setMinPlayers] = useState(defaultValues?.min_players ?? 2);
 
   // Autosave
   const formState = useMemo<QuickFormState>(() => ({
-    format, startsAt, city, minPlayers,
-  }), [format, startsAt, city, minPlayers]);
+    format, startsAt, venueId, city, minPlayers,
+  }), [format, startsAt, venueId, city, minPlayers]);
 
   const autosaveKey = `event-draft-${user?.id ?? "anon"}-quick`;
   const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
@@ -49,6 +52,7 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
     if (hasSaved && savedState && !defaultValues) {
       setFormat(savedState.format);
       setStartsAt(savedState.startsAt);
+      setVenueId(savedState.venueId ?? "");
       setCity(savedState.city);
       setMinPlayers(savedState.minPlayers);
       toast({ title: t("draft_restored", "Draft restored") });
@@ -58,8 +62,8 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!city) {
-      toast({ title: t("city_required", "City is required"), variant: "destructive" });
+    if (!venueId) {
+      toast({ title: t("venue_required", "Venue is required"), variant: "destructive" });
       return;
     }
     if (!startsAt) {
@@ -79,6 +83,7 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         type: "quick",
         format,
         city,
+        venue_id: venueId || null,
         starts_at: startsAtDate.toISOString(),
         min_players: minPlayers,
         // Quick meetups auto-expire 24h after start (DB trigger also handles this)
@@ -101,7 +106,8 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
       <EventFormFields
         format={format}
         onFormatChange={setFormat}
-        city={city}
+        venueId={venueId}
+        onVenueIdChange={setVenueId}
         onCityChange={setCity}
         startsAt={startsAt}
         onStartsAtChange={setStartsAt}

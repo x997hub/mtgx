@@ -1,17 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
 import { supabase } from "@/lib/supabase";
@@ -103,23 +95,12 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
     }
   }, []);
 
-  const { data: venues } = useQuery({
-    queryKey: ["venues", city],
-    queryFn: async () => {
-      let query = supabase.from("venues").select("id, name, city");
-      if (city) query = query.eq("city", city);
-      const { data, error } = await query.order("name");
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || isSubmitting) return;
     setIsSubmitting(true);
-    if (!city) {
-      toast({ title: t("city_required", "City is required"), variant: "destructive" });
+    if (!venueId) {
+      toast({ title: t("venue_required", "Venue is required"), variant: "destructive" });
       return;
     }
     if (maxPlayers != null && maxPlayers < minPlayers) {
@@ -216,33 +197,14 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
       <EventFormFields
         format={format}
         onFormatChange={setFormat}
-        city={city}
+        venueId={venueId}
+        onVenueIdChange={setVenueId}
         onCityChange={setCity}
         startsAt={startsAt}
         onStartsAtChange={setStartsAt}
         minPlayers={minPlayers}
         onMinPlayersChange={setMinPlayers}
       />
-
-      <div className="space-y-2">
-        <Label>{t("venue")}</Label>
-        <Select
-          value={venueId || "none"}
-          onValueChange={(v) => setVenueId(v === "none" ? "" : v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t("select_venue")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">--</SelectItem>
-            {venues?.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name} ({v.city})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="max_players">{t("max_players")}</Label>
@@ -277,7 +239,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="flex w-full rounded-md border border-border bg-primary px-4 py-3 text-base text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+          className="flex w-full rounded-md border border-border bg-surface-card px-4 py-3 text-base text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         />
       </div>
 
