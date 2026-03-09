@@ -24,17 +24,13 @@ export function OrganizerMessagesList({ eventId }: OrganizerMessagesListProps) {
   const { data: messages, isLoading } = useQuery({
     queryKey: ["organizer-messages", eventId],
     queryFn: async () => {
-      // organizer_messages table may not yet be in database.types.ts
-      const { data, error } = await (supabase
-        .from("organizer_messages" as "profiles")
+      const { data, error } = await supabase
+        .from("organizer_messages")
         .select("*")
-        .eq("event_id" as "id", eventId)
-        .order("created_at", { ascending: false }) as unknown as Promise<{
-          data: OrganizerMessage[] | null;
-          error: { message: string } | null;
-        }>);
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as OrganizerMessage[];
+      return data ?? [];
     },
     enabled: !!eventId,
   });

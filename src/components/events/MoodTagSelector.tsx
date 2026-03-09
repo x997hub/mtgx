@@ -21,13 +21,13 @@ export function MoodTagSelector({ value, onChange }: MoodTagSelectorProps) {
   const { data: tags } = useQuery({
     queryKey: ["mood-tags"],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase.from("mood_tags") as any)
+      const { data, error } = await supabase
+        .from("mood_tags")
         .select("*")
         .eq("is_active", true)
         .order("id");
       if (error) throw error;
-      return data as MoodTag[];
+      return data;
     },
   });
 

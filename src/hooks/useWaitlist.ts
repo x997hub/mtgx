@@ -29,19 +29,16 @@ export function useWaitlist(eventId: string) {
     queryFn: async () => {
       if (!user) return null;
 
-      const { data, error } = await (supabase
+      const { data, error } = await supabase
         .from("rsvps")
         .select("queue_position, status")
         .eq("event_id", eventId)
         .eq("user_id", user.id)
-        .eq("status", "waitlisted" as string as "going")
-        .maybeSingle() as unknown as Promise<{
-          data: WaitlistEntry | null;
-          error: { message: string } | null;
-        }>);
+        .eq("status", "waitlisted")
+        .maybeSingle();
 
       if (error) throw error;
-      return data;
+      return data as WaitlistEntry | null;
     },
     enabled: !!eventId && !!user,
   });
@@ -50,10 +47,11 @@ export function useWaitlist(eventId: string) {
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase.rpc("join_waitlist", {
+      // RPC will be created by waitlist migration
+      const { data, error } = await supabase.rpc("join_waitlist" as never, {
         p_event_id: eventId,
         p_user_id: user.id,
-      });
+      } as never);
 
       if (error) throw error;
       return data as { status: string; queue_position: number | null };

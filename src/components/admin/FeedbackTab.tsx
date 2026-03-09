@@ -175,7 +175,7 @@ function FeedbackItem({
 }) {
   const { t } = useTranslation(["common"]);
   const [notes, setNotes] = useState(item.admin_notes ?? "");
-  const TypeIcon = TYPE_ICONS[item.type];
+  const TypeIcon = TYPE_ICONS[item.type as FeedbackType];
 
   const truncatedBody =
     item.body.length > 120 ? item.body.slice(0, 120) + "..." : item.body;
@@ -192,7 +192,7 @@ function FeedbackItem({
           onClick={onToggle}
         >
           <div className="flex items-start gap-3 min-w-0 flex-1">
-            <Badge className={cn("border-none shrink-0 mt-0.5", TYPE_COLORS[item.type])}>
+            <Badge className={cn("border-none shrink-0 mt-0.5", TYPE_COLORS[item.type as FeedbackType])}>
               <TypeIcon className="h-3.5 w-3.5 me-1" />
               {t(`common:feedback.type_${item.type}`, item.type)}
             </Badge>
@@ -212,7 +212,7 @@ function FeedbackItem({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Badge className={cn("border-none", STATUS_COLORS[item.status])}>
+            <Badge className={cn("border-none", STATUS_COLORS[item.status as FeedbackStatus])}>
               {t(`common:feedback.status_${item.status}`, item.status)}
             </Badge>
             {isExpanded ? (

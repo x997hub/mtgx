@@ -147,8 +147,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
           rrule += `;UNTIL=${recurrence.until.replace(/-/g, "")}T235959Z`;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: templateData } = await (supabase.from("event_templates") as any).insert({
+        const { data: templateData } = await supabase.from("event_templates").insert({
           organizer_id: user.id,
           venue_id: venueId || null,
           recurrence_rule: rrule,
@@ -163,8 +162,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         const eventId = (data as { id: string }).id;
         const templateId = templateData?.id;
         if (templateId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase.from("events") as any).update({ template_id: templateId }).eq("id", eventId);
+          await supabase.from("events").update({ template_id: templateId }).eq("id", eventId);
         }
       }
 

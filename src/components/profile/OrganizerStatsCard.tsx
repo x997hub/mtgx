@@ -23,15 +23,11 @@ export function OrganizerStatsCard({ organizerId }: OrganizerStatsCardProps) {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["organizer-stats", organizerId],
     queryFn: async () => {
-      // organizer_stats view may not yet be in database.types.ts
-      const { data, error } = await (supabase
-        .from("organizer_stats" as "profiles")
+      const { data, error } = await supabase
+        .from("organizer_stats")
         .select("*")
-        .eq("organizer_id" as "id", organizerId)
-        .maybeSingle() as unknown as Promise<{
-          data: OrganizerStats | null;
-          error: { message: string } | null;
-        }>);
+        .eq("organizer_id", organizerId)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -50,14 +46,14 @@ export function OrganizerStatsCard({ organizerId }: OrganizerStatsCardProps) {
     <div className="grid grid-cols-3 gap-3">
       <StatCard
         title={t("events_organized", "Events")}
-        value={stats.events_total}
+        value={stats.events_total ?? 0}
         icon={Calendar}
       />
       <StatCard
         title={t("cancel_rate", "Cancel %")}
         value={`${stats.cancel_rate ?? 0}%`}
         icon={XCircle}
-        trend={stats.cancel_rate > 10 ? { value: stats.cancel_rate, positive: false } : undefined}
+        trend={(stats.cancel_rate ?? 0) > 10 ? { value: stats.cancel_rate ?? 0, positive: false } : undefined}
       />
       <StatCard
         title={t("avg_attendance", "Avg attend.")}

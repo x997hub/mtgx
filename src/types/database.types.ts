@@ -662,10 +662,13 @@ export type Database = {
           created_at: string
           display_name: string
           formats: Database["public"]["Enums"]["mtg_format"][]
+          game_speed: string | null
           id: string
           interested_in_trading: boolean
+          playstyle: string | null
           reliability_score: number
           role: Database["public"]["Enums"]["user_role"]
+          social_level: string | null
           whatsapp: string | null
         }
         Insert: {
@@ -676,10 +679,13 @@ export type Database = {
           created_at?: string
           display_name: string
           formats?: Database["public"]["Enums"]["mtg_format"][]
+          game_speed?: string | null
           id: string
           interested_in_trading?: boolean
+          playstyle?: string | null
           reliability_score?: number
           role?: Database["public"]["Enums"]["user_role"]
+          social_level?: string | null
           whatsapp?: string | null
         }
         Update: {
@@ -690,10 +696,13 @@ export type Database = {
           created_at?: string
           display_name?: string
           formats?: Database["public"]["Enums"]["mtg_format"][]
+          game_speed?: string | null
           id?: string
           interested_in_trading?: boolean
+          playstyle?: string | null
           reliability_score?: number
           role?: Database["public"]["Enums"]["user_role"]
+          social_level?: string | null
           whatsapp?: string | null
         }
         Relationships: []
@@ -915,6 +924,8 @@ export type Database = {
           created_at: string
           hours: Json | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           owner_id: string
           supported_formats: Database["public"]["Enums"]["mtg_format"][]
@@ -927,6 +938,8 @@ export type Database = {
           created_at?: string
           hours?: Json | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           owner_id: string
           supported_formats?: Database["public"]["Enums"]["mtg_format"][]
@@ -939,6 +952,8 @@ export type Database = {
           created_at?: string
           hours?: Json | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           owner_id?: string
           supported_formats?: Database["public"]["Enums"]["mtg_format"][]
@@ -1243,6 +1258,9 @@ export type InviteStatus = "pending" | "accepted" | "declined" | "expired";
 export type MatchRadius = "my_city" | "nearby" | "all";
 export type FeedbackStatus = "new" | "in_progress" | "resolved" | "closed";
 export type FeedbackType = "bug" | "suggestion" | "question";
+export type Playstyle = "casual" | "competitive" | "mixed";
+export type GameSpeed = "slow" | "medium" | "fast";
+export type SocialLevel = "quiet" | "moderate" | "talkative";
 
 // ---------------------------------------------------------------------------
 // Convenience table/view type aliases

@@ -19,8 +19,12 @@ import type {
   AvailabilityLevel,
   AvailabilityInsert,
   CarAccess,
+  Playstyle,
+  GameSpeed,
+  SocialLevel,
 } from "@/types/database.types";
-import { Car, Loader2, Repeat, Save } from "lucide-react";
+import { Car, Gamepad2, Loader2, Repeat, Save } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { AutoMatchSettings } from "@/components/profile/AutoMatchSettings";
 import { InvitePreferencesSettings } from "@/components/profile/InvitePreferencesSettings";
@@ -46,6 +50,9 @@ export default function ProfileEditPage() {
   const [bio, setBio] = useState("");
   const [carAccess, setCarAccess] = useState<CarAccess | "">("");
   const [interestedInTrading, setInterestedInTrading] = useState(false);
+  const [playstyle, setPlaystyle] = useState<Playstyle>("mixed");
+  const [gameSpeed, setGameSpeed] = useState<GameSpeed>("medium");
+  const [socialLevel, setSocialLevel] = useState<SocialLevel>("moderate");
   const [grid, setGrid] = useState<Record<string, AvailabilityLevel>>({});
 
   useEffect(() => {
@@ -55,8 +62,11 @@ export default function ProfileEditPage() {
       setFormats(profile.formats);
       setWhatsapp(profile.whatsapp ?? "");
       setBio(profile.bio ?? "");
-      setCarAccess(profile.car_access ?? "");
+      setCarAccess((profile.car_access as CarAccess) ?? "");
       setInterestedInTrading(profile.interested_in_trading ?? false);
+      setPlaystyle((profile.playstyle as Playstyle) ?? "mixed");
+      setGameSpeed((profile.game_speed as GameSpeed) ?? "medium");
+      setSocialLevel((profile.social_level as SocialLevel) ?? "moderate");
     }
   }, [profile]);
 
@@ -99,6 +109,9 @@ export default function ProfileEditPage() {
         bio: bio.trim() || null,
         car_access: carAccess || null,
         interested_in_trading: interestedInTrading,
+        playstyle,
+        game_speed: gameSpeed,
+        social_level: socialLevel,
       });
 
       const slots: AvailabilityInsert[] = [];
@@ -318,6 +331,83 @@ export default function ProfileEditPage() {
                 <span className="flex items-center gap-1">
                   <span className="inline-block h-4 w-4 rounded bg-surface-hover" /> {t("unavailable")}
                 </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Game Style */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
+              <Gamepad2 className="h-4 w-4" />
+              {t("game_style")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Playstyle */}
+            <div className="space-y-1.5">
+              <Label>{t("playstyle")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {(["casual", "mixed", "competitive"] as Playstyle[]).map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setPlaystyle(val)}
+                    className={cn(
+                      "rounded-full px-5 py-2 text-base font-medium transition-colors",
+                      playstyle === val
+                        ? "bg-accent text-white"
+                        : "bg-surface-card border border-border text-text-secondary"
+                    )}
+                  >
+                    {t(val)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Game Speed */}
+            <div className="space-y-1.5">
+              <Label>{t("game_speed")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {(["slow", "medium", "fast"] as GameSpeed[]).map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setGameSpeed(val)}
+                    className={cn(
+                      "rounded-full px-5 py-2 text-base font-medium transition-colors",
+                      gameSpeed === val
+                        ? "bg-accent text-white"
+                        : "bg-surface-card border border-border text-text-secondary"
+                    )}
+                  >
+                    {t(val)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Level */}
+            <div className="space-y-1.5">
+              <Label>{t("social_level")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {(["quiet", "moderate", "talkative"] as SocialLevel[]).map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setSocialLevel(val)}
+                    className={cn(
+                      "rounded-full px-5 py-2 text-base font-medium transition-colors",
+                      socialLevel === val
+                        ? "bg-accent text-white"
+                        : "bg-surface-card border border-border text-text-secondary"
+                    )}
+                  >
+                    {t(val)}
+                  </button>
+                ))}
               </div>
             </div>
           </CardContent>

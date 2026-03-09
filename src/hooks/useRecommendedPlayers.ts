@@ -31,7 +31,7 @@ export function useRecommendedPlayers(eventId: string | null) {
       const { data, error } = await supabase.rpc("send_bulk_invites", {
         p_event_id: eid,
         p_user_ids: userIds,
-        p_message: message || null,
+        p_message: message ?? undefined,
       });
       if (error) throw error;
       return data as unknown as { invited: number };
