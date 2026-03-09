@@ -20,7 +20,8 @@ const mockFrom = vi.fn().mockReturnValue(mockChain);
 
 const mockChannelOn = vi.fn().mockReturnThis();
 const mockChannelSubscribe = vi.fn().mockReturnThis();
-const mockChannelObj = { on: mockChannelOn, subscribe: mockChannelSubscribe };
+const mockChannelUnsubscribe = vi.fn();
+const mockChannelObj = { on: mockChannelOn, subscribe: mockChannelSubscribe, unsubscribe: mockChannelUnsubscribe };
 const mockChannel = vi.fn().mockReturnValue(mockChannelObj);
 const mockRemoveChannel = vi.fn();
 

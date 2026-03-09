@@ -65,11 +65,14 @@ vi.mock("@/components/events/AvailablePlayersHint", () => ({
 }));
 
 // Mock react-query useQuery for venues
+const mockVenues = [
+  { id: "venue-1", name: "Test Venue", city: "Tel Aviv" },
+];
 vi.mock("@tanstack/react-query", async () => {
   const actual = await vi.importActual("@tanstack/react-query");
   return {
     ...actual,
-    useQuery: () => ({ data: [], isLoading: false }),
+    useQuery: () => ({ data: mockVenues, isLoading: false }),
   };
 });
 
@@ -102,14 +105,14 @@ describe("BigEventForm", () => {
     expect(screen.getByRole("button", { name: "create_big_event" })).toBeInTheDocument();
   });
 
-  it("shows toast when city is empty on submit", async () => {
+  it("shows toast when venue is empty on submit", async () => {
     const user = userEvent.setup();
     renderForm();
 
     // Fill required title field (it has required attribute)
     await user.type(screen.getByLabelText("event_title"), "Test Event");
 
-    // Submit form - city is empty by default
+    // Submit form - venue is empty by default
     // We need to fire submit directly since HTML validation might block
     const form = document.querySelector("form")!;
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
@@ -118,7 +121,7 @@ describe("BigEventForm", () => {
     await vi.waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: "City is required",
+          title: "Venue is required",
           variant: "destructive",
         })
       );
@@ -128,13 +131,13 @@ describe("BigEventForm", () => {
   it("shows toast when max < min players on submit", async () => {
     renderForm();
 
-    // Manually dispatch submit with city set but max < min
+    // Manually dispatch submit with venue not set but max < min
     // We need to programmatically set form state via interactions
     const maxInput = screen.getByLabelText("max_players");
     await userEvent.clear(maxInput);
     await userEvent.type(maxInput, "2");
 
-    // The form won't pass city validation first, so toast should show city_required
+    // The form won't pass venue validation first, so toast should show venue_required
     const form = document.querySelector("form")!;
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
 
@@ -144,23 +147,25 @@ describe("BigEventForm", () => {
   });
 
   it("successful submit calls createEvent and navigates", async () => {
-    // For a full submit test we need to override city validation
-    // Since city uses Select which is complex to interact with in tests,
-    // we render with defaultValues
+    // Render with defaultValues including venue_id to bypass venue validation
     render(
       <MemoryRouter>
         <BigEventForm
           defaultValues={{
             city: "Tel Aviv",
+            venue_id: "venue-1",
             title: "Test Event",
           }}
         />
       </MemoryRouter>
     );
 
-    // Set starts_at to future date
-    const dateInput = screen.getByLabelText("date_time");
-    await userEvent.type(dateInput, "2027-06-15T18:00");
+    // Set date via split picker
+    const dateInput = screen.getByLabelText("Date");
+    await userEvent.type(dateInput, "2027-06-15");
+
+    // Click a time preset button (e.g. 18:00)
+    await userEvent.click(screen.getByRole("button", { name: "18:00" }));
 
     // Submit
     const form = document.querySelector("form")!;

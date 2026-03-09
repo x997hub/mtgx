@@ -45,10 +45,36 @@ vi.mock("@/store/authStore", () => ({
     selector({ user: { id: "user-1", email: "test@test.com" } }),
 }));
 
+// Mock supabase for venue query
+vi.mock("@/lib/supabase", () => ({
+  supabase: {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          order: () => Promise.resolve({ data: [], error: null }),
+        }),
+        order: () => Promise.resolve({ data: [], error: null }),
+      }),
+    }),
+  },
+}));
+
 // Mock AvailablePlayersHint (added to EventFormFields; needs QueryClient + RPC)
 vi.mock("@/components/events/AvailablePlayersHint", () => ({
   AvailablePlayersHint: () => null,
 }));
+
+// Mock react-query useQuery for venues
+const mockVenues = [
+  { id: "venue-1", name: "Test Venue", city: "Tel Aviv" },
+];
+vi.mock("@tanstack/react-query", async () => {
+  const actual = await vi.importActual("@tanstack/react-query");
+  return {
+    ...actual,
+    useQuery: () => ({ data: mockVenues, isLoading: false }),
+  };
+});
 
 function renderForm(defaultValues?: any) {
   return render(
@@ -71,13 +97,13 @@ describe("QuickMeetupForm", () => {
     expect(
       screen.getByRole("button", { name: "create_quick_meetup" })
     ).toBeInTheDocument();
-    // Date/time input
-    expect(screen.getByLabelText("date_time")).toBeInTheDocument();
+    // Date input (split picker: date field)
+    expect(screen.getByLabelText("Date")).toBeInTheDocument();
     // Min players input
     expect(screen.getByLabelText("min_players")).toBeInTheDocument();
   });
 
-  it("shows toast when city is empty on submit", async () => {
+  it("shows toast when venue is empty on submit", async () => {
     renderForm();
 
     const form = document.querySelector("form")!;
@@ -86,7 +112,7 @@ describe("QuickMeetupForm", () => {
     await vi.waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: "City is required",
+          title: "Venue is required",
           variant: "destructive",
         })
       );
@@ -94,8 +120,8 @@ describe("QuickMeetupForm", () => {
   });
 
   it("shows toast when date is empty on submit", async () => {
-    // Provide city so we get past city validation
-    renderForm({ city: "Tel Aviv" });
+    // Provide venue_id so we get past venue validation
+    renderForm({ venue_id: "venue-1" });
 
     const form = document.querySelector("form")!;
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
@@ -111,11 +137,14 @@ describe("QuickMeetupForm", () => {
   });
 
   it('successful submit calls createEvent with type "quick"', async () => {
-    renderForm({ city: "Tel Aviv" });
+    renderForm({ venue_id: "venue-1", city: "Tel Aviv" });
 
-    // Set starts_at to a future date
-    const dateInput = screen.getByLabelText("date_time");
-    await userEvent.type(dateInput, "2027-06-15T18:00");
+    // Set date via split picker
+    const dateInput = screen.getByLabelText("Date");
+    await userEvent.type(dateInput, "2027-06-15");
+
+    // Click a time preset button (e.g. 18:00)
+    await userEvent.click(screen.getByRole("button", { name: "18:00" }));
 
     const form = document.querySelector("form")!;
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
@@ -137,10 +166,14 @@ describe("QuickMeetupForm", () => {
   });
 
   it("expires_at is starts_at + 24h", async () => {
-    renderForm({ city: "Tel Aviv" });
+    renderForm({ venue_id: "venue-1", city: "Tel Aviv" });
 
-    const dateInput = screen.getByLabelText("date_time");
-    await userEvent.type(dateInput, "2027-06-15T18:00");
+    // Set date via split picker
+    const dateInput = screen.getByLabelText("Date");
+    await userEvent.type(dateInput, "2027-06-15");
+
+    // Click a time preset button (e.g. 18:00)
+    await userEvent.click(screen.getByRole("button", { name: "18:00" }));
 
     const form = document.querySelector("form")!;
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
