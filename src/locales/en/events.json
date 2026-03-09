@@ -85,6 +85,7 @@
   "proxy_partial": "Proxies: partial",
   "proxy_full": "Proxies: allowed",
   "proxy_policy": "Proxy policy",
+  "all_proxy": "Any proxy",
   "power_level": "Power level",
   "power_1": "1 - Jank",
   "power_2": "2 - Casual",

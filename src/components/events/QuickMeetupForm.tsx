@@ -7,7 +7,8 @@ import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
 import { EventFormFields } from "@/components/events/EventFormFields";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
-import type { MtgFormat } from "@/types/database.types";
+import { ProxyPolicySelector } from "@/components/events/ProxyPolicySelector";
+import type { MtgFormat, ProxyPolicy } from "@/types/database.types";
 
 interface QuickMeetupFormProps {
   defaultValues?: Partial<{
@@ -25,6 +26,7 @@ interface QuickFormState {
   venueId: string;
   city: string;
   minPlayers: number;
+  proxyPolicy: ProxyPolicy;
 }
 
 export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormProps) {
@@ -38,11 +40,12 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
   const [venueId, setVenueId] = useState(defaultValues?.venue_id ?? "");
   const [city, setCity] = useState(defaultValues?.city ?? "");
   const [minPlayers, setMinPlayers] = useState(defaultValues?.min_players ?? 2);
+  const [proxyPolicy, setProxyPolicy] = useState<ProxyPolicy>("none");
 
   // Autosave
   const formState = useMemo<QuickFormState>(() => ({
-    format, startsAt, venueId, city, minPlayers,
-  }), [format, startsAt, venueId, city, minPlayers]);
+    format, startsAt, venueId, city, minPlayers, proxyPolicy,
+  }), [format, startsAt, venueId, city, minPlayers, proxyPolicy]);
 
   const autosaveKey = `event-draft-${user?.id ?? "anon"}-quick`;
   const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
@@ -55,6 +58,7 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
       setVenueId(savedState.venueId ?? "");
       setCity(savedState.city);
       setMinPlayers(savedState.minPlayers);
+      setProxyPolicy(savedState.proxyPolicy ?? "none");
       toast({ title: t("draft_restored", "Draft restored") });
     }
   }, []);
@@ -86,6 +90,7 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         venue_id: venueId || null,
         starts_at: startsAtDate.toISOString(),
         min_players: minPlayers,
+        proxy_policy: proxyPolicy,
         // Quick meetups auto-expire 24h after start (DB trigger also handles this)
         expires_at: new Date(startsAtDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       });
@@ -115,6 +120,8 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         onMinPlayersChange={setMinPlayers}
         idPrefix="q_"
       />
+
+      <ProxyPolicySelector value={proxyPolicy} onChange={setProxyPolicy} />
 
       <Button type="submit" className="w-full min-h-[44px]" disabled={isCreating}>
         {isCreating ? t("common:loading") : t("create_quick_meetup")}

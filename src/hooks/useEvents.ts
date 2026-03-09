@@ -20,10 +20,11 @@ const PAGE_SIZE = 20;
 export function useEvents() {
   const format = useFilterStore((s) => s.format);
   const city = useFilterStore((s) => s.city);
+  const proxyPolicy = useFilterStore((s) => s.proxyPolicy);
   const queryClient = useQueryClient();
 
   const eventsQuery = useInfiniteQuery({
-    queryKey: ["events", { format, city }],
+    queryKey: ["events", { format, city, proxyPolicy }],
     queryFn: async ({ pageParam = 0 }) => {
       let query = supabase
         .from("events")
@@ -36,6 +37,7 @@ export function useEvents() {
 
       if (format) query = query.eq("format", format);
       if (city) query = query.eq("city", city);
+      if (proxyPolicy) query = query.eq("proxy_policy", proxyPolicy);
 
       const { data, error } = await query;
       if (error) throw error;

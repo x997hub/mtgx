@@ -25,7 +25,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useFilterStore } from "@/store/filterStore";
 import { FORMATS, CITIES } from "@/lib/constants";
 import { isToday } from "@/lib/utils";
-import type { MtgFormat } from "@/types/database.types";
+import type { MtgFormat, ProxyPolicy } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
 
 export default function EventFeedPage() {
@@ -34,8 +34,10 @@ export default function EventFeedPage() {
   const profile = useAuthStore((s) => s.profile);
   const format = useFilterStore((s) => s.format);
   const city = useFilterStore((s) => s.city);
+  const proxyPolicy = useFilterStore((s) => s.proxyPolicy);
   const setFormat = useFilterStore((s) => s.setFormat);
   const setCity = useFilterStore((s) => s.setCity);
+  const setProxyPolicy = useFilterStore((s) => s.setProxyPolicy);
   const { events, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
   const { instantCount } = useGoingToday(profile?.city ?? undefined);
@@ -81,13 +83,29 @@ export default function EventFeedPage() {
           </SelectContent>
         </Select>
 
-        {(format || city) && (
+        <Select
+          value={proxyPolicy ?? "all"}
+          onValueChange={(v) => setProxyPolicy(v === "all" ? null : (v as ProxyPolicy))}
+        >
+          <SelectTrigger className="w-[160px] min-h-[44px]">
+            <SelectValue placeholder={t("events:all_proxy")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("events:all_proxy")}</SelectItem>
+            <SelectItem value="none">{t("events:proxy_none")}</SelectItem>
+            <SelectItem value="partial">{t("events:proxy_partial")}</SelectItem>
+            <SelectItem value="full">{t("events:proxy_full")}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {(format || city || proxyPolicy) && (
           <Badge
             variant="outline"
             className="cursor-pointer min-h-[44px] flex items-center border-surface-hover text-text-secondary hover:bg-surface-hover"
             onClick={() => {
               setFormat(null);
               setCity(null);
+              setProxyPolicy(null);
             }}
           >
             {t("events:browse_all")}
