@@ -13,6 +13,14 @@
     <title>MTGX - MTG Meetup Platform</title>
   </head>
   <body>
+    <script>
+      // Apply saved theme before render to prevent flash
+      (function(){
+        var t = localStorage.getItem('mtgx-theme');
+        if (!t) t = 'dark';
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      })();
+    </script>
     <div id="root"></div>
     <script>
       // Auto-reload on chunk load failure (stale deploy after new version)

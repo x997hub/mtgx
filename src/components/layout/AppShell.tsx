@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Building2, Home, Plus, Settings, Shield, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { FeedbackModal } from "@/components/shared/FeedbackModal";
 import { useAuthStore } from "@/store/authStore";
 
@@ -80,6 +81,7 @@ export function AppShell() {
                 <Shield className="h-5 w-5" />
               </Link>
             )}
+            <ThemeToggle />
             <NotificationBell />
           </div>
         </header>

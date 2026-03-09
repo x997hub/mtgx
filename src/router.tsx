@@ -18,6 +18,7 @@ const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
 const PlayersDirectoryPage = lazy(() => import("@/pages/PlayersDirectoryPage"));
 const ClubsPage = lazy(() => import("@/pages/ClubsPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
+const DesignSystemPage = lazy(() => import("@/pages/DesignSystemPage"));
 
 function LazyPage({ children }: { children: React.ReactNode }) {
   return (
@@ -146,6 +147,14 @@ export const router = createBrowserRouter([
         element: (
           <LazyPage>
             <SettingsPage />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "/design-system",
+        element: (
+          <LazyPage>
+            <DesignSystemPage />
           </LazyPage>
         ),
       },
