@@ -1,14 +1,12 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { UserRole, MtgFormat } from "@/types/database.types";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormatBadge } from "@/components/shared/FormatBadge";
+import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import {
   Select,
   SelectContent,
@@ -27,17 +25,26 @@ const ROLE_LABELS: Record<UserRole, string> = {
   admin: "role_admin",
 };
 
-const ROLE_COLORS: Record<UserRole, string> = {
-  player: "bg-surface-hover text-text-secondary",
-  organizer: "bg-blue-700/30 text-blue-300",
-  club_owner: "bg-purple-700/30 text-purple-300",
-  admin: "bg-amber-700/30 text-amber-300",
+const ROLE_VARIANT: Record<string, "neutral" | "info" | "soft" | "warning"> = {
+  player: "neutral",
+  organizer: "info",
+  club_owner: "soft",
+  admin: "warning",
+};
+
+type UserRow = {
+  id: string;
+  display_name: string | null;
+  city: string | null;
+  role: string;
+  reliability_score: number | null;
+  formats: string[] | null;
+  created_at: string;
 };
 
 export function UsersTab() {
   const { t } = useTranslation(["common", "profile"]);
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
 
   const { data: profiles, isLoading, isError } = useQuery({
@@ -49,7 +56,7 @@ export function UsersTab() {
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
-      return data;
+      return data as UserRow[];
     },
   });
 
@@ -71,20 +78,78 @@ export function UsersTab() {
 
   const filtered = useMemo(() => {
     if (!profiles) return [];
-    let result = profiles;
-    if (roleFilter !== "all") {
-      result = result.filter((u) => u.role === roleFilter);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (u) =>
-          u.display_name?.toLowerCase().includes(q) ||
-          u.city?.toLowerCase().includes(q)
-      );
-    }
-    return result;
-  }, [profiles, roleFilter, search]);
+    if (roleFilter === "all") return profiles;
+    return profiles.filter((u) => u.role === roleFilter);
+  }, [profiles, roleFilter]);
+
+  const columns = useMemo<ColumnDef<UserRow, unknown>[]>(
+    () => [
+      { accessorKey: "display_name", header: "Name" },
+      { accessorKey: "city", header: "City" },
+      {
+        accessorKey: "role",
+        header: "Role",
+        cell: ({ getValue }) => {
+          const role = getValue<string>();
+          return <Badge variant={ROLE_VARIANT[role] ?? "neutral"}>{role}</Badge>;
+        },
+      },
+      {
+        accessorKey: "reliability_score",
+        header: "Reliability",
+        cell: ({ getValue }) => {
+          const score = getValue<number | null>();
+          if (score == null || score >= 1) return null;
+          const pct = (score * 100).toFixed(0);
+          return <Badge variant={score < 0.5 ? "danger" : "warning"}>{pct}%</Badge>;
+        },
+      },
+      {
+        accessorKey: "formats",
+        header: "Formats",
+        enableSorting: false,
+        cell: ({ getValue }) => {
+          const formats = getValue<string[] | null>();
+          if (!formats || formats.length === 0) return null;
+          return (
+            <div className="flex gap-1">
+              {formats.map((f) => (
+                <FormatBadge key={f} format={f as MtgFormat} className="text-xs px-2 py-0" />
+              ))}
+            </div>
+          );
+        },
+      },
+      {
+        id: "set_role",
+        header: "Set Role",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <Select
+              value={user.role}
+              onValueChange={(role) =>
+                updateRoleMutation.mutate({ userId: user.id, role: role as UserRole })
+              }
+            >
+              <SelectTrigger className="w-[130px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {t(`profile:${ROLE_LABELS[role]}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+    ],
+    [t, updateRoleMutation],
+  );
 
   if (isLoading) {
     return (
@@ -97,22 +162,13 @@ export function UsersTab() {
   }
 
   if (isError) {
-    return <p className="p-4 text-red-400">{t("common:error_occurred")}</p>;
+    return <p className="p-4 text-danger">{t("common:error_occurred")}</p>;
   }
 
   return (
     <div className="space-y-3 mt-4">
-      {/* Search + filter bar */}
+      {/* Role filter */}
       <div className="flex gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary" />
-          <Input
-            placeholder={t("common:search_users", "Search by name or city...")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="ps-9"
-          />
-        </div>
         <Select
           value={roleFilter}
           onValueChange={(v) => setRoleFilter(v as UserRole | "all")}
@@ -136,63 +192,7 @@ export function UsersTab() {
         {filtered.length} / {profiles?.length ?? 0}
       </p>
 
-      {/* User list */}
-      {filtered.length === 0 && (
-        <p className="p-4 text-center text-text-secondary">{t("common:no_results")}</p>
-      )}
-      {filtered.map((user) => (
-        <Card key={user.id} className="bg-surface-card border-surface-hover">
-          <CardContent className="flex items-center justify-between gap-3 p-4">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="font-medium text-text-primary truncate">{user.display_name}</p>
-                <Badge className={`border-none text-xs shrink-0 ${ROLE_COLORS[user.role as UserRole] ?? ROLE_COLORS.player}`}>
-                  {t(`profile:${ROLE_LABELS[user.role as UserRole] ?? "role_player"}`)}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-text-secondary">{user.city}</span>
-                {user.reliability_score != null && user.reliability_score < 1 && (
-                  <Badge
-                    className={`border-none text-xs ${
-                      user.reliability_score < 0.5
-                        ? "bg-red-700/20 text-red-400"
-                        : "bg-amber-700/20 text-amber-400"
-                    }`}
-                  >
-                    {(user.reliability_score * 100).toFixed(0)}%
-                  </Badge>
-                )}
-              </div>
-              {/* Formats */}
-              {user.formats && user.formats.length > 0 && (
-                <div className="flex gap-1 mt-1.5">
-                  {(user.formats as MtgFormat[]).map((f) => (
-                    <FormatBadge key={f} format={f} className="text-xs px-2 py-0" />
-                  ))}
-                </div>
-              )}
-            </div>
-            <Select
-              value={user.role}
-              onValueChange={(role) =>
-                updateRoleMutation.mutate({ userId: user.id, role: role as UserRole })
-              }
-            >
-              <SelectTrigger className="w-[130px] shrink-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLES.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {t(`profile:${ROLE_LABELS[role]}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-      ))}
+      <DataTable data={filtered} columns={columns} />
     </div>
   );
 }

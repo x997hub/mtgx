@@ -1,30 +1,33 @@
-import { useState, useEffect } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, TreePine } from "lucide-react";
+import { useUIStore, type ThemeId } from "@/store/uiStore";
+
+const THEME_CYCLE: ThemeId[] = ["dark", "light", "forest"];
+const THEME_ICON: Record<ThemeId, typeof Sun> = {
+  light: Sun,
+  dark: Moon,
+  forest: TreePine,
+};
+const THEME_LABEL: Record<ThemeId, string> = {
+  light: "Switch to forest theme",
+  dark: "Switch to light theme",
+  forest: "Switch to dark theme",
+};
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(() => {
-    return (localStorage.getItem("mtgx-theme") || "dark") === "dark";
-  });
+  const theme = useUIStore((s) => s.theme);
+  const setTheme = useUIStore((s) => s.setTheme);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("mtgx-theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("mtgx-theme", "light");
-    }
-  }, [isDark]);
+  const nextTheme = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
+  const Icon = THEME_ICON[theme];
 
   return (
     <button
       type="button"
-      onClick={() => setIsDark((prev) => !prev)}
+      onClick={() => setTheme(nextTheme)}
       className="flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary hover:text-accent transition-colors"
-      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      aria-label={THEME_LABEL[theme]}
     >
-      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      <Icon className="h-5 w-5" />
     </button>
   );
 }

@@ -71,7 +71,7 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
                     <PowerLevelBadge level={attendee.power_level} />
                   )}
                   <Badge
-                    className={`border-none text-white ${STATUS_COLORS[attendee.status] ?? "bg-border"}`}
+                    className={`border-none text-white ${STATUS_COLORS[attendee.status] ?? "bg-border text-text-secondary"}`}
                   >
                     {t(attendee.status)}
                   </Badge>

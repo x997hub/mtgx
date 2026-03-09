@@ -148,7 +148,7 @@ export function MoodTagsTab() {
   }
 
   if (isError) {
-    return <p className="p-4 text-red-400">{t("common:error_occurred")}</p>;
+    return <p className="p-4 text-danger">{t("common:error_occurred")}</p>;
   }
 
   return (
@@ -189,8 +189,8 @@ export function MoodTagsTab() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Badge
-                    variant={tag.is_active ? "default" : "outline"}
-                    className={tag.is_active ? "bg-emerald-700 text-emerald-100 border-none" : ""}
+                    variant={tag.is_active ? "success" : "outline"}
+                    className="border-none"
                   >
                     {tag.slug}
                   </Badge>

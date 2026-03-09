@@ -1,0 +1,51 @@
+/* ── Forest theme ── */
+.forest {
+  --color-primary: #0a1a0e;
+  --color-secondary: #0f2414;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+  --color-accent-soft: rgba(34, 197, 94, 0.12);
+
+  --color-surface: #071209;
+  --color-surface-card: #132a18;
+  --color-surface-hover: #1a3520;
+
+  --color-border: rgba(34, 197, 94, 0.10);
+  --color-border-hover: rgba(34, 197, 94, 0.18);
+  --color-border-active: rgba(34, 197, 94, 0.35);
+
+  --color-text-primary: #e8f5e9;
+  --color-text-secondary: #8bb898;
+  --color-text-muted: #4d7a56;
+
+  --color-going-soft: rgba(34, 197, 94, 0.12);
+  --color-maybe-soft: rgba(234, 179, 8, 0.10);
+  --color-not-going-soft: rgba(239, 68, 68, 0.10);
+
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  /* Format colors */
+  --color-format-pauper: #6b8e23;
+  --color-format-commander: #c2884c;
+  --color-format-standard: #4169e1;
+  --color-format-draft: #b366e0;
+
+  --color-format-pauper-soft: rgba(107, 142, 35, 0.18);
+  --color-format-commander-soft: rgba(194, 136, 76, 0.18);
+  --color-format-standard-soft: rgba(65, 105, 225, 0.18);
+  --color-format-draft-soft: rgba(179, 102, 224, 0.18);
+
+  /* Mood tag colors */
+  --color-mood-casual: #22c55e;
+  --color-mood-competitive: #ef4444;
+  --color-mood-deck-test: #3b82f6;
+  --color-mood-training: #a855f7;
+
+  --color-mood-casual-soft: rgba(34, 197, 94, 0.15);
+  --color-mood-competitive-soft: rgba(239, 68, 68, 0.15);
+  --color-mood-deck-test-soft: rgba(59, 130, 246, 0.15);
+  --color-mood-training-soft: rgba(168, 85, 247, 0.15);
+}

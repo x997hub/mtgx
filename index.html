@@ -16,9 +16,9 @@
     <script>
       // Apply saved theme before render to prevent flash
       (function(){
-        var t = localStorage.getItem('mtgx-theme');
-        if (!t) t = 'dark';
-        if (t === 'dark') document.documentElement.classList.add('dark');
+        var t = localStorage.getItem('mtgx-theme') || 'dark';
+        document.documentElement.classList.remove('dark','forest');
+        if (t !== 'light') document.documentElement.classList.add(t);
       })();
     </script>
     <div id="root"></div>

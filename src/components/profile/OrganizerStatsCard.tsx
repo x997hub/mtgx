@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, XCircle, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/StatCard";
 import { supabase } from "@/lib/supabase";
 
 interface OrganizerStats {
@@ -47,23 +47,23 @@ export function OrganizerStatsCard({ organizerId }: OrganizerStatsCardProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
-          <BarChart3 className="h-4 w-4" />
-          {t("organizer_stats", "Organizer stats")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-base text-text-primary">
-          {t("organizer_stats_summary", {
-            events: stats.events_total,
-            cancelRate: stats.cancel_rate ?? 0,
-            avgAttendance: Math.round(stats.avg_attendance ?? 0),
-            defaultValue: `${stats.events_total} events • ${stats.cancel_rate ?? 0}% cancellations • ~${Math.round(stats.avg_attendance ?? 0)} avg attendance`,
-          })}
-        </p>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-3 gap-3">
+      <StatCard
+        title={t("total_events", "Events")}
+        value={stats.events_total}
+        icon={Calendar}
+      />
+      <StatCard
+        title={t("cancel_rate", "Cancel %")}
+        value={`${stats.cancel_rate ?? 0}%`}
+        icon={XCircle}
+        trend={stats.cancel_rate > 10 ? { value: stats.cancel_rate, positive: false } : undefined}
+      />
+      <StatCard
+        title={t("avg_attendance", "Avg attend.")}
+        value={Math.round(stats.avg_attendance ?? 0)}
+        icon={Users}
+      />
+    </div>
   );
 }

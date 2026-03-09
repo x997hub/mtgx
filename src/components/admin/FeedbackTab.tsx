@@ -115,7 +115,7 @@ export function FeedbackTab() {
 
         {/* New count badge */}
         {newCount > 0 && (
-          <Badge className="bg-red-600 text-white border-none self-center">
+          <Badge variant="danger" className="border-none self-center">
             {newCount} {t("common:feedback.status_new", "new")}
           </Badge>
         )}
@@ -204,7 +204,7 @@ function FeedbackItem({
                   {timeAgo(item.created_at)}
                 </span>
                 {item.admin_notes && (
-                  <Badge className="bg-blue-700/20 text-blue-400 border-none text-xs">
+                  <Badge variant="info" className="border-none text-xs">
                     {t("common:feedback.admin_notes", "notes")}
                   </Badge>
                 )}

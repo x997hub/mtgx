@@ -8,9 +8,10 @@ interface StatCardProps {
     value: number;
     positive: boolean;
   };
+  subtitle?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, trend, subtitle }: StatCardProps) {
   return (
     <Card>
       <CardContent className="relative pt-6">
@@ -24,7 +25,7 @@ export function StatCard({ title, value, icon: Icon, trend }: StatCardProps) {
           {trend && (
             <p
               className={`text-sm font-medium ${
-                trend.positive ? "text-green-500" : "text-red-500"
+                trend.positive ? "text-success" : "text-danger"
               }`}
             >
               {trend.positive ? "\u2191" : "\u2193"}
@@ -32,6 +33,9 @@ export function StatCard({ title, value, icon: Icon, trend }: StatCardProps) {
             </p>
           )}
           <p className="text-sm text-text-secondary">{title}</p>
+          {subtitle && (
+            <p className="text-xs text-text-muted mt-0.5">{subtitle}</p>
+          )}
         </div>
       </CardContent>
     </Card>

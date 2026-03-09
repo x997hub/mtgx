@@ -9,8 +9,8 @@ interface ProxyPolicyBadgeProps {
 }
 
 const POLICY_STYLES: Record<string, string> = {
-  partial: "bg-amber-700/30 text-amber-300 border-amber-700/50",
-  full: "bg-emerald-700/30 text-emerald-300 border-emerald-700/50",
+  partial: "bg-maybe-soft text-warning border-warning/30",
+  full: "bg-going-soft text-success border-success/30",
 };
 
 export function ProxyPolicyBadge({ policy, className }: ProxyPolicyBadgeProps) {

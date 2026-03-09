@@ -2,13 +2,13 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Users, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Database, EventStatus } from "@/types/database.types";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormatBadge } from "@/components/shared/FormatBadge";
+import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { EVENT_STATUS_COLORS } from "@/lib/constants";
 
 const STATUSES: EventStatus[] = ["active", "confirmed", "cancelled", "expired"];
@@ -41,6 +41,83 @@ export function EventsTab() {
     return events.filter((e) => e.status === statusFilter);
   }, [events, statusFilter]);
 
+  const columns = useMemo<ColumnDef<EventRow, unknown>[]>(
+    () => [
+      {
+        id: "format",
+        header: "Format",
+        accessorKey: "format",
+        cell: ({ row }) => <FormatBadge format={row.original.format} />,
+      },
+      {
+        accessorKey: "title",
+        header: "Title",
+        cell: ({ row }) => {
+          const evt = row.original;
+          const title = evt.title || t("events:quick_format", { format: evt.format });
+          return (
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-text-primary truncate">{title}</span>
+              <Link
+                to={`/events/${evt.id}`}
+                className="text-text-secondary hover:text-accent shrink-0"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "starts_at",
+        header: "Date",
+        cell: ({ getValue }) => {
+          const date = getValue<string>();
+          return <span>{new Date(date).toLocaleDateString()}</span>;
+        },
+      },
+      { accessorKey: "city", header: "City" },
+      {
+        id: "organizer",
+        header: "Organizer",
+        accessorFn: (row) => row.profiles?.display_name ?? "",
+        cell: ({ getValue }) => {
+          const name = getValue<string>();
+          return name ? <span className="text-text-primary">{name}</span> : null;
+        },
+      },
+      {
+        id: "rsvp",
+        header: "RSVP",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const evt = row.original;
+          const goingCount = evt.rsvps?.[0]?.count ?? 0;
+          return (
+            <span className="text-text-secondary">
+              {goingCount}{evt.max_players ? `/${evt.max_players}` : ""}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ getValue }) => {
+          const status = getValue<string>();
+          return (
+            <Badge
+              className={`border-none ${EVENT_STATUS_COLORS[status as EventStatus] ?? "bg-surface-hover text-text-secondary"}`}
+            >
+              {status}
+            </Badge>
+          );
+        },
+      },
+    ],
+    [t],
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-2 mt-4">
@@ -52,7 +129,7 @@ export function EventsTab() {
   }
 
   if (isError) {
-    return <p className="p-4 text-red-400">{t("common:error_occurred")}</p>;
+    return <p className="p-4 text-danger">{t("common:error_occurred")}</p>;
   }
 
   return (
@@ -92,55 +169,7 @@ export function EventsTab() {
         {filtered.length} {t("common:events").toLowerCase()}
       </p>
 
-      {/* Event list */}
-      {filtered.length === 0 && (
-        <p className="p-4 text-center text-text-secondary">{t("common:no_results")}</p>
-      )}
-      {filtered.map((evt) => {
-        const title = evt.title || t("events:quick_format", { format: evt.format });
-        const organizer = evt.profiles?.display_name;
-        const goingCount = evt.rsvps?.[0]?.count ?? 0;
-        const isPast = new Date(evt.starts_at) < new Date();
-
-        return (
-          <Card key={evt.id} className={`bg-surface-card border-surface-hover ${isPast ? "opacity-60" : ""}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <FormatBadge format={evt.format} />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-text-primary truncate">{title}</p>
-                      <Link
-                        to={`/events/${evt.id}`}
-                        className="text-text-secondary hover:text-accent shrink-0"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                    <p className="text-sm text-text-secondary">
-                      {new Date(evt.starts_at).toLocaleDateString()} — {evt.city}
-                      {organizer && <> — {organizer}</>}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* RSVP count */}
-                  <div className="flex items-center gap-1 text-sm text-text-secondary">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>{goingCount}{evt.max_players ? `/${evt.max_players}` : ""}</span>
-                  </div>
-                  <Badge
-                    className={`border-none ${EVENT_STATUS_COLORS[evt.status as EventStatus] ?? "bg-surface-hover text-text-secondary"}`}
-                  >
-                    {evt.status}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      <DataTable data={filtered} columns={columns} />
     </div>
   );
 }

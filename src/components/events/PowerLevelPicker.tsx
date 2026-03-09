@@ -16,11 +16,11 @@ const POWER_LEVELS = [
 ] as const;
 
 const LEVEL_COLORS: Record<number, { active: string; inactive: string }> = {
-  1: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-border text-text-secondary" },
-  2: { active: "bg-teal-700 text-teal-100", inactive: "bg-border text-text-secondary" },
-  3: { active: "bg-amber-700 text-amber-100", inactive: "bg-border text-text-secondary" },
-  4: { active: "bg-orange-700 text-orange-100", inactive: "bg-border text-text-secondary" },
-  5: { active: "bg-red-700 text-red-100", inactive: "bg-border text-text-secondary" },
+  1: { active: "bg-success text-white", inactive: "bg-border text-text-secondary" },
+  2: { active: "bg-success/80 text-white", inactive: "bg-border text-text-secondary" },
+  3: { active: "bg-warning text-white", inactive: "bg-border text-text-secondary" },
+  4: { active: "bg-warning/80 text-white", inactive: "bg-border text-text-secondary" },
+  5: { active: "bg-danger text-white", inactive: "bg-border text-text-secondary" },
 };
 
 export function PowerLevelPicker({ value, onChange }: PowerLevelPickerProps) {
@@ -59,11 +59,11 @@ export function PowerLevelBadge({ level }: { level: number }) {
   const { t } = useTranslation("events");
   const labels: Record<number, string> = { 1: "Jank", 2: "Casual", 3: "Focused", 4: "Optimized", 5: "cEDH" };
   const colors: Record<number, string> = {
-    1: "bg-emerald-700/30 text-emerald-300",
-    2: "bg-teal-700/30 text-teal-300",
-    3: "bg-amber-700/30 text-amber-300",
-    4: "bg-orange-700/30 text-orange-300",
-    5: "bg-red-700/30 text-red-300",
+    1: "bg-going-soft text-success",
+    2: "bg-going-soft text-success",
+    3: "bg-maybe-soft text-warning",
+    4: "bg-maybe-soft text-warning",
+    5: "bg-not-going-soft text-danger",
   };
 
   return (

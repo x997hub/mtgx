@@ -1,0 +1,51 @@
+/* ── Dark theme ── */
+.dark {
+  --color-primary: #0e1019;
+  --color-secondary: #141725;
+  --color-accent: #e94560;
+  --color-accent-hover: #d63851;
+  --color-accent-soft: rgba(233, 69, 96, 0.12);
+
+  --color-surface: #0a0b12;
+  --color-surface-card: #171a28;
+  --color-surface-hover: #1e2236;
+
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-hover: rgba(255, 255, 255, 0.14);
+  --color-border-active: rgba(233, 69, 96, 0.35);
+
+  --color-text-primary: #eff1f5;
+  --color-text-secondary: #a0a4b8;
+  --color-text-muted: #5c6078;
+
+  --color-going-soft: rgba(34, 197, 94, 0.12);
+  --color-maybe-soft: rgba(234, 179, 8, 0.10);
+  --color-not-going-soft: rgba(239, 68, 68, 0.10);
+
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  /* Format colors */
+  --color-format-pauper: #6b8e23;
+  --color-format-commander: #c2884c;
+  --color-format-standard: #4169e1;
+  --color-format-draft: #b366e0;
+
+  --color-format-pauper-soft: rgba(107, 142, 35, 0.18);
+  --color-format-commander-soft: rgba(194, 136, 76, 0.18);
+  --color-format-standard-soft: rgba(65, 105, 225, 0.18);
+  --color-format-draft-soft: rgba(179, 102, 224, 0.18);
+
+  /* Mood tag colors */
+  --color-mood-casual: #22c55e;
+  --color-mood-competitive: #ef4444;
+  --color-mood-deck-test: #3b82f6;
+  --color-mood-training: #a855f7;
+
+  --color-mood-casual-soft: rgba(34, 197, 94, 0.15);
+  --color-mood-competitive-soft: rgba(239, 68, 68, 0.15);
+  --color-mood-deck-test-soft: rgba(59, 130, 246, 0.15);
+  --color-mood-training-soft: rgba(168, 85, 247, 0.15);
+}

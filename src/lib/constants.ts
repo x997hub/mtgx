@@ -15,18 +15,18 @@ export const CAR_ACCESS_OPTIONS: CarAccess[] = ["yes", "no", "sometimes"];
 
 /** Active/inactive toggle colors for format selection buttons */
 export const FORMAT_TOGGLE_COLORS: Record<MtgFormat, { active: string; inactive: string }> = {
-  pauper: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-surface-hover text-text-secondary" },
-  commander: { active: "bg-purple-700 text-purple-100", inactive: "bg-surface-hover text-text-secondary" },
-  standard: { active: "bg-blue-700 text-blue-100", inactive: "bg-surface-hover text-text-secondary" },
-  draft: { active: "bg-amber-700 text-amber-100", inactive: "bg-surface-hover text-text-secondary" },
+  pauper: { active: "bg-format-pauper text-white", inactive: "bg-surface-hover text-text-secondary" },
+  commander: { active: "bg-format-commander text-white", inactive: "bg-surface-hover text-text-secondary" },
+  standard: { active: "bg-format-standard text-white", inactive: "bg-surface-hover text-text-secondary" },
+  draft: { active: "bg-format-draft text-white", inactive: "bg-surface-hover text-text-secondary" },
 };
 
 /** Badge colors for format display */
 export const FORMAT_BADGE_COLORS: Record<MtgFormat, string> = {
-  pauper: "bg-emerald-700 text-emerald-100",
-  commander: "bg-purple-700 text-purple-100",
-  standard: "bg-blue-700 text-blue-100",
-  draft: "bg-amber-700 text-amber-100",
+  pauper: "bg-format-pauper text-white",
+  commander: "bg-format-commander text-white",
+  standard: "bg-format-standard text-white",
+  draft: "bg-format-draft text-white",
 };
 
 /** Default mood tag slugs (matching DB seed) */
@@ -38,9 +38,9 @@ export const PROXY_POLICIES: ProxyPolicy[] = ["none", "partial", "full"];
 
 /** Proxy policy display colors */
 export const PROXY_POLICY_COLORS: Record<ProxyPolicy, string> = {
-  none: "bg-red-700/60 text-red-100",
-  partial: "bg-yellow-700/60 text-yellow-100",
-  full: "bg-green-700/60 text-green-100",
+  none: "bg-danger/60 text-white",
+  partial: "bg-warning/60 text-white",
+  full: "bg-success/60 text-white",
 };
 
 /** Commander power levels (1-5) */
@@ -67,19 +67,19 @@ export const FEEDBACK_STATUSES: FeedbackStatus[] = ["new", "in_progress", "resol
 
 /** Event status badge colors */
 export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
-  active: "bg-emerald-700 text-emerald-100",
-  confirmed: "bg-blue-700 text-blue-100",
-  cancelled: "bg-red-700 text-red-100",
+  active: "bg-going-soft text-success",
+  confirmed: "bg-info/10 text-info",
+  cancelled: "bg-not-going-soft text-danger",
   expired: "bg-surface-hover text-text-secondary",
 };
 
 /** RSVP status badge colors */
 export const RSVP_STATUS_COLORS: Record<RsvpStatus, string> = {
-  going: "bg-emerald-700",
-  maybe: "bg-amber-700",
+  going: "bg-success",
+  maybe: "bg-warning",
   not_going: "bg-surface-hover",
-  waitlisted: "bg-indigo-700",
-  pending_confirmation: "bg-yellow-700",
+  waitlisted: "bg-info",
+  pending_confirmation: "bg-warning",
 };
 
 /** RSVP display order */
@@ -87,47 +87,47 @@ export const RSVP_STATUS_ORDER: RsvpStatus[] = ["going", "maybe", "not_going", "
 
 /** Feedback type badge colors */
 export const FEEDBACK_TYPE_COLORS: Record<FeedbackType, string> = {
-  bug: "bg-red-700/20 text-red-400",
-  suggestion: "bg-blue-700/20 text-blue-400",
-  question: "bg-amber-700/20 text-amber-400",
+  bug: "bg-not-going-soft text-danger",
+  suggestion: "bg-info/10 text-info",
+  question: "bg-maybe-soft text-warning",
 };
 
 /** Feedback status badge colors */
 export const FEEDBACK_STATUS_COLORS: Record<FeedbackStatus, string> = {
-  new: "bg-blue-700 text-blue-100",
-  in_progress: "bg-amber-700 text-amber-100",
-  resolved: "bg-emerald-700 text-emerald-100",
+  new: "bg-info/10 text-info",
+  in_progress: "bg-maybe-soft text-warning",
+  resolved: "bg-going-soft text-success",
   closed: "bg-surface-hover text-text-secondary",
 };
 
 /** Player skill level badge colors */
 export const LEVEL_COLORS: Record<string, string> = {
-  casual: "bg-green-700/30 text-green-300",
-  regular: "bg-blue-700/30 text-blue-300",
-  competitive: "bg-red-700/30 text-red-300",
+  casual: "bg-going-soft text-success",
+  regular: "bg-info/10 text-info",
+  competitive: "bg-not-going-soft text-danger",
 };
 
 /** Availability level colors (interactive, with hover) */
 export const AVAILABILITY_LEVEL_COLORS: Record<AvailabilityLevel, string> = {
-  available: "bg-emerald-600 hover:bg-emerald-500",
-  sometimes: "bg-amber-600 hover:bg-amber-500",
+  available: "bg-success hover:bg-success/80",
+  sometimes: "bg-warning hover:bg-warning/80",
   unavailable: "bg-surface-hover hover:bg-surface-hover/80",
 };
 
 /** Mood tag toggle colors (for selector buttons) */
 export const MOOD_TAG_TOGGLE_COLORS: Record<string, { active: string; inactive: string }> = {
-  casual: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-surface-hover text-text-secondary" },
-  competitive: { active: "bg-red-700 text-red-100", inactive: "bg-surface-hover text-text-secondary" },
-  deck_test: { active: "bg-blue-700 text-blue-100", inactive: "bg-surface-hover text-text-secondary" },
-  training: { active: "bg-purple-700 text-purple-100", inactive: "bg-surface-hover text-text-secondary" },
+  casual: { active: "bg-mood-casual text-white", inactive: "bg-surface-hover text-text-secondary" },
+  competitive: { active: "bg-mood-competitive text-white", inactive: "bg-surface-hover text-text-secondary" },
+  deck_test: { active: "bg-mood-deck-test text-white", inactive: "bg-surface-hover text-text-secondary" },
+  training: { active: "bg-mood-training text-white", inactive: "bg-surface-hover text-text-secondary" },
 };
 
 /** Mood tag badge colors */
 export const MOOD_TAG_COLORS: Record<string, string> = {
-  casual: "bg-emerald-700/30 text-emerald-300 border-emerald-700/50",
-  competitive: "bg-red-700/30 text-red-300 border-red-700/50",
-  deck_test: "bg-blue-700/30 text-blue-300 border-blue-700/50",
-  training: "bg-purple-700/30 text-purple-300 border-purple-700/50",
+  casual: "bg-mood-casual-soft text-mood-casual border-mood-casual/30",
+  competitive: "bg-mood-competitive-soft text-mood-competitive border-mood-competitive/30",
+  deck_test: "bg-mood-deck-test-soft text-mood-deck-test border-mood-deck-test/30",
+  training: "bg-mood-training-soft text-mood-training border-mood-training/30",
 };
 
 /** Mood tag display labels */
