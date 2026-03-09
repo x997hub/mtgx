@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
 import { getInitials } from "@/lib/utils";
@@ -103,7 +104,7 @@ export default function ProfilePage() {
   const { user, profile: viewerProfile } = useAuth();
   const queryClient = useQueryClient();
   const isOwn = !userId || userId === user?.id;
-  const { profile, availability, isLoading } = useProfile(isOwn ? undefined : userId);
+  const { profile, availability, isLoading, isError, refetch } = useProfile(isOwn ? undefined : userId);
   const { subscriptions } = useSubscription();
   const { prefs: invitePrefs } = useInvitePreferences(isOwn ? undefined : userId);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
@@ -165,6 +166,10 @@ export default function ProfilePage() {
         <Skeleton className="h-32 w-full rounded-xl" />
       </div>
     );
+  }
+
+  if (isError) {
+    return <QueryErrorState onRetry={() => refetch()} />;
   }
 
   if (!profile) {

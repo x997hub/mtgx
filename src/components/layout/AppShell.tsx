@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Building2, Home, Plus, Settings, Shield, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
+import { OfflineBanner } from "@/components/shared/OfflineBanner";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { FeedbackModal } from "@/components/shared/FeedbackModal";
 import { useAuthStore } from "@/store/authStore";
@@ -23,7 +24,9 @@ export function AppShell() {
   const isAdmin = role === "admin";
 
   return (
-    <div className="flex min-h-screen bg-primary text-text-primary">
+    <div className="flex min-h-screen flex-col bg-primary text-text-primary">
+      <OfflineBanner />
+      <div className="flex flex-1">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-48 md:flex-col md:border-e md:border-border md:bg-secondary">
         <div className="flex h-16 items-center px-6">
@@ -94,6 +97,7 @@ export function AppShell() {
 
       {/* Feedback button (Feature #36) */}
       <FeedbackModal />
+      </div>
 
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 start-0 end-0 z-40 flex h-[72px] items-center justify-around border-t border-border bg-secondary md:hidden">

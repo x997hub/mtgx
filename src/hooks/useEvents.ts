@@ -81,6 +81,8 @@ export function useEvents() {
   return {
     events: eventsQuery.data?.pages.flat() ?? [],
     isLoading: eventsQuery.isLoading,
+    isError: eventsQuery.isError,
+    refetch: eventsQuery.refetch,
     fetchNextPage: eventsQuery.fetchNextPage,
     hasNextPage: eventsQuery.hasNextPage,
     isFetchingNextPage: eventsQuery.isFetchingNextPage,

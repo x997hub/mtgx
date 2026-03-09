@@ -5,6 +5,7 @@ import { Bell, Check, CheckCheck, Mail, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useInvites } from "@/hooks/useInvites";
 import { InviteNotificationCard } from "@/components/shared/InviteNotificationCard";
@@ -15,7 +16,7 @@ import type { InviteStatus } from "@/types/database.types";
 export default function NotificationsPage() {
   const { t } = useTranslation("common");
   const { t: tp } = useTranslation("profile");
-  const { notifications, isLoading, markAsRead, markAllRead } = useNotifications();
+  const { notifications, isLoading, isError, refetch, markAsRead, markAllRead } = useNotifications();
   const { incoming, pendingCount, respondInvite, isResponding } = useInvites();
   const { toast } = useToast();
   const { t: te } = useTranslation("events");
@@ -40,6 +41,10 @@ export default function NotificationsPage() {
     } catch {
       toast({ title: t("error_occurred"), variant: "destructive" });
     }
+  }
+
+  if (isError) {
+    return <QueryErrorState onRetry={() => refetch()} />;
   }
 
   if (isLoading) {

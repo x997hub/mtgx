@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import i18n from "i18next";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
@@ -108,11 +109,20 @@ export function useRSVP() {
         });
       });
     },
-    onError: (_err, { eventId }, context) => {
+    onError: (err, { eventId }, context) => {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(["rsvps", eventId], context.previous);
       }
-      toast({ title: "Something went wrong", variant: "destructive" });
+      const message = err instanceof Error ? err.message : "";
+      let title: string;
+      if (message.includes("event_full")) {
+        title = i18n.t("errors.event_full", { ns: "common" });
+      } else if (message.includes("event_not_active")) {
+        title = i18n.t("errors.event_not_found", { ns: "common" });
+      } else {
+        title = i18n.t("error_network", { ns: "common" });
+      }
+      toast({ title, variant: "destructive" });
     },
     onSettled: (_data, _err, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: ["rsvps", eventId] });

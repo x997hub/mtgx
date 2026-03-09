@@ -110,6 +110,7 @@ export function usePlayers(filters: PlayerFilters) {
     availabilityMap,
     isLoading: playersQuery.isLoading,
     isError: playersQuery.isError,
+    refetch: playersQuery.refetch,
     fetchNextPage: playersQuery.fetchNextPage,
     hasNextPage: playersQuery.hasNextPage,
     isFetchingNextPage: playersQuery.isFetchingNextPage,

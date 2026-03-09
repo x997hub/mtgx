@@ -17,6 +17,7 @@ import { LFGToggleButton } from "@/components/events/LFGToggleButton";
 import { LFGSignalList } from "@/components/events/LFGSignalList";
 import { GoingTodaySheet } from "@/components/events/GoingTodaySheet";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { FAB } from "@/components/shared/FAB";
 import { useEvents } from "@/hooks/useEvents";
 import { useGoingToday } from "@/hooks/useGoingToday";
@@ -38,7 +39,7 @@ export default function EventFeedPage() {
   const setFormat = useFilterStore((s) => s.setFormat);
   const setCity = useFilterStore((s) => s.setCity);
   const setProxyPolicy = useFilterStore((s) => s.setProxyPolicy);
-  const { events, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { events, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
   const { instantCount } = useGoingToday(profile?.city ?? undefined);
   const [goingTodayOpen, setGoingTodayOpen] = useState(false);
@@ -121,7 +122,9 @@ export default function EventFeedPage() {
       <LFGSignalList city={profile?.city ?? undefined} />
 
       {/* Events */}
-      {isLoading ? (
+      {isError ? (
+        <QueryErrorState onRetry={() => refetch()} />
+      ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-lg" />

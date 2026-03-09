@@ -15,6 +15,7 @@ import { MoodTagBadge } from "@/components/events/MoodTagBadge";
 import { ProxyPolicyBadge } from "@/components/events/ProxyPolicyBadge";
 import { RecurringBadge } from "@/components/events/RecurringBadge";
 import { RSVPButton } from "@/components/events/RSVPButton";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { AttendeeList } from "@/components/events/AttendeeList";
 import { MessageComposer } from "@/components/events/MessageComposer";
 import { OrganizerMessagesList } from "@/components/events/OrganizerMessagesList";
@@ -34,7 +35,7 @@ export default function EventDetailPage() {
   const user = useAuthStore((s) => s.user);
   const session = useAuthStore((s) => s.session);
 
-  const { data: event, isLoading: eventLoading } = useEvent(eventId ?? "");
+  const { data: event, isLoading: eventLoading, isError: eventError, refetch: eventRefetch } = useEvent(eventId ?? "");
   const { data: rsvps, isLoading: rsvpsLoading } = useEventRsvps(eventId ?? "");
   const { position: waitlistPosition } = useWaitlist(eventId ?? "");
   const [confirming, setConfirming] = useState(false);
@@ -106,6 +107,10 @@ export default function EventDetailPage() {
         <Skeleton className="h-32 rounded-lg" />
       </div>
     );
+  }
+
+  if (eventError) {
+    return <QueryErrorState onRetry={() => eventRefetch()} />;
   }
 
   if (!event) {

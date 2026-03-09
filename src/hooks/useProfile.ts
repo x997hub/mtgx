@@ -118,6 +118,8 @@ export function useProfile(userId?: string) {
     profile: profileQuery.data,
     availability: availabilityQuery.data ?? [],
     isLoading: profileQuery.isLoading,
+    isError: profileQuery.isError,
+    refetch: profileQuery.refetch,
     updateProfile: updateProfileMutation.mutateAsync,
     upsertProfile: upsertProfileMutation.mutateAsync,
     updateAvailability: updateAvailabilityMutation.mutateAsync,

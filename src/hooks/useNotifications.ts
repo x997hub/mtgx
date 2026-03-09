@@ -84,6 +84,8 @@ export function useNotifications() {
   return {
     notifications: notificationsQuery.data ?? [],
     isLoading: notificationsQuery.isLoading,
+    isError: notificationsQuery.isError,
+    refetch: notificationsQuery.refetch,
     markAsRead: markAsReadMutation.mutate,
     markAllRead: markAllReadMutation.mutate,
   };

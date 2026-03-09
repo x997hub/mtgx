@@ -11,6 +11,7 @@ import { Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { VenueCard } from "@/components/venue/VenueCard";
 import { useVenues } from "@/hooks/useVenues";
 
@@ -46,7 +47,7 @@ function FlyToUser() {
 
 export default function ClubsPage() {
   const { t } = useTranslation(["common", "venue"]);
-  const { data: venues, isLoading, isError } = useVenues();
+  const { data: venues, isLoading, isError, refetch } = useVenues();
   const [mapReady, setMapReady] = useState(false);
 
   const venuesWithCoords = venues?.filter(
@@ -112,7 +113,7 @@ export default function ClubsPage() {
         </div>
       )}
 
-      {isError && <EmptyState title={t("common:error_occurred")} />}
+      {isError && <QueryErrorState onRetry={() => refetch()} />}
 
       {venues && venues.length === 0 && (
         <EmptyState icon={Building2} title={t("venue:no_clubs")} />

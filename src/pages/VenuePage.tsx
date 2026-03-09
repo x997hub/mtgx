@@ -9,6 +9,7 @@ import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
 import { SubscribeButton } from "@/components/shared/SubscribeButton";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { EventCard } from "@/components/events/EventCard";
 import type { Venue, VenuePhoto } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
@@ -88,11 +89,7 @@ export default function VenuePage() {
   }
 
   if (venueQuery.isError) {
-    return (
-      <div className="min-h-screen bg-surface p-4">
-        <EmptyState title={tc("error_occurred")} />
-      </div>
-    );
+    return <QueryErrorState onRetry={() => venueQuery.refetch()} />;
   }
 
   const venue = venueQuery.data;

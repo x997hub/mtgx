@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlayerCard } from "@/components/players/PlayerCard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { usePlayers, useVenuesList } from "@/hooks/usePlayers";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/store/authStore";
@@ -28,7 +29,7 @@ export default function PlayersDirectoryPage() {
   const [day, setDay] = useState<DayOfWeek | null>(null);
   const [venueId, setVenueId] = useState<string | null>(null);
 
-  const { players, availabilityMap, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { players, availabilityMap, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     usePlayers({ format, city, day, venueId });
 
   const { data: venues } = useVenuesList();
@@ -141,7 +142,7 @@ export default function PlayersDirectoryPage() {
 
       {/* Players grid */}
       {isError ? (
-        <p className="text-center text-red-400">{t("common:error_occurred")}</p>
+        <QueryErrorState onRetry={() => refetch()} />
       ) : isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
