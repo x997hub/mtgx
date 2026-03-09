@@ -44,7 +44,7 @@ export default function EventFeedPage() {
   const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   return (
-    <div className="space-y-4 pb-24">
+    <div className="space-y-4 p-4 md:p-6 pb-24">
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select

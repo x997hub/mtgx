@@ -14,7 +14,7 @@ export default function ClubsPage() {
       <h1 className="text-2xl font-bold text-text-primary">{t("common:clubs")}</h1>
 
       {isLoading && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
@@ -33,7 +33,7 @@ export default function ClubsPage() {
       )}
 
       {venues && venues.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {venues.map((venue) => (
             <VenueCard key={venue.id} venue={venue} />
           ))}

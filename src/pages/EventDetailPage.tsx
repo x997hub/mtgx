@@ -98,7 +98,7 @@ export default function EventDetailPage() {
 
   if (eventLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 md:p-6">
         <Skeleton className="h-8 w-3/4 rounded-lg" />
         <Skeleton className="h-48 rounded-lg" />
         <Skeleton className="h-32 rounded-lg" />
@@ -131,7 +131,7 @@ export default function EventDetailPage() {
   const spotsLeft = event.max_players ? event.max_players - goingCount : null;
 
   return (
-    <div className="space-y-4 pb-8">
+    <div className="space-y-4 p-4 md:p-6 pb-8">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
