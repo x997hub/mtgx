@@ -244,7 +244,8 @@ async function getRecipients(
     entry.type === "organizer_message" ||
     entry.type === "attendance_confirmation" ||
     entry.type === "player_recruitment" ||
-    entry.type === "rsvp_waitlisted"
+    entry.type === "rsvp_waitlisted" ||
+    entry.type === "waitlist_promoted"
   ) {
     const payloadRecipients = payload.recipients as string[] | undefined;
     if (payloadRecipients) {
@@ -1097,6 +1098,7 @@ function getNotificationTitle(type: string): string {
     case "attendance_confirmation": return "Confirm your attendance";
     case "player_recruitment": return "A game needs you!";
     case "rsvp_waitlisted": return "You're on the waitlist";
+    case "waitlist_promoted": return "You got a spot!";
     default: return "MTGX Notification";
   }
 }
@@ -1128,6 +1130,8 @@ function getNotificationBody(entry: Record<string, unknown>): string {
       return `${payload.title || "An event"} needs ${payload.spots_remaining || "more"} player(s) — join now!`;
     case "rsvp_waitlisted":
       return `Event is full — you're #${payload.queue_position || "?"} on the waitlist`;
+    case "waitlist_promoted":
+      return "A spot opened up and you've been moved from the waitlist to going!";
     default:
       return "Check the app for details";
   }

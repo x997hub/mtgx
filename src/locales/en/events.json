@@ -67,6 +67,7 @@
   "pending_confirmation": "Pending confirmation",
   "queue_position": "You are #{{position}} in queue",
   "join_waitlist": "Join waitlist",
+  "waitlist_promoted": "You got a spot! Moved from waitlist to going.",
   "confirm_attendance": "Confirm attendance",
   "confirmed": "Confirmed!",
   "organizer_message": "Message from organizer",

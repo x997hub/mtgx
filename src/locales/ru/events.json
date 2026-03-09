@@ -67,6 +67,7 @@
   "pending_confirmation": "Ожидает подтверждения",
   "queue_position": "Вы #{{position}} в очереди",
   "join_waitlist": "Встать в очередь",
+  "waitlist_promoted": "Место освободилось! Вы перемещены из очереди в участники.",
   "confirm_attendance": "Подтвердить участие",
   "confirmed": "Подтверждено!",
   "organizer_message": "Сообщение от организатора",
