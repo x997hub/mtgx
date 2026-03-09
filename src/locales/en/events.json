@@ -114,5 +114,15 @@
   "instant_meetup_suggestion": "{{count}} players available! Create meetup?",
   "fill_indicator": "{{current}}/{{max}} spots",
   "available_players_hint": "~{{count}} players in your city are usually free at this time",
-  "recruitment_push": "{{event}} needs players - join?"
+  "recruitment_push": "{{event}} needs players - join?",
+  "show_qr": "Show QR",
+  "check_in": "Check in",
+  "scan_qr": "Scan QR code",
+  "scan_to_checkin": "Scan to check in",
+  "checked_in_success": "Checked in!",
+  "already_checked_in": "Already checked in",
+  "qr_event_not_found": "Event not found",
+  "qr_checkin_disabled": "Check-in is disabled for this event",
+  "qr_no_rsvp": "You have no RSVP for this event",
+  "qr_not_going": "You must RSVP as going first"
 }

@@ -114,5 +114,15 @@
   "instant_meetup_suggestion": "{{count}} игроков свободны! Создать встречу?",
   "fill_indicator": "{{current}}/{{max}} мест",
   "available_players_hint": "~{{count}} игроков в вашем городе обычно свободны в это время",
-  "recruitment_push": "{{event}} ищет игроков — присоединиться?"
+  "recruitment_push": "{{event}} ищет игроков — присоединиться?",
+  "show_qr": "Показать QR",
+  "check_in": "Отметиться",
+  "scan_qr": "Сканировать QR-код",
+  "scan_to_checkin": "Сканируйте для отметки",
+  "checked_in_success": "Вы отмечены!",
+  "already_checked_in": "Вы уже отметились",
+  "qr_event_not_found": "Событие не найдено",
+  "qr_checkin_disabled": "Отметка отключена для этого события",
+  "qr_no_rsvp": "У вас нет записи на это событие",
+  "qr_not_going": "Сначала запишитесь на событие"
 }

@@ -21,6 +21,8 @@ import { MessageComposer } from "@/components/events/MessageComposer";
 import { OrganizerMessagesList } from "@/components/events/OrganizerMessagesList";
 import { PowerLevelSelector } from "@/components/events/PowerLevelSelector";
 import { PowerLevelDistribution } from "@/components/events/PowerLevelDistribution";
+import { ShowQRButton } from "@/components/events/ShowQRButton";
+import { CheckInButton } from "@/components/events/CheckInButton";
 import { useEvent, useEventRsvps } from "@/hooks/useEvents";
 import { useWaitlist } from "@/hooks/useWaitlist";
 import { useAuthStore } from "@/store/authStore";
@@ -285,6 +287,12 @@ export default function EventDetailPage() {
             <Copy className="h-4 w-4" />
             {t("events:clone_event")}
           </Button>
+        )}
+        {isOrganizer && event.checkin_enabled && event.qr_token && (
+          <ShowQRButton qrToken={event.qr_token} />
+        )}
+        {currentUserRsvp === "going" && (
+          <CheckInButton />
         )}
       </div>
 

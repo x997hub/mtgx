@@ -40,6 +40,8 @@ function makeEvent(overrides: Partial<EventWithRelations> = {}): EventWithRelati
     mood_tags: [],
     proxy_policy: "none",
     template_id: null,
+    checkin_enabled: true,
+    qr_token: "00000000-0000-0000-0000-000000000000",
     created_at: "2026-03-01T00:00:00Z",
     rsvps: [{ count: 5 }],
     venues: null,

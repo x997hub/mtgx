@@ -161,6 +161,7 @@ export type Database = {
       }
       events: {
         Row: {
+          checkin_enabled: boolean
           city: string
           cloned_from: string | null
           confirmation_sent_24h: boolean | null
@@ -177,6 +178,7 @@ export type Database = {
           mood_tags: string[] | null
           organizer_id: string
           proxy_policy: Database["public"]["Enums"]["proxy_policy"] | null
+          qr_token: string
           starts_at: string
           status: Database["public"]["Enums"]["event_status"]
           template_id: string | null
@@ -185,6 +187,7 @@ export type Database = {
           venue_id: string | null
         }
         Insert: {
+          checkin_enabled?: boolean
           city: string
           cloned_from?: string | null
           confirmation_sent_24h?: boolean | null
@@ -201,6 +204,7 @@ export type Database = {
           mood_tags?: string[] | null
           organizer_id: string
           proxy_policy?: Database["public"]["Enums"]["proxy_policy"] | null
+          qr_token?: string
           starts_at: string
           status?: Database["public"]["Enums"]["event_status"]
           template_id?: string | null
@@ -209,6 +213,7 @@ export type Database = {
           venue_id?: string | null
         }
         Update: {
+          checkin_enabled?: boolean
           city?: string
           cloned_from?: string | null
           confirmation_sent_24h?: boolean | null
@@ -225,6 +230,7 @@ export type Database = {
           mood_tags?: string[] | null
           organizer_id?: string
           proxy_policy?: Database["public"]["Enums"]["proxy_policy"] | null
+          qr_token?: string
           starts_at?: string
           status?: Database["public"]["Enums"]["event_status"]
           template_id?: string | null
@@ -799,6 +805,7 @@ export type Database = {
       }
       rsvps: {
         Row: {
+          checked_in_at: string | null
           confirmed_at: string | null
           created_at: string
           event_id: string
@@ -810,6 +817,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          checked_in_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           event_id: string
@@ -821,6 +829,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          checked_in_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           event_id?: string
@@ -929,6 +938,7 @@ export type Database = {
           name: string
           owner_id: string
           supported_formats: Database["public"]["Enums"]["mtg_format"][]
+          venue_qr_token: string
         }
         Insert: {
           address: string
@@ -943,6 +953,7 @@ export type Database = {
           name: string
           owner_id: string
           supported_formats?: Database["public"]["Enums"]["mtg_format"][]
+          venue_qr_token?: string
         }
         Update: {
           address?: string
@@ -957,6 +968,7 @@ export type Database = {
           name?: string
           owner_id?: string
           supported_formats?: Database["public"]["Enums"]["mtg_format"][]
+          venue_qr_token?: string
         }
         Relationships: [
           {
@@ -995,6 +1007,10 @@ export type Database = {
         Returns: {
           user_id: string
         }[]
+      }
+      checkin_by_qr: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: Json
       }
       check_played_together: {
         Args: { p_user1: string; p_user2: string }
