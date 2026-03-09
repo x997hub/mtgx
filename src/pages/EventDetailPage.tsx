@@ -328,7 +328,7 @@ export default function EventDetailPage() {
       ) : rsvps && rsvps.length > 0 ? (
         <Card className="bg-surface-card border-surface-hover">
           <CardContent className="p-4">
-            <AttendeeList attendees={rsvps} />
+            <AttendeeList attendees={rsvps} isOrganizer={!!isOrganizer} />
           </CardContent>
         </Card>
       ) : null}

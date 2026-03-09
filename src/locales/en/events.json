@@ -124,5 +124,11 @@
   "qr_event_not_found": "Event not found",
   "qr_checkin_disabled": "Check-in is disabled for this event",
   "qr_no_rsvp": "You have no RSVP for this event",
-  "qr_not_going": "You must RSVP as going first"
+  "qr_not_going": "You must RSVP as going first",
+  "attendance_confirmed": "Attendance confirmed!",
+  "confirm_attendance_title": "Confirm your attendance",
+  "confirm_attendance_desc": "The event starts soon. Please confirm you are coming.",
+  "confirm": "Confirm",
+  "checked_in": "Checked in",
+  "unconfirmed": "Unconfirmed"
 }

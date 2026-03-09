@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Bell, Check, CheckCheck, Mail, MessageSquare } from "lucide-react";
+import { Bell, Check, CheckCheck, CheckCircle, Mail, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,8 @@ import { useInvites } from "@/hooks/useInvites";
 import { InviteNotificationCard } from "@/components/shared/InviteNotificationCard";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
+import { apiFetch } from "@/lib/api";
 import type { InviteStatus } from "@/types/database.types";
 
 export default function NotificationsPage() {
@@ -20,11 +22,42 @@ export default function NotificationsPage() {
   const { incoming, pendingCount, respondInvite, isResponding } = useInvites();
   const { toast } = useToast();
   const { t: te } = useTranslation("events");
+  const session = useAuthStore((s) => s.session);
   const [activeTab, setActiveTab] = useState<"notifications" | "invites" | "messages">("notifications");
+  const [confirmingEventId, setConfirmingEventId] = useState<string | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
   const messageNotifications = notifications.filter((n) => n.type === "organizer_message");
   const otherNotifications = notifications.filter((n) => n.type !== "organizer_message");
+
+  async function handleConfirmFromNotification(eventId: string, notificationId: number) {
+    if (!session?.access_token) return;
+    setConfirmingEventId(eventId);
+    try {
+      const res = await apiFetch("/confirm-attendance", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ event_id: eventId }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to confirm");
+      }
+      toast({ title: te("attendance_confirmed", "Attendance confirmed!") });
+      markAsRead(notificationId);
+    } catch (err) {
+      toast({
+        title: t("error_occurred"),
+        description: err instanceof Error ? err.message : undefined,
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmingEventId(null);
+    }
+  }
 
   async function handleAccept(id: number) {
     try {
@@ -168,6 +201,17 @@ export default function NotificationsPage() {
                       <p className="text-sm text-text-secondary">
                         {new Date(notification.created_at).toLocaleString()}
                       </p>
+                      {notification.type === "attendance_confirmation" && notification.event_id && !notification.is_read && (
+                        <Button
+                          size="sm"
+                          className="mt-2 gap-2"
+                          disabled={confirmingEventId === notification.event_id}
+                          onClick={() => handleConfirmFromNotification(notification.event_id!, notification.id)}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          {te("confirm_attendance", "Confirm attendance")}
+                        </Button>
+                      )}
                     </div>
                     {!notification.is_read && (
                       <Button
