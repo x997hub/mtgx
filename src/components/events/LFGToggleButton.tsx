@@ -38,6 +38,7 @@ export function LFGToggleButton() {
   );
   const [selectedCity, setSelectedCity] = useState(profile?.city ?? "");
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | "">("");
+  const [durationHours, setDurationHours] = useState(4);
 
   const onFormatsChange = useCallback((fmts: MtgFormat[]) => setSelectedFormats(fmts), []);
   const toggleFormat = useFormatToggle(selectedFormats, onFormatsChange);
@@ -52,6 +53,7 @@ export function LFGToggleButton() {
         city: selectedCity,
         formats: selectedFormats,
         preferred_slot: selectedSlot || null,
+        durationHours,
       },
       {
         onSuccess: () => {
@@ -74,10 +76,14 @@ export function LFGToggleButton() {
   };
 
   if (mySignal) {
-    const expiresIn = Math.max(
-      0,
-      Math.round((new Date(mySignal.expires_at).getTime() - Date.now()) / (1000 * 60 * 60))
-    );
+    const remainingMs = Math.max(0, new Date(mySignal.expires_at).getTime() - Date.now());
+    const remainingH = Math.floor(remainingMs / 3600000);
+    const remainingM = Math.floor((remainingMs % 3600000) / 60000);
+    const remainingText = remainingMs <= 0
+      ? t("events:signal_expired")
+      : remainingH > 0
+        ? `${remainingH}${t("events:hours_short")} ${remainingM}${t("events:minutes_short")}`
+        : `${remainingM}${t("events:minutes_short")}`;
 
     return (
       <div className="flex flex-wrap items-center gap-2">
@@ -88,7 +94,7 @@ export function LFGToggleButton() {
           disabled={isDeactivating}
         >
           <ZapOff className="h-4 w-4" />
-          {t("events:lfg_active")} ({t("events:lfg_expires", { hours: expiresIn })})
+          {t("events:lfg_active")} ({remainingText})
         </Button>
         <div className="flex flex-wrap gap-1">
           {mySignal.formats.map((f) => (
@@ -179,6 +185,28 @@ export function LFGToggleButton() {
                     }`}
                   >
                     {t(`profile:${slot}_slot`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="space-y-2">
+              <Label>{t("events:lfg_duration")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {[1, 2, 3, 4, 5].map((h) => (
+                  <button
+                    key={h}
+                    type="button"
+                    aria-pressed={durationHours === h}
+                    onClick={() => setDurationHours(h)}
+                    className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
+                      durationHours === h
+                        ? "bg-accent text-white"
+                        : "bg-surface-card border border-border text-text-secondary"
+                    }`}
+                  >
+                    {h < 5 ? t("events:duration_hours", { count: h }) : "5+"}
                   </button>
                 ))}
               </div>

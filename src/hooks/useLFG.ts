@@ -20,6 +20,7 @@ interface ActivateLFGParams {
   city: string;
   formats: MtgFormat[];
   preferred_slot?: TimeSlot | null;
+  durationHours?: number;
 }
 
 /**
@@ -81,9 +82,9 @@ export function useLFG(city?: string) {
 
   // Activate LFG signal (upsert — one signal per user via UNIQUE constraint)
   const activateMutation = useMutation({
-    mutationFn: async ({ city: signalCity, formats, preferred_slot }: ActivateLFGParams) => {
+    mutationFn: async ({ city: signalCity, formats, preferred_slot, durationHours = 4 }: ActivateLFGParams) => {
       if (!user) throw new Error("Not authenticated");
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(Date.now() + durationHours * 3600000).toISOString();
       const { data, error } = await supabase
         .from("looking_for_game")
         .upsert(
