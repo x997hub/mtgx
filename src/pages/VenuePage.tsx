@@ -12,6 +12,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { EventCard } from "@/components/events/EventCard";
 import type { Venue, VenuePhoto } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
+import { useAuthStore } from "@/store/authStore";
+import { VenueAnalytics } from "@/components/venue/VenueAnalytics";
 import { MapPin, Clock, Users, Phone, Calendar } from "lucide-react";
 
 const VENUE_IMAGES_BUCKET = "venue-images";
@@ -20,6 +22,7 @@ export default function VenuePage() {
   const { t } = useTranslation("venue");
   const { t: tc } = useTranslation("common");
   const { id: venueId } = useParams<{ id: string }>();
+  const user = useAuthStore((s) => s.user);
 
   const venueQuery = useQuery({
     queryKey: ["venue", venueId],
@@ -218,6 +221,11 @@ export default function VenuePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Analytics — owner only */}
+        {user && venue.owner_id === user.id && venueId && (
+          <VenueAnalytics venueId={venueId} />
+        )}
 
         {/* Upcoming Events */}
         <Card>

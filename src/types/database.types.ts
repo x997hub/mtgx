@@ -1050,6 +1050,10 @@ export type Database = {
         Args: { p_slots: Json; p_user_id: string }
         Returns: undefined
       }
+      get_venue_analytics: {
+        Args: { p_venue_id: string; p_days_back?: number }
+        Returns: Json
+      }
     }
     Enums: {
       availability_level: "available" | "sometimes" | "unavailable"
