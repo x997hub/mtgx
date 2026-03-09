@@ -308,6 +308,31 @@ export default function ProfilePage() {
           <OrganizerStatsCard organizerId={profile.id} />
         )}
 
+        {/* Game Style */}
+        {(profile.playstyle || profile.game_speed || profile.social_level) && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base text-text-secondary">{t("game_style")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {profile.playstyle && profile.playstyle !== "mixed" && (
+                  <Badge variant="outline">{t(profile.playstyle)}</Badge>
+                )}
+                {profile.playstyle === "mixed" && (
+                  <Badge variant="outline">{t("mixed")}</Badge>
+                )}
+                {profile.game_speed && (
+                  <Badge variant="outline">{t(profile.game_speed)}</Badge>
+                )}
+                {profile.social_level && (
+                  <Badge variant="outline">{t(profile.social_level)}</Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Formats */}
         {profile.formats.length > 0 && (
           <Card>

@@ -117,5 +117,19 @@
   "events_organized": "Events organized",
   "cancel_rate": "Cancellation rate",
   "avg_attendance": "Avg. attendance",
-  "no_stats": "No events yet"
+  "no_stats": "No events yet",
+
+  "game_style": "Game Style",
+  "playstyle": "Playstyle",
+  "game_speed": "Game Speed",
+  "social_level": "Social Level",
+  "casual": "Casual",
+  "competitive": "Competitive",
+  "mixed": "Mixed",
+  "slow": "Slow",
+  "medium": "Medium",
+  "fast": "Fast",
+  "quiet": "Quiet",
+  "moderate": "Moderate",
+  "talkative": "Talkative"
 }

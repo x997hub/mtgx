@@ -127,11 +127,11 @@ export function useEventRsvps(eventId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rsvps")
-        .select("*, profiles(display_name)" as "*")
+        .select("*, profiles(display_name, playstyle)" as "*")
         .eq("event_id", eventId);
       if (error) throw error;
       return data as unknown as (Database["public"]["Tables"]["rsvps"]["Row"] & {
-        profiles?: { display_name: string } | null;
+        profiles?: { display_name: string; playstyle?: string | null } | null;
       })[];
     },
     enabled: !!eventId,

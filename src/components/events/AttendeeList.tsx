@@ -8,11 +8,16 @@ import type { Database } from "@/types/database.types";
 
 type RsvpStatus = Database["public"]["Enums"]["rsvp_status"];
 
+const PLAYSTYLE_ICON: Record<string, string> = {
+  casual: "\uD83C\uDFB2",
+  competitive: "\u2694\uFE0F",
+};
+
 interface Attendee {
   user_id: string;
   status: RsvpStatus;
   power_level?: number | null;
-  profiles?: { display_name: string } | null;
+  profiles?: { display_name: string; playstyle?: string | null } | null;
 }
 
 interface AttendeeListProps {
@@ -66,6 +71,11 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
                   </Avatar>
                   <span className="flex-1 text-base text-text-primary">
                     {attendee.profiles?.display_name || t("common:unknown")}
+                    {attendee.profiles?.playstyle && PLAYSTYLE_ICON[attendee.profiles.playstyle] && (
+                      <span className="ms-1" title={attendee.profiles.playstyle}>
+                        {PLAYSTYLE_ICON[attendee.profiles.playstyle]}
+                      </span>
+                    )}
                   </span>
                   {attendee.power_level != null && attendee.power_level >= 1 && attendee.power_level <= 5 && (
                     <PowerLevelBadge level={attendee.power_level} />
