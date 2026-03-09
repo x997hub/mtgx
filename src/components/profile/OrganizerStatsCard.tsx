@@ -49,7 +49,7 @@ export function OrganizerStatsCard({ organizerId }: OrganizerStatsCardProps) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <StatCard
-        title={t("total_events", "Events")}
+        title={t("events_organized", "Events")}
         value={stats.events_total}
         icon={Calendar}
       />

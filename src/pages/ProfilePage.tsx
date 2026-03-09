@@ -256,8 +256,8 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* Organizer Stats (Feature #18) */}
-        {(profile.role === "organizer" || profile.role === "club_owner") && (
+        {/* Organizer Stats — only on other users' profiles */}
+        {!isOwn && (profile.role === "organizer" || profile.role === "club_owner") && (
           <OrganizerStatsCard organizerId={profile.id} />
         )}
 
