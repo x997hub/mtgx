@@ -23,6 +23,9 @@
   "day_thursday": "Thursday",
   "day_friday": "Friday",
   "day_saturday": "Saturday",
+  "clubs_map": "Clubs",
+  "open_venue": "Open",
+  "no_coords": "No venues with coordinates yet",
   "no_clubs": "No clubs yet",
   "events_count_one": "event",
   "events_count_other": "events"
