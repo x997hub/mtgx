@@ -101,7 +101,6 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
       setRecurrence(savedState.recurrence ?? null);
       toast({ title: t("draft_restored", "Draft restored") });
     }
-    // eslint-disable-next-line
   }, []);
 
   const { data: venues } = useQuery({

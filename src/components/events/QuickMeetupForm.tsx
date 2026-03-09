@@ -53,7 +53,6 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
       setMinPlayers(savedState.minPlayers);
       toast({ title: t("draft_restored", "Draft restored") });
     }
-    // eslint-disable-next-line
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
