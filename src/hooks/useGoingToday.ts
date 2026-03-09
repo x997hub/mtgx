@@ -48,8 +48,6 @@ export function useGoingToday(city?: string) {
       return count ?? 0;
     },
     enabled: !!city,
-    // Realtime subscription handles live updates; polling is a fallback only
-    refetchInterval: 5 * 60 * 1000,
   });
 
   // All instant signals in the city (for details display)
@@ -68,8 +66,6 @@ export function useGoingToday(city?: string) {
       return (data ?? []) as unknown as InstantLFGSignal[];
     },
     enabled: !!city,
-    // Realtime subscription handles live updates; polling is a fallback only
-    refetchInterval: 5 * 60 * 1000,
   });
 
   // Current user's instant signal
@@ -88,7 +84,6 @@ export function useGoingToday(city?: string) {
       return data;
     },
     enabled: !!user,
-    refetchInterval: 60000,
   });
 
   // Realtime subscription — scoped to city

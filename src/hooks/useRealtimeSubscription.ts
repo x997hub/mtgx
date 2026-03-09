@@ -46,6 +46,7 @@ export function useRealtimeSubscription({
       .subscribe();
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, [channelName, table, filter, event, enabled]);

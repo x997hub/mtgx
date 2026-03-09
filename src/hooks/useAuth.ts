@@ -6,6 +6,9 @@ import { toast } from "@/components/ui/use-toast";
 /** Module-level flag to prevent duplicate auth listeners across component instances */
 let listenerInitialized = false;
 
+/** Guard to prevent concurrent fetchProfile calls */
+let _fetchingProfile = false;
+
 /**
  * Sets up the Supabase auth listener exactly once (module-level guard).
  * Call this hook in a single top-level component (e.g. App.tsx or ProtectedRoute).
@@ -61,6 +64,8 @@ export function useAuthListener() {
   }, [setSession, setProfile, setLoading]);
 
   async function fetchProfile(userId: string) {
+    if (_fetchingProfile) return;
+    _fetchingProfile = true;
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -77,6 +82,8 @@ export function useAuthListener() {
     } catch (err) {
       console.error("Failed to fetch profile:", err);
       setProfile(null);
+    } finally {
+      _fetchingProfile = false;
     }
   }
 }

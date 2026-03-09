@@ -48,7 +48,6 @@ export function useLFG(city?: string) {
       return data;
     },
     enabled: !!user,
-    refetchInterval: 60000, // Re-check expiry
   });
 
   // All active signals in the given city
@@ -66,8 +65,6 @@ export function useLFG(city?: string) {
       return (data ?? []) as unknown as LFGSignal[];
     },
     enabled: !!city,
-    // Realtime subscription handles live updates; polling is a fallback only
-    refetchInterval: 5 * 60 * 1000,
   });
 
   // Realtime subscription for LFG signals — scoped to city

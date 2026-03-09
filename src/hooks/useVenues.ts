@@ -10,35 +10,31 @@ export function useVenues() {
   return useQuery({
     queryKey: ["venues"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: venues, error } = await supabase
         .from("venues")
-        .select("*, events!events_venue_id_fkey(count)" as "*")
+        .select("*")
         .order("name", { ascending: true });
       if (error) throw error;
 
+      // Get upcoming event counts in one query
       const now = new Date().toISOString();
+      const { data: countData } = await supabase
+        .from("events")
+        .select("venue_id")
+        .not("venue_id", "is", null)
+        .eq("status", "active")
+        .gte("starts_at", now);
 
-      // Get upcoming event counts per venue
-      const venueIds = (data as Venue[]).map((v) => v.id);
-      let countMap: Record<string, number> = {};
-
-      if (venueIds.length > 0) {
-        const { data: countData, error: countError } = await supabase
-          .from("events")
-          .select("venue_id")
-          .in("venue_id", venueIds)
-          .eq("status", "active")
-          .gte("starts_at", now);
-        if (!countError && countData) {
-          for (const row of countData) {
-            if (row.venue_id) {
-              countMap[row.venue_id] = (countMap[row.venue_id] ?? 0) + 1;
-            }
+      const countMap: Record<string, number> = {};
+      if (countData) {
+        for (const row of countData) {
+          if (row.venue_id) {
+            countMap[row.venue_id] = (countMap[row.venue_id] ?? 0) + 1;
           }
         }
       }
 
-      return (data as Venue[]).map((v) => ({
+      return (venues as Venue[]).map((v) => ({
         ...v,
         upcoming_event_count: countMap[v.id] ?? 0,
       })) as VenueWithEventCount[];

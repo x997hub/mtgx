@@ -22,6 +22,7 @@ export function useInvitePreferences(userId?: string) {
       return data;
     },
     enabled: !!id,
+    staleTime: 30 * 60 * 1000,
   });
 
   const upsertMutation = useMutation({

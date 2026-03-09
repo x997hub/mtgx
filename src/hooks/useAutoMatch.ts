@@ -21,6 +21,7 @@ export function useAutoMatch() {
       return data;
     },
     enabled: !!user,
+    staleTime: 30 * 60 * 1000,
   });
 
   const upsertMutation = useMutation({
