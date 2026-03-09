@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, EyeOff, Eye, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,16 +85,16 @@ export function MoodTagsTab() {
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
+  const toggleActiveMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: number; is_active: boolean }) => {
       const { error } = await supabase
         .from("mood_tags")
-        .delete()
+        .update({ is_active })
         .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: t("common:deleted", "Deleted") });
+      toast({ title: t("common:saved", "Saved") });
     },
     onSettled: invalidateTags,
     onError: () => {
@@ -102,9 +102,8 @@ export function MoodTagsTab() {
     },
   });
 
-  const handleDelete = (tag: MoodTag) => {
-    if (!window.confirm(t("common:confirm_delete", { name: tag.slug }))) return;
-    deleteMutation.mutate(tag.id);
+  const handleToggleActive = (tag: MoodTag) => {
+    toggleActiveMutation.mutate({ id: tag.id, is_active: !tag.is_active });
   };
 
   const startEdit = (tag: MoodTag) => {
@@ -213,10 +212,15 @@ export function MoodTagsTab() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(tag)}
-                    disabled={deleteMutation.isPending}
+                    onClick={() => handleToggleActive(tag)}
+                    disabled={toggleActiveMutation.isPending}
+                    title={tag.is_active ? "Deactivate" : "Activate"}
                   >
-                    <Trash2 className="h-4 w-4 text-red-400" />
+                    {tag.is_active ? (
+                      <EyeOff className="h-4 w-4 text-text-secondary" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-accent" />
+                    )}
                   </Button>
                 </div>
               </div>
