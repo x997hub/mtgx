@@ -47,7 +47,7 @@ export default function PlayersDirectoryPage() {
   return (
     <div className="space-y-4 p-4 pb-24">
       {/* Title */}
-      <h1 className="text-2xl font-bold text-gray-100">
+      <h1 className="text-2xl font-bold text-text-primary">
         {t("profile:players_directory")}
       </h1>
 

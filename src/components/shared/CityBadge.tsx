@@ -8,7 +8,7 @@ interface CityBadgeProps {
 
 export function CityBadge({ city, className }: CityBadgeProps) {
   return (
-    <Badge variant="outline" className={cn("text-gray-300", className)}>
+    <Badge variant="outline" className={cn("text-text-secondary", className)}>
       {city}
     </Badge>
   );

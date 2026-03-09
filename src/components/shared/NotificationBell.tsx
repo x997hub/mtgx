@@ -12,7 +12,7 @@ export function NotificationBell() {
       className="relative flex min-h-[44px] min-w-[44px] items-center justify-center"
       aria-label={count > 0 ? `${count} unread notifications` : "Notifications"}
     >
-      <Bell className="h-5 w-5 text-gray-300" />
+      <Bell className="h-5 w-5 text-text-secondary" />
       {count > 0 && (
         <span
           className={cn(

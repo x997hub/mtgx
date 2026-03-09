@@ -23,7 +23,7 @@ const MATCH_STATES: MatchDayPref[] = ["always", "if_free", "never"];
 const MATCH_STATE_COLORS: Record<MatchDayPref, string> = {
   always: "bg-emerald-600 hover:bg-emerald-500",
   if_free: "bg-amber-600 hover:bg-amber-500",
-  never: "bg-gray-700 hover:bg-gray-600",
+  never: "bg-border hover:bg-border",
 };
 
 export function AutoMatchSettings() {
@@ -90,11 +90,11 @@ export function AutoMatchSettings() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base text-gray-400">
+        <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
           <Zap className="h-4 w-4" />
           {t("auto_match_title")}
         </CardTitle>
-        <p className="text-sm text-gray-500">{t("auto_match_description")}</p>
+        <p className="text-sm text-text-muted">{t("auto_match_description")}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Active toggle */}
@@ -105,19 +105,19 @@ export function AutoMatchSettings() {
         >
           <div
             className={`flex h-6 w-6 items-center justify-center rounded border transition-colors ${
-              isActive ? "border-accent bg-accent text-white" : "border-gray-600 bg-transparent"
+              isActive ? "border-accent bg-accent text-white" : "border-border bg-transparent"
             }`}
           >
             {isActive && <Zap className="h-4 w-4" />}
           </div>
-          <span className="text-base text-gray-200">{t("auto_match_active")}</span>
+          <span className="text-base text-text-primary">{t("auto_match_active")}</span>
         </button>
 
         {isActive && (
           <>
             {/* Formats */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("auto_match_formats")}</p>
+              <p className="text-sm text-text-secondary">{t("auto_match_formats")}</p>
               <div className="flex flex-wrap gap-2">
                 {FORMATS.map((format) => {
                   const active = formats.includes(format);
@@ -140,7 +140,7 @@ export function AutoMatchSettings() {
 
             {/* Event types */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("auto_match_event_types")}</p>
+              <p className="text-sm text-text-secondary">{t("auto_match_event_types")}</p>
               <div className="flex flex-wrap gap-2">
                 {["big", "quick"].map((type) => (
                   <button
@@ -150,7 +150,7 @@ export function AutoMatchSettings() {
                     className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
                       eventTypes.includes(type)
                         ? "bg-accent text-white"
-                        : "bg-gray-700 text-gray-400"
+                        : "bg-border text-text-secondary"
                     }`}
                   >
                     {tc(type === "big" ? "big_event" : "quick_meetup")}
@@ -161,7 +161,7 @@ export function AutoMatchSettings() {
 
             {/* Schedule grid */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("auto_match_schedule")}</p>
+              <p className="text-sm text-text-secondary">{t("auto_match_schedule")}</p>
               <ScheduleGrid
                 days={DAYS}
                 slots={[...MATCH_SLOTS]}
@@ -175,7 +175,7 @@ export function AutoMatchSettings() {
 
             {/* Radius */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("auto_match_radius")}</p>
+              <p className="text-sm text-text-secondary">{t("auto_match_radius")}</p>
               <Select value={radius} onValueChange={(v) => setRadius(v as MatchRadius)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -190,7 +190,7 @@ export function AutoMatchSettings() {
 
             {/* Max daily */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("auto_match_max_daily")}</p>
+              <p className="text-sm text-text-secondary">{t("auto_match_max_daily")}</p>
               <Select
                 value={String(maxDaily)}
                 onValueChange={(v) => setMaxDaily(Number(v))}

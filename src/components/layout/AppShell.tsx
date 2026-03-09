@@ -22,11 +22,11 @@ export function AppShell() {
   const isAdmin = role === "admin";
 
   return (
-    <div className="flex min-h-screen bg-primary text-gray-100">
+    <div className="flex min-h-screen bg-primary text-text-primary">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-48 md:flex-col md:border-e md:border-gray-700 md:bg-secondary">
+      <aside className="hidden md:flex md:w-48 md:flex-col md:border-e md:border-border md:bg-secondary">
         <div className="flex h-16 items-center px-6">
-          <Link to="/" className="text-xl font-bold text-accent">
+          <Link to="/" className="font-heading text-xl font-bold text-accent">
             MTGX
           </Link>
         </div>
@@ -39,7 +39,7 @@ export function AppShell() {
                 "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary",
                 location.pathname === to
                   ? "bg-primary text-accent"
-                  : "text-gray-400"
+                  : "text-text-secondary"
               )}
             >
               <Icon className="h-6 w-6" />
@@ -53,7 +53,7 @@ export function AppShell() {
                 "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary mt-auto",
                 location.pathname === "/admin"
                   ? "bg-primary text-accent"
-                  : "text-gray-400"
+                  : "text-text-secondary"
               )}
             >
               <Shield className="h-6 w-6" />
@@ -66,8 +66,8 @@ export function AppShell() {
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Top header */}
-        <header className="flex h-16 items-center justify-between border-b border-gray-700 bg-secondary px-4 md:px-6">
-          <Link to="/" className="text-lg font-bold text-accent md:hidden">
+        <header className="flex h-16 items-center justify-between border-b border-border bg-secondary px-4 md:px-6">
+          <Link to="/" className="font-heading text-lg font-bold text-accent md:hidden">
             MTGX
           </Link>
           <div className="hidden md:block" />
@@ -75,7 +75,7 @@ export function AppShell() {
             {isAdmin && (
               <Link
                 to="/admin"
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 hover:text-accent transition-colors md:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary hover:text-accent transition-colors md:hidden"
               >
                 <Shield className="h-5 w-5" />
               </Link>
@@ -94,14 +94,14 @@ export function AppShell() {
       <FeedbackModal />
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 start-0 end-0 z-40 flex h-[72px] items-center justify-around border-t border-gray-700 bg-secondary md:hidden">
+      <nav className="fixed bottom-0 start-0 end-0 z-40 flex h-[72px] items-center justify-around border-t border-border bg-secondary md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, labelKey }) => (
           <Link
             key={to}
             to={to}
             className={cn(
               "flex min-h-[48px] min-w-[44px] flex-col items-center justify-center gap-0.5 text-xs",
-              location.pathname === to ? "text-accent" : "text-gray-400"
+              location.pathname === to ? "text-accent" : "text-text-secondary"
             )}
           >
             <Icon className="h-6 w-6" />

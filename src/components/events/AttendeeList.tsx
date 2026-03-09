@@ -42,7 +42,7 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-medium text-gray-300">
+      <h3 className="text-base font-medium text-text-secondary">
         {t("attendees")} ({goingCount})
       </h3>
       {STATUS_ORDER.map((status) => {
@@ -64,14 +64,14 @@ export function AttendeeList({ attendees }: AttendeeListProps) {
                       {attendee.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="flex-1 text-base text-gray-200">
+                  <span className="flex-1 text-base text-text-primary">
                     {attendee.profiles?.display_name || t("common:unknown")}
                   </span>
                   {attendee.power_level != null && attendee.power_level >= 1 && attendee.power_level <= 5 && (
                     <PowerLevelBadge level={attendee.power_level} />
                   )}
                   <Badge
-                    className={`border-none text-white ${STATUS_COLORS[attendee.status] ?? "bg-gray-600"}`}
+                    className={`border-none text-white ${STATUS_COLORS[attendee.status] ?? "bg-border"}`}
                   >
                     {t(attendee.status)}
                   </Badge>

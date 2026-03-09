@@ -259,7 +259,7 @@ function TagEditRow({
             type="checkbox"
             checked={state.is_active}
             onChange={(e) => onChange({ ...state, is_active: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-accent"
+            className="h-4 w-4 rounded border-border bg-surface-hover text-accent"
           />
           {t("common:active", "Active")}
         </label>

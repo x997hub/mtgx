@@ -141,7 +141,7 @@ export function GoingTodaySheet({ open, onOpenChange }: GoingTodaySheetProps) {
                         "flex-1 rounded-lg py-2 text-base font-medium transition-colors",
                         duration === h
                           ? "bg-accent text-white"
-                          : "bg-gray-700 text-gray-400"
+                          : "bg-border text-text-secondary"
                       )}
                     >
                       {h}h

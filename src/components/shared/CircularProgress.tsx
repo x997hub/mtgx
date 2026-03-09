@@ -30,7 +30,7 @@ export function CircularProgress({ value, max, size = 40, className }: CircularP
           fill="none"
           stroke="currentColor"
           strokeWidth={3}
-          className="text-gray-700"
+          className="text-border"
         />
         {/* Progress arc */}
         <circle
@@ -46,7 +46,7 @@ export function CircularProgress({ value, max, size = 40, className }: CircularP
           className={getColor()}
         />
       </svg>
-      <span className="absolute text-[10px] font-semibold text-gray-300">
+      <span className="absolute text-[10px] font-semibold text-text-secondary">
         {value}/{max}
       </span>
     </div>

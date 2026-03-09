@@ -23,7 +23,7 @@ const INVITE_SLOTS = ["day", "evening"] as const;
 const BOOL_STATES = ["true", "false"] as const;
 const BOOL_COLORS: Record<string, string> = {
   true: "bg-emerald-600 hover:bg-emerald-500",
-  false: "bg-gray-700 hover:bg-gray-600",
+  false: "bg-border hover:bg-border",
 };
 
 export function InvitePreferencesSettings() {
@@ -108,11 +108,11 @@ export function InvitePreferencesSettings() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base text-gray-400">
+        <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
           <UserPlus className="h-4 w-4" />
           {t("invite_prefs_title")}
         </CardTitle>
-        <p className="text-sm text-gray-500">{t("invite_prefs_description")}</p>
+        <p className="text-sm text-text-muted">{t("invite_prefs_description")}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Open toggle */}
@@ -123,19 +123,19 @@ export function InvitePreferencesSettings() {
         >
           <div
             className={`flex h-6 w-6 items-center justify-center rounded border transition-colors ${
-              isOpen ? "border-accent bg-accent text-white" : "border-gray-600 bg-transparent"
+              isOpen ? "border-accent bg-accent text-white" : "border-border bg-transparent"
             }`}
           >
             {isOpen && <UserPlus className="h-4 w-4" />}
           </div>
-          <span className="text-base text-gray-200">{t("invite_open")}</span>
+          <span className="text-base text-text-primary">{t("invite_open")}</span>
         </button>
 
         {isOpen && (
           <>
             {/* Schedule */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("invite_schedule")}</p>
+              <p className="text-sm text-text-secondary">{t("invite_schedule")}</p>
               <ScheduleGrid
                 days={DAYS}
                 slots={[...INVITE_SLOTS]}
@@ -149,7 +149,7 @@ export function InvitePreferencesSettings() {
 
             {/* Formats */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("invite_formats")}</p>
+              <p className="text-sm text-text-secondary">{t("invite_formats")}</p>
               <div className="flex flex-wrap gap-2">
                 {FORMATS.map((format) => {
                   const active = formats.includes(format);
@@ -172,7 +172,7 @@ export function InvitePreferencesSettings() {
 
             {/* Visibility */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{t("invite_visibility")}</p>
+              <p className="text-sm text-text-secondary">{t("invite_visibility")}</p>
               <Select value={visibility} onValueChange={(v) => setVisibility(v as InviteVisibility)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -188,7 +188,7 @@ export function InvitePreferencesSettings() {
 
             {/* DND */}
             <div className="space-y-2">
-              <p className="flex items-center gap-2 text-sm text-gray-400">
+              <p className="flex items-center gap-2 text-sm text-text-secondary">
                 <Moon className="h-4 w-4" />
                 {t("dnd_mode")}
               </p>

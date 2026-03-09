@@ -28,7 +28,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const ROLE_COLORS: Record<UserRole, string> = {
-  player: "bg-gray-700 text-gray-300",
+  player: "bg-surface-hover text-text-secondary",
   organizer: "bg-blue-700/30 text-blue-300",
   club_owner: "bg-purple-700/30 text-purple-300",
   admin: "bg-amber-700/30 text-amber-300",

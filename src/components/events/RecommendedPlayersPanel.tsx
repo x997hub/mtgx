@@ -75,11 +75,11 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
           <UserPlus className="h-5 w-5 text-accent" />
           {t("recommended_players")}
         </CardTitle>
-        <p className="text-sm text-gray-500">{t("recommended_players_description")}</p>
+        <p className="text-sm text-text-muted">{t("recommended_players_description")}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {players.length === 0 ? (
-          <p className="text-base text-gray-500">{t("no_recommended_players")}</p>
+          <p className="text-base text-text-muted">{t("no_recommended_players")}</p>
         ) : (
           <>
             <Button variant="ghost" size="sm" onClick={toggleAll} className="text-accent">
@@ -105,7 +105,7 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
                       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border transition-colors ${
                         selected.has(player.user_id)
                           ? "border-accent bg-accent text-white"
-                          : "border-gray-600"
+                          : "border-border"
                       }`}
                     >
                       {selected.has(player.user_id) && (
@@ -122,7 +122,7 @@ export function RecommendedPlayersPanel({ eventId, onDone }: RecommendedPlayersP
                       )}
                     </Avatar>
                     <div className="flex-1 text-start">
-                      <p className="text-base font-medium text-gray-100">{player.display_name}</p>
+                      <p className="text-base font-medium text-text-primary">{player.display_name}</p>
                       <div className="flex flex-wrap gap-1">
                         {player.formats.map((f) => (
                           <FormatBadge key={f} format={f} />

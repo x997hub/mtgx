@@ -175,7 +175,7 @@ export function LFGToggleButton() {
                     className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
                       selectedSlot === slot
                         ? "bg-accent text-white"
-                        : "bg-gray-700 text-gray-400"
+                        : "bg-border text-text-secondary"
                     }`}
                   >
                     {t(`profile:${slot}_slot`)}

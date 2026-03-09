@@ -15,10 +15,10 @@ export const CAR_ACCESS_OPTIONS: CarAccess[] = ["yes", "no", "sometimes"];
 
 /** Active/inactive toggle colors for format selection buttons */
 export const FORMAT_TOGGLE_COLORS: Record<MtgFormat, { active: string; inactive: string }> = {
-  pauper: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  commander: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
-  standard: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
-  draft: { active: "bg-amber-700 text-amber-100", inactive: "bg-gray-700 text-gray-400" },
+  pauper: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-surface-hover text-text-secondary" },
+  commander: { active: "bg-purple-700 text-purple-100", inactive: "bg-surface-hover text-text-secondary" },
+  standard: { active: "bg-blue-700 text-blue-100", inactive: "bg-surface-hover text-text-secondary" },
+  draft: { active: "bg-amber-700 text-amber-100", inactive: "bg-surface-hover text-text-secondary" },
 };
 
 /** Badge colors for format display */
@@ -70,14 +70,14 @@ export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
   active: "bg-emerald-700 text-emerald-100",
   confirmed: "bg-blue-700 text-blue-100",
   cancelled: "bg-red-700 text-red-100",
-  expired: "bg-gray-700 text-gray-300",
+  expired: "bg-surface-hover text-text-secondary",
 };
 
 /** RSVP status badge colors */
 export const RSVP_STATUS_COLORS: Record<RsvpStatus, string> = {
   going: "bg-emerald-700",
   maybe: "bg-amber-700",
-  not_going: "bg-gray-600",
+  not_going: "bg-surface-hover",
   waitlisted: "bg-indigo-700",
   pending_confirmation: "bg-yellow-700",
 };
@@ -97,7 +97,7 @@ export const FEEDBACK_STATUS_COLORS: Record<FeedbackStatus, string> = {
   new: "bg-blue-700 text-blue-100",
   in_progress: "bg-amber-700 text-amber-100",
   resolved: "bg-emerald-700 text-emerald-100",
-  closed: "bg-gray-700 text-gray-300",
+  closed: "bg-surface-hover text-text-secondary",
 };
 
 /** Player skill level badge colors */
@@ -111,15 +111,15 @@ export const LEVEL_COLORS: Record<string, string> = {
 export const AVAILABILITY_LEVEL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600 hover:bg-emerald-500",
   sometimes: "bg-amber-600 hover:bg-amber-500",
-  unavailable: "bg-gray-700 hover:bg-gray-600",
+  unavailable: "bg-surface-hover hover:bg-surface-hover/80",
 };
 
 /** Mood tag toggle colors (for selector buttons) */
 export const MOOD_TAG_TOGGLE_COLORS: Record<string, { active: string; inactive: string }> = {
-  casual: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  competitive: { active: "bg-red-700 text-red-100", inactive: "bg-gray-700 text-gray-400" },
-  deck_test: { active: "bg-blue-700 text-blue-100", inactive: "bg-gray-700 text-gray-400" },
-  training: { active: "bg-purple-700 text-purple-100", inactive: "bg-gray-700 text-gray-400" },
+  casual: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-surface-hover text-text-secondary" },
+  competitive: { active: "bg-red-700 text-red-100", inactive: "bg-surface-hover text-text-secondary" },
+  deck_test: { active: "bg-blue-700 text-blue-100", inactive: "bg-surface-hover text-text-secondary" },
+  training: { active: "bg-purple-700 text-purple-100", inactive: "bg-surface-hover text-text-secondary" },
 };
 
 /** Mood tag badge colors */

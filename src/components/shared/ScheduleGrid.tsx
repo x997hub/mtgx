@@ -35,9 +35,9 @@ export function ScheduleGrid<TState extends string>({
       <table className="w-full text-base">
         <thead>
           <tr>
-            <th className="p-1 text-start text-gray-400" />
+            <th className="p-1 text-start text-text-secondary" />
             {days.map((day) => (
-              <th key={day} className="p-1 text-center text-gray-400 font-normal">
+              <th key={day} className="p-1 text-center text-text-secondary font-normal">
                 {t(day)}
               </th>
             ))}
@@ -46,7 +46,7 @@ export function ScheduleGrid<TState extends string>({
         <tbody>
           {slots.map((slot) => (
             <tr key={slot}>
-              <td className="p-1 text-gray-400 whitespace-nowrap">
+              <td className="p-1 text-text-secondary whitespace-nowrap">
                 {t(`${slot}_slot`)}
               </td>
               {days.map((day) => {
@@ -69,7 +69,7 @@ export function ScheduleGrid<TState extends string>({
           ))}
         </tbody>
       </table>
-      <div className="mt-2 flex items-center gap-3 text-sm text-gray-400">
+      <div className="mt-2 flex items-center gap-3 text-sm text-text-secondary">
         {states.map((state) => (
           <span key={state} className="flex items-center gap-1">
             <span className={`inline-block h-4 w-4 rounded ${stateColors[state].split(" ")[0]}`} />

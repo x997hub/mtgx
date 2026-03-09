@@ -86,7 +86,7 @@ export function FeedbackModal() {
                     "flex flex-1 flex-col items-center gap-1.5 rounded-lg border p-3 transition-colors",
                     type === ft
                       ? "border-accent bg-accent/10 text-accent"
-                      : "border-gray-600 text-gray-400 hover:border-gray-500"
+                      : "border-border text-text-secondary hover:border-border"
                   )}
                 >
                   <Icon className="h-5 w-5" />

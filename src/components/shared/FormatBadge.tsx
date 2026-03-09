@@ -15,7 +15,7 @@ export function FormatBadge({ format, className }: FormatBadgeProps) {
   const { t } = useTranslation("events");
 
   return (
-    <Badge className={cn("border-none", FORMAT_BADGE_COLORS[format] ?? "bg-gray-700 text-gray-100", className)}>
+    <Badge className={cn("border-none", FORMAT_BADGE_COLORS[format] ?? "bg-border text-text-primary", className)}>
       {t(format)}
     </Badge>
   );

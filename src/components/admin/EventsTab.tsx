@@ -131,7 +131,7 @@ export function EventsTab() {
                     <span>{goingCount}{evt.max_players ? `/${evt.max_players}` : ""}</span>
                   </div>
                   <Badge
-                    className={`border-none ${EVENT_STATUS_COLORS[evt.status as EventStatus] ?? "bg-gray-700 text-gray-300"}`}
+                    className={`border-none ${EVENT_STATUS_COLORS[evt.status as EventStatus] ?? "bg-surface-hover text-text-secondary"}`}
                   >
                     {evt.status}
                   </Badge>

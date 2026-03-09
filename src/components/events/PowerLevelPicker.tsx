@@ -16,11 +16,11 @@ const POWER_LEVELS = [
 ] as const;
 
 const LEVEL_COLORS: Record<number, { active: string; inactive: string }> = {
-  1: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-gray-700 text-gray-400" },
-  2: { active: "bg-teal-700 text-teal-100", inactive: "bg-gray-700 text-gray-400" },
-  3: { active: "bg-amber-700 text-amber-100", inactive: "bg-gray-700 text-gray-400" },
-  4: { active: "bg-orange-700 text-orange-100", inactive: "bg-gray-700 text-gray-400" },
-  5: { active: "bg-red-700 text-red-100", inactive: "bg-gray-700 text-gray-400" },
+  1: { active: "bg-emerald-700 text-emerald-100", inactive: "bg-border text-text-secondary" },
+  2: { active: "bg-teal-700 text-teal-100", inactive: "bg-border text-text-secondary" },
+  3: { active: "bg-amber-700 text-amber-100", inactive: "bg-border text-text-secondary" },
+  4: { active: "bg-orange-700 text-orange-100", inactive: "bg-border text-text-secondary" },
+  5: { active: "bg-red-700 text-red-100", inactive: "bg-border text-text-secondary" },
 };
 
 export function PowerLevelPicker({ value, onChange }: PowerLevelPickerProps) {
@@ -67,7 +67,7 @@ export function PowerLevelBadge({ level }: { level: number }) {
   };
 
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium", colors[level] ?? "bg-gray-700 text-gray-300")}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium", colors[level] ?? "bg-border text-text-secondary")}>
       {t(`power_${level}`, labels[level] ?? String(level))}
     </span>
   );

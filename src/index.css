@@ -1,21 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  /* Primary palette */
-  --color-primary: #1a1a2e;
-  --color-secondary: #16213e;
+  /* Primary palette — deep layered blues */
+  --color-primary: #0e1019;
+  --color-secondary: #141725;
   --color-accent: #e94560;
   --color-accent-hover: #d63851;
+  --color-accent-soft: rgba(233, 69, 96, 0.12);
 
-  /* Surface colors */
-  --color-surface: #0f0f1a;
-  --color-surface-card: #1e1e36;
-  --color-surface-hover: #2a2a48;
+  /* Surface colors — 3 layers of depth */
+  --color-surface: #0a0b12;
+  --color-surface-card: #171a28;
+  --color-surface-hover: #1e2236;
 
-  /* Text colors */
-  --color-text-primary: #f0f0f5;
-  --color-text-secondary: #a0a0b8;
-  --color-text-muted: #6b6b80;
+  /* Borders — rgba for subtle layering */
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-hover: rgba(255, 255, 255, 0.14);
+  --color-border-active: rgba(233, 69, 96, 0.35);
+
+  /* Text */
+  --color-text-primary: #eff1f5;
+  --color-text-secondary: #a0a4b8;
+  --color-text-muted: #5c6078;
 
   /* MTG format colors */
   --color-format-pauper: #6b8e23;
@@ -28,8 +34,51 @@
   --color-maybe: #eab308;
   --color-not-going: #ef4444;
 
+  /* Soft status variants */
+  --color-going-soft: rgba(34, 197, 94, 0.12);
+  --color-maybe-soft: rgba(234, 179, 8, 0.10);
+  --color-not-going-soft: rgba(239, 68, 68, 0.10);
+
+  /* Font families */
+  --font-heading: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+
   /* Spacing */
-  --radius-default: 0.5rem;
+  --radius-default: 0.75rem;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-slide-up: slide-up 0.35s ease-out both;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 html {
@@ -43,3 +92,42 @@ body {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
 }
+
+/* Noise texture overlay — desktop only */
+@media (min-width: 768px) {
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+  }
+}
+
+/* Heading font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Mono font for numbers */
+.font-mono, .tabular-nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Utility: staggered fade-in for lists */
+.stagger-fade-in > * {
+  animation: fade-in 0.4s ease-out both;
+}
+.stagger-fade-in > *:nth-child(1) { animation-delay: 0s; }
+.stagger-fade-in > *:nth-child(2) { animation-delay: 0.04s; }
+.stagger-fade-in > *:nth-child(3) { animation-delay: 0.08s; }
+.stagger-fade-in > *:nth-child(4) { animation-delay: 0.12s; }
+.stagger-fade-in > *:nth-child(5) { animation-delay: 0.16s; }
+.stagger-fade-in > *:nth-child(6) { animation-delay: 0.20s; }
+.stagger-fade-in > *:nth-child(7) { animation-delay: 0.24s; }
+.stagger-fade-in > *:nth-child(8) { animation-delay: 0.28s; }
+.stagger-fade-in > *:nth-child(n+9) { animation-delay: 0.32s; }

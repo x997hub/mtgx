@@ -277,7 +277,7 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="flex w-full rounded-md border border-gray-600 bg-primary px-4 py-3 text-base text-gray-100 placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+          className="flex w-full rounded-md border border-border bg-primary px-4 py-3 text-base text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         />
       </div>
 

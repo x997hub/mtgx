@@ -97,7 +97,7 @@ export function InvitePlayerDialog({
         <div className="space-y-4 py-2">
           {/* Event selection */}
           <div className="space-y-2">
-            <p className="text-sm text-gray-400">{t("invite_select_event")}</p>
+            <p className="text-sm text-text-secondary">{t("invite_select_event")}</p>
             <Select value={eventId || "none"} onValueChange={(v) => setEventId(v === "none" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder={t("invite_select_event")} />
@@ -116,7 +116,7 @@ export function InvitePlayerDialog({
           {/* Format (only if no event selected) */}
           {!eventId && (
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">{te("format")}</p>
+              <p className="text-sm text-text-secondary">{te("format")}</p>
               <Select value={format} onValueChange={(v) => setFormat(v as MtgFormat)}>
                 <SelectTrigger>
                   <SelectValue />

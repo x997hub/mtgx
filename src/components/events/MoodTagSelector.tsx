@@ -13,7 +13,7 @@ interface MoodTagSelectorProps {
   onChange: (tags: string[]) => void;
 }
 
-const DEFAULT_COLORS = { active: "bg-accent text-white", inactive: "bg-gray-700 text-gray-400" };
+const DEFAULT_COLORS = { active: "bg-accent text-white", inactive: "bg-border text-text-secondary" };
 
 export function MoodTagSelector({ value, onChange }: MoodTagSelectorProps) {
   const { t, i18n } = useTranslation("events");

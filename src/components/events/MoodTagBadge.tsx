@@ -8,7 +8,7 @@ interface MoodTagBadgeProps {
 }
 
 export function MoodTagBadge({ tag, className }: MoodTagBadgeProps) {
-  const colors = MOOD_TAG_COLORS[tag] ?? "bg-gray-700/30 text-gray-300 border-gray-700/50";
+  const colors = MOOD_TAG_COLORS[tag] ?? "bg-border/30 text-text-secondary border-border/50";
   const label = MOOD_TAG_LABELS[tag] ?? tag;
 
   return (

@@ -18,7 +18,7 @@ type State = (typeof STATES)[number];
 const STATE_COLORS: Record<State, string> = {
   always: "bg-emerald-600 hover:bg-emerald-500",
   if_free: "bg-amber-600 hover:bg-amber-500",
-  never: "bg-gray-700 hover:bg-gray-600",
+  never: "bg-surface-hover hover:bg-surface-hover/80",
 };
 
 const STATE_LABELS: Record<State, string> = {

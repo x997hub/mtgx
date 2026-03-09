@@ -130,7 +130,7 @@ export default function ProfileEditPage() {
   return (
     <div className="min-h-screen bg-surface text-text-primary">
       <div className="mx-auto max-w-lg space-y-4 p-4">
-        <h1 className="text-2xl font-bold text-gray-100">{t("edit_profile")}</h1>
+        <h1 className="text-2xl font-bold text-text-primary">{t("edit_profile")}</h1>
 
         {/* Display Name */}
         <Card>
@@ -191,7 +191,7 @@ export default function ProfileEditPage() {
         {/* Car Access */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base text-gray-400">
+            <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
               <Car className="h-4 w-4" />
               {t("car_access")}
             </CardTitle>
@@ -206,7 +206,7 @@ export default function ProfileEditPage() {
                   className={`rounded-full px-5 py-2 text-base font-medium transition-colors ${
                     carAccess === option
                       ? "bg-accent text-white"
-                      : "bg-gray-700 text-gray-400"
+                      : "bg-surface-hover text-text-secondary"
                   }`}
                 >
                   {t(`car_${option}`)}
@@ -228,12 +228,12 @@ export default function ProfileEditPage() {
                 className={`flex h-6 w-6 items-center justify-center rounded border transition-colors ${
                   interestedInTrading
                     ? "border-accent bg-accent text-white"
-                    : "border-gray-600 bg-transparent"
+                    : "border-border bg-transparent"
                 }`}
               >
                 {interestedInTrading && <Repeat className="h-4 w-4" />}
               </div>
-              <span className="text-base text-gray-200">{t("interested_in_trading")}</span>
+              <span className="text-base text-text-primary">{t("interested_in_trading")}</span>
             </button>
           </CardContent>
         </Card>
@@ -241,7 +241,7 @@ export default function ProfileEditPage() {
         {/* Formats */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-gray-400">{t("formats")}</CardTitle>
+            <CardTitle className="text-base text-text-secondary">{t("formats")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -268,17 +268,17 @@ export default function ProfileEditPage() {
         {/* Availability Grid */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-gray-400">{t("availability")}</CardTitle>
-            <p className="text-sm text-gray-500">{t("availability_description")}</p>
+            <CardTitle className="text-base text-text-secondary">{t("availability")}</CardTitle>
+            <p className="text-sm text-text-muted">{t("availability_description")}</p>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-base">
                 <thead>
                   <tr>
-                    <th className="p-1 text-start text-gray-400" />
+                    <th className="p-1 text-start text-text-secondary" />
                     {DAYS.map((day) => (
-                      <th key={day} className="p-1 text-center text-gray-400 font-normal">
+                      <th key={day} className="p-1 text-center text-text-secondary font-normal">
                         {t(day)}
                       </th>
                     ))}
@@ -287,7 +287,7 @@ export default function ProfileEditPage() {
                 <tbody>
                   {SLOTS.map((slot) => (
                     <tr key={slot}>
-                      <td className="p-1 text-gray-400 whitespace-nowrap">
+                      <td className="p-1 text-text-secondary whitespace-nowrap">
                         {t(`${slot}_slot`)}
                       </td>
                       {DAYS.map((day) => {
@@ -308,7 +308,7 @@ export default function ProfileEditPage() {
                   ))}
                 </tbody>
               </table>
-              <div className="mt-2 flex items-center gap-3 text-sm text-gray-400">
+              <div className="mt-2 flex items-center gap-3 text-sm text-text-secondary">
                 <span className="flex items-center gap-1">
                   <span className="inline-block h-4 w-4 rounded bg-emerald-600" /> {t("available")}
                 </span>
@@ -316,7 +316,7 @@ export default function ProfileEditPage() {
                   <span className="inline-block h-4 w-4 rounded bg-amber-600" /> {t("sometimes")}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="inline-block h-4 w-4 rounded bg-gray-700" /> {t("unavailable")}
+                  <span className="inline-block h-4 w-4 rounded bg-surface-hover" /> {t("unavailable")}
                 </span>
               </div>
             </div>

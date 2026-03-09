@@ -4,17 +4,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#e94560] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-[#e94560] text-white shadow hover:bg-[#d63d56]",
+        default: "bg-accent text-white shadow hover:bg-accent-hover",
         destructive: "bg-red-700 text-white shadow-sm hover:bg-red-800",
         outline:
-          "border border-gray-600 bg-transparent text-gray-200 shadow-sm hover:bg-[#16213e] hover:text-white",
-        secondary: "bg-[#16213e] text-gray-200 shadow-sm hover:bg-[#1a1a2e]",
-        ghost: "text-gray-300 hover:bg-[#16213e] hover:text-white",
-        link: "text-[#e94560] underline-offset-4 hover:underline",
+          "border border-border bg-transparent text-text-primary shadow-sm hover:bg-secondary hover:text-white",
+        secondary: "bg-secondary text-text-primary shadow-sm hover:bg-primary",
+        ghost: "text-text-secondary hover:bg-secondary hover:text-white",
+        link: "text-accent underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 px-5 py-2",

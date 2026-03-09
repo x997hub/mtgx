@@ -113,7 +113,7 @@ export function InviteNotificationCard({
               "text-xs font-medium px-2 py-1 rounded",
               invite.status === "accepted" && "text-emerald-400 bg-emerald-400/10",
               invite.status === "declined" && "text-red-400 bg-red-400/10",
-              invite.status === "expired" && "text-gray-400 bg-gray-400/10"
+              invite.status === "expired" && "text-text-secondary bg-text-secondary/10"
             )}>
               {t(`invite_${invite.status}`)}
             </span>

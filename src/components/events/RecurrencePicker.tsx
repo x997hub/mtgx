@@ -43,9 +43,9 @@ export function RecurrencePicker({ value, onChange }: RecurrencePickerProps) {
           type="checkbox"
           checked={isEnabled}
           onChange={handleToggle}
-          className="h-5 w-5 rounded border-gray-600 bg-gray-700 text-accent focus:ring-accent"
+          className="h-5 w-5 rounded border-border bg-border text-accent focus:ring-accent"
         />
-        <span className="text-base font-medium text-gray-200">
+        <span className="text-base font-medium text-text-primary">
           {t("events:make_recurring", "Make recurring")}
         </span>
       </label>
@@ -68,7 +68,7 @@ export function RecurrencePicker({ value, onChange }: RecurrencePickerProps) {
                       "rounded-full px-3 py-1.5 text-sm font-medium transition-colors min-w-[42px]",
                       active
                         ? "bg-accent text-white"
-                        : "bg-gray-700 text-gray-400"
+                        : "bg-border text-text-secondary"
                     )}
                   >
                     {t(`profile:${day}_short`, day.substring(0, 2).toUpperCase())}

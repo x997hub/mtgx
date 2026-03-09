@@ -49,13 +49,13 @@ export function OrganizerStatsCard({ organizerId }: OrganizerStatsCardProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base text-gray-400">
+        <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
           <BarChart3 className="h-4 w-4" />
           {t("organizer_stats", "Organizer stats")}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-base text-gray-200">
+        <p className="text-base text-text-primary">
           {t("organizer_stats_summary", {
             events: stats.events_total,
             cancelRate: stats.cancel_rate ?? 0,

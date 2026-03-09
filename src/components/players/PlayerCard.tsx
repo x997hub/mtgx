@@ -40,7 +40,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
 
   return (
     <Link to={`/profile/${player.id}`}>
-      <Card className="h-full bg-secondary border-gray-700 hover:border-accent/50 transition-colors cursor-pointer">
+      <Card className="h-full bg-secondary border-border hover:border-accent/50 transition-colors cursor-pointer">
         <CardContent className="p-4 space-y-3">
           {/* Header: Avatar + Name + City + Role */}
           <div className="flex items-center gap-3">
@@ -50,11 +50,11 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="text-base font-medium text-gray-100 truncate">
+              <p className="text-base font-medium text-text-primary truncate">
                 {player.display_name}
               </p>
               <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-400 truncate">{player.city}</p>
+                <p className="text-sm text-text-secondary truncate">{player.city}</p>
                 {player.role !== "player" && (
                   <Badge variant="outline" className="text-[10px] leading-tight border-accent/50 text-accent shrink-0 px-1.5 py-0">
                     {t(`profile:role_${player.role}`)}
@@ -76,13 +76,13 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
           {/* Mini availability grid: 7 cols × 3 rows */}
           {availability.length > 0 && (
             <div className="space-y-1">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+              <p className="text-[10px] text-text-muted uppercase tracking-wider">
                 {t("profile:availability")}
               </p>
               <div className="grid grid-cols-7 gap-1">
                 {DAYS.map((day) => (
                   <div key={day} className="text-center">
-                    <span className="text-[9px] text-gray-500 block mb-0.5">
+                    <span className="text-[9px] text-text-muted block mb-0.5">
                       {t(`profile:${day}`)}
                     </span>
                     {SLOTS.map((slot) => {
@@ -93,7 +93,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
                           className={cn(
                             "h-1.5 rounded-full mx-auto mb-0.5",
                             level === "unavailable"
-                              ? "bg-gray-700 w-2"
+                              ? "bg-border w-2"
                               : cn(AVAIL_COLORS[level], "w-3")
                           )}
                           title={`${t(`profile:${day}`)} ${t(`profile:${slot}_slot`)}: ${t(`profile:${level}`)}`}
@@ -108,7 +108,7 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
 
           {/* Reliability (only for organizers/admins) */}
           {showReliability && (
-            <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center justify-between text-xs text-text-secondary">
               <span>{t("profile:reliability_score")}</span>
               <span
                 className={cn(

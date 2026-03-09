@@ -45,7 +45,7 @@ export function EventCard({ event }: EventCardProps) {
                 )}
                 {event.template_id && <RecurringBadge />}
               </div>
-              <h3 className="text-lg font-semibold text-gray-100">
+              <h3 className="text-lg font-semibold text-text-primary">
                 {event.title || t(event.type === "big" ? "big_event" : "quick_meetup")}
               </h3>
               {/* Mood tags */}
@@ -56,7 +56,7 @@ export function EventCard({ event }: EventCardProps) {
                   ))}
                 </div>
               )}
-              <div className="flex flex-col gap-1 text-base text-gray-400">
+              <div className="flex flex-col gap-1 text-base text-text-secondary">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
                   {timeStr} {hourStr}
@@ -73,7 +73,7 @@ export function EventCard({ event }: EventCardProps) {
               {maxPlayers != null ? (
                 <CircularProgress value={goingCount} max={maxPlayers} size={44} />
               ) : (
-                <span className="text-base text-gray-400">{goingCount}</span>
+                <span className="text-base text-text-secondary">{goingCount}</span>
               )}
             </div>
           </div>
