@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -18,7 +19,9 @@ import { DAYS, SLOTS } from "@/lib/constants";
 import type { DayOfWeek, TimeSlot, AvailabilityLevel, Availability, UserRole } from "@/types/database.types";
 import { getInitials } from "@/lib/utils";
 import { OrganizerStatsCard } from "@/components/profile/OrganizerStatsCard";
-import { Car, MessageCircle, Pencil, Repeat, Shield, Bell, UserPlus } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
+import { Car, MessageCircle, Pencil, Repeat, Shield, Bell, UserPlus, Trash2 } from "lucide-react";
 
 const AVAIL_COLORS: Record<AvailabilityLevel, string> = {
   available: "bg-emerald-600",
@@ -95,8 +98,10 @@ const RELIABILITY_VIEWER_ROLES: UserRole[] = ["organizer", "club_owner", "admin"
 export default function ProfilePage() {
   const { t } = useTranslation("profile");
   const { t: tc } = useTranslation("common");
+  const { t: te } = useTranslation("events");
   const { userId } = useParams<{ userId?: string }>();
   const { user, profile: viewerProfile } = useAuth();
+  const queryClient = useQueryClient();
   const isOwn = !userId || userId === user?.id;
   const { profile, availability, isLoading } = useProfile(isOwn ? undefined : userId);
   const { subscriptions } = useSubscription();
@@ -104,6 +109,48 @@ export default function ProfilePage() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const canInvite = !isOwn && invitePrefs?.is_open &&
     (!invitePrefs.dnd_until || new Date(invitePrefs.dnd_until) <= new Date());
+
+  // Recurring events (own profile only, organizer/club_owner/admin)
+  const { data: templates } = useQuery({
+    queryKey: ["event-templates", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_templates")
+        .select("*")
+        .eq("organizer_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: isOwn && !!user,
+  });
+
+  const toggleTemplateMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase
+        .from("event_templates")
+        .update({ is_active })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event-templates", user?.id] });
+    },
+  });
+
+  const deleteTemplateMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("event_templates")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event-templates", user?.id] });
+      toast({ title: tc("deleted", "Deleted") });
+    },
+  });
 
   // Reliability score is visible to organizers, club_owners, and admins
   const canSeeReliability =
@@ -286,6 +333,62 @@ export default function ProfilePage() {
             <AvailabilityGrid availability={availability} />
           </CardContent>
         </Card>
+
+        {/* Recurring Events (own profile only) */}
+        {isOwn && templates && templates.length > 0 && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base text-text-secondary">
+                <Repeat className="h-4 w-4" />
+                {te("my_recurring_events", "My recurring events")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {templates.map((tmpl) => {
+                const data = tmpl.template_data as Record<string, unknown>;
+                return (
+                  <div
+                    key={tmpl.id}
+                    className="flex items-center justify-between rounded-lg bg-primary px-3 py-2"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base text-text-primary truncate">
+                        {(data.title as string) || (data.format as string) || te("recurring")}
+                      </p>
+                      <p className="text-sm text-text-secondary">
+                        {tmpl.recurrence_rule}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tmpl.is_active}
+                          onChange={() => toggleTemplateMutation.mutate({
+                            id: tmpl.id,
+                            is_active: !tmpl.is_active,
+                          })}
+                          className="h-4 w-4 rounded border-border bg-border text-accent focus:ring-accent"
+                        />
+                        <span className="text-sm text-text-secondary">
+                          {tmpl.is_active ? tc("active", "Active") : tc("inactive", "Inactive")}
+                        </span>
+                      </label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteTemplateMutation.mutate(tmpl.id)}
+                        className="text-text-secondary hover:text-danger min-h-[36px] min-w-[36px] p-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Subscriptions (own profile only) */}
         {isOwn && (
