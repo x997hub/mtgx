@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Bell, Check, CheckCheck, Mail } from "lucide-react";
+import { Bell, Check, CheckCheck, Mail, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,7 @@ import { useInvites } from "@/hooks/useInvites";
 import { InviteNotificationCard } from "@/components/shared/InviteNotificationCard";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import type { InviteStatus } from "@/types/database.types";
 
 export default function NotificationsPage() {
   const { t } = useTranslation("common");
@@ -17,9 +18,12 @@ export default function NotificationsPage() {
   const { notifications, isLoading, markAsRead, markAllRead } = useNotifications();
   const { incoming, pendingCount, respondInvite, isResponding } = useInvites();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"notifications" | "invites">("notifications");
+  const { t: te } = useTranslation("events");
+  const [activeTab, setActiveTab] = useState<"notifications" | "invites" | "messages">("notifications");
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const messageNotifications = notifications.filter((n) => n.type === "organizer_message");
+  const otherNotifications = notifications.filter((n) => n.type !== "organizer_message");
 
   async function handleAccept(id: number) {
     try {
@@ -102,17 +106,34 @@ export default function NotificationsPage() {
             </span>
           )}
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("messages")}
+          className={cn(
+            "px-4 py-2 rounded-t text-base font-medium transition-colors",
+            activeTab === "messages"
+              ? "text-accent border-b-2 border-accent"
+              : "text-text-secondary hover:text-text-primary"
+          )}
+        >
+          {te("organizer_message", "Messages")}
+          {messageNotifications.filter((n) => !n.is_read).length > 0 && (
+            <span className="ms-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-xs text-white px-1">
+              {messageNotifications.filter((n) => !n.is_read).length}
+            </span>
+          )}
+        </button>
       </div>
 
       {activeTab === "notifications" && (
-        notifications.length === 0 ? (
+        otherNotifications.length === 0 ? (
           <div className="flex flex-col items-center gap-4 py-12 text-text-secondary">
             <Bell className="h-12 w-12 opacity-50" />
             <p>{t("no_notifications")}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {notifications.map((notification) => (
+            {otherNotifications.map((notification) => (
               <Card
                 key={notification.id}
                 className={cn(
@@ -175,7 +196,7 @@ export default function NotificationsPage() {
                 key={invite.id}
                 invite={{
                   id: invite.id,
-                  status: invite.status,
+                  status: invite.status as InviteStatus,
                   message: invite.message,
                   created_at: invite.created_at,
                   event_id: invite.event_id,
@@ -187,6 +208,64 @@ export default function NotificationsPage() {
                 onDecline={handleDecline}
                 isResponding={isResponding}
               />
+            ))}
+          </div>
+        )
+      )}
+
+      {activeTab === "messages" && (
+        messageNotifications.length === 0 ? (
+          <div className="flex flex-col items-center gap-4 py-12 text-text-secondary">
+            <MessageSquare className="h-12 w-12 opacity-50" />
+            <p>{te("no_messages", "No messages yet")}</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {messageNotifications.map((notification) => (
+              <Card
+                key={notification.id}
+                className={cn(
+                  "bg-surface-card border-surface-hover transition-colors",
+                  !notification.is_read && "border-s-2 border-s-accent"
+                )}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 space-y-1">
+                      {notification.event_id ? (
+                        <Link
+                          to={`/events/${notification.event_id}`}
+                          className="font-medium text-text-primary hover:text-accent"
+                          onClick={() => {
+                            if (!notification.is_read) {
+                              markAsRead(notification.id);
+                            }
+                          }}
+                        >
+                          {notification.title}
+                        </Link>
+                      ) : (
+                        <p className="font-medium text-text-primary">{notification.title}</p>
+                      )}
+                      <p className="text-base text-text-secondary">{notification.body}</p>
+                      <p className="text-sm text-text-secondary">
+                        {new Date(notification.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    {!notification.is_read && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => markAsRead(notification.id)}
+                        className="min-h-[44px] min-w-[44px] shrink-0"
+                        aria-label={t("mark_read")}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )
