@@ -13,7 +13,7 @@ const corsHeaders = {
 
 const VALID_FORMATS = ["pauper", "commander", "standard", "draft"] as const;
 const VALID_EVENT_STATUSES = ["active", "confirmed", "cancelled", "expired", "completed"] as const;
-const VALID_RSVP_STATUSES = ["going", "maybe", "not_going"] as const;
+const VALID_RSVP_STATUSES = ["going", "maybe", "not_going", "waitlisted"] as const;
 const HOURS_24_MS = 24 * 60 * 60 * 1000;
 const DAILY_INVITE_LIMIT = 5;
 const MAX_INVITE_MESSAGE_LEN = 200;
@@ -158,7 +158,8 @@ async function handleRsvp(
         .single();
 
       if (waitlistError) {
-        return jsonResponse({ error: waitlistError.message }, 500);
+        console.error("[mtgx-api] Error:", waitlistError.message);
+        return jsonResponse({ error: "Internal server error" }, 500);
       }
 
       // Create outbox entry for waitlist notification
@@ -180,7 +181,8 @@ async function handleRsvp(
       return jsonResponse({ error: "Event not found" }, 404);
     }
 
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   return jsonResponse({ rsvp: data });
@@ -277,7 +279,8 @@ async function handleCreateEvent(
     .single();
 
   if (error) {
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   // Trigger handles outbox entry automatically
@@ -323,7 +326,8 @@ async function handleLfg(
     .single();
 
   if (error) {
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   return jsonResponse({ lfg });
@@ -367,7 +371,8 @@ async function handleAssignRole(
     .single();
 
   if (error) {
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   return jsonResponse({ profile });
@@ -405,14 +410,14 @@ async function handleSendInvite(
 
   if (prefs) {
     if (!prefs.is_open) {
-      return jsonResponse({ error: "Player is not accepting invites" }, 403);
+      return jsonResponse({ error: "Cannot send invite at this time" }, 403);
     }
     if (prefs.dnd_until && new Date(prefs.dnd_until) > new Date()) {
-      return jsonResponse({ error: "Player has Do Not Disturb active" }, 403);
+      return jsonResponse({ error: "Cannot send invite at this time" }, 403);
     }
     // Visibility check
     if (prefs.visibility === "none") {
-      return jsonResponse({ error: "Player is not accepting invites" }, 403);
+      return jsonResponse({ error: "Cannot send invite at this time" }, 403);
     }
     if (prefs.visibility === "played_together") {
       const { data: played } = await supabase.rpc("check_played_together", {
@@ -439,10 +444,10 @@ async function handleSendInvite(
               .in("event_id", eventIds);
 
             if (!count || count === 0) {
-              return jsonResponse({ error: "Player only accepts invites from players they played with" }, 403);
+              return jsonResponse({ error: "Cannot send invite at this time" }, 403);
             }
           } else {
-            return jsonResponse({ error: "Player only accepts invites from players they played with" }, 403);
+            return jsonResponse({ error: "Cannot send invite at this time" }, 403);
           }
         }
       }
@@ -482,7 +487,8 @@ async function handleSendInvite(
     if (error.code === "23505") {
       return jsonResponse({ error: "Invite already sent" }, 409);
     }
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   // Get sender name for notification
@@ -564,7 +570,8 @@ async function handleRespondInvite(
     .single();
 
   if (updateError) {
-    return jsonResponse({ error: updateError.message }, 500);
+    console.error("[mtgx-api] Error:", updateError.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   // If accepted and has event_id, auto-RSVP via rsvp_with_lock to respect capacity limits
@@ -643,7 +650,8 @@ async function handleGetInvites(
   const { data, error } = await query.order("created_at", { ascending: false }).limit(50);
 
   if (error) {
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   return jsonResponse({ invites: data });
@@ -695,7 +703,8 @@ async function handleEventMessage(
     .single();
 
   if (msgError) {
-    return jsonResponse({ error: msgError.message }, 500);
+    console.error("[mtgx-api] Error:", msgError.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   // Get all going/maybe participants
@@ -768,7 +777,8 @@ async function handleConfirmAttendance(
     .single();
 
   if (updateError) {
-    return jsonResponse({ error: updateError.message }, 500);
+    console.error("[mtgx-api] Error:", updateError.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   // Bump reliability score slightly (max 1.0)
@@ -818,7 +828,8 @@ async function handleFeedback(
     .single();
 
   if (error) {
-    return jsonResponse({ error: error.message }, 500);
+    console.error("[mtgx-api] Error:", error.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 
   return jsonResponse({ report }, 201);
