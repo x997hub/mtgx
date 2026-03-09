@@ -18,6 +18,8 @@ import { RSVPButton } from "@/components/events/RSVPButton";
 import { AttendeeList } from "@/components/events/AttendeeList";
 import { MessageComposer } from "@/components/events/MessageComposer";
 import { OrganizerMessagesList } from "@/components/events/OrganizerMessagesList";
+import { PowerLevelSelector } from "@/components/events/PowerLevelSelector";
+import { PowerLevelDistribution } from "@/components/events/PowerLevelDistribution";
 import { useEvent, useEventRsvps } from "@/hooks/useEvents";
 import { useWaitlist } from "@/hooks/useWaitlist";
 import { useAuthStore } from "@/store/authStore";
@@ -37,11 +39,11 @@ export default function EventDetailPage() {
   const { position: waitlistPosition } = useWaitlist(eventId ?? "");
   const [confirming, setConfirming] = useState(false);
 
-  const currentUserRsvp = useMemo(() => {
+  const currentUserRsvpData = useMemo(() => {
     if (!rsvps || !user) return null;
-    const found = rsvps.find((r) => r.user_id === user.id);
-    return found?.status as RsvpStatus | undefined ?? null;
+    return rsvps.find((r) => r.user_id === user.id) ?? null;
   }, [rsvps, user]);
+  const currentUserRsvp = (currentUserRsvpData?.status as RsvpStatus | undefined) ?? null;
 
   const countdown = useMemo(() => {
     if (!event) return null;
@@ -317,6 +319,32 @@ export default function EventDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Commander Power Level (for going users) */}
+      {event.format === "commander" && currentUserRsvp === "going" && user && eventId && (
+        <Card className="bg-surface-card border-surface-hover">
+          <CardContent className="p-4">
+            <PowerLevelSelector
+              eventId={eventId}
+              userId={user.id}
+              currentLevel={currentUserRsvpData?.power_level ?? null}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Commander Power Level Distribution (for organizer) */}
+      {event.format === "commander" && isOrganizer && rsvps && rsvps.length > 0 && (
+        <Card className="bg-surface-card border-surface-hover">
+          <CardContent className="p-4">
+            <PowerLevelDistribution
+              levels={rsvps
+                .filter((r) => r.status === "going")
+                .map((r) => r.power_level)}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Organizer Messages (Feature #15) */}
       {isOrganizer && eventId && (
