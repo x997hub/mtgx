@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-export type ThemeId = "light" | "dark" | "forest";
+export type ThemeId = "light" | "dark";
 
-const THEME_CLASSES: ThemeId[] = ["dark", "forest"];
+const THEME_CLASSES: ThemeId[] = ["dark"];
 
 function safeGetItem(key: string, fallback: string): string {
   try {

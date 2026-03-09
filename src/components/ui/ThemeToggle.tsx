@@ -1,16 +1,14 @@
-import { Sun, Moon, TreePine } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useUIStore, type ThemeId } from "@/store/uiStore";
 
-const THEME_CYCLE: ThemeId[] = ["dark", "light", "forest"];
+const THEME_CYCLE: ThemeId[] = ["dark", "light"];
 const THEME_ICON: Record<ThemeId, typeof Sun> = {
   light: Sun,
   dark: Moon,
-  forest: TreePine,
 };
 const THEME_LABEL: Record<ThemeId, string> = {
-  light: "Switch to forest theme",
   dark: "Switch to light theme",
-  forest: "Switch to dark theme",
+  light: "Switch to dark theme",
 };
 
 export function ThemeToggle() {

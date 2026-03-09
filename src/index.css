@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "./styles/themes/dark.css";
-@import "./styles/themes/forest.css";
 
 @theme {
   /* ── Light theme (default CSS values) ── */
@@ -110,8 +109,7 @@ body {
 }
 
 /* Noise texture overlay — desktop only, dark themes only */
-.dark body::before,
-.forest body::before {
+.dark body::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -123,8 +121,7 @@ body {
 }
 
 @media (max-width: 767px) {
-  .dark body::before,
-  .forest body::before {
+  .dark body::before {
     display: none;
   }
 }
