@@ -15,7 +15,7 @@ export function VenueCard({ venue }: VenueCardProps) {
   const { t } = useTranslation(["venue", "common"]);
 
   return (
-    <Link to={`/venues/${venue.id}`}>
+    <Link to={`/venues/${venue.id}`} className="block">
       <Card className="transition-colors hover:border-accent/50">
         <CardContent className="p-4 space-y-2.5">
           {/* Name + City */}
