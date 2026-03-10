@@ -14,7 +14,7 @@ import { ProxyPolicySelector } from "@/components/events/ProxyPolicySelector";
 import { RecurrencePicker } from "@/components/events/RecurrencePicker";
 import type { RecurrenceConfig } from "@/components/events/RecurrencePicker";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
-import type { MtgFormat, ProxyPolicy, DayOfWeek } from "@/types/database.types";
+import type { MtgFormat, ProxyPolicy, DayOfWeek, EventMode, OnlinePlatform } from "@/types/database.types";
 
 interface BigEventFormProps {
   defaultValues?: Partial<{
@@ -45,6 +45,9 @@ interface BigFormState {
   moodTags: string[];
   proxyPolicy: ProxyPolicy;
   recurrence: RecurrenceConfig | null;
+  mode: EventMode;
+  onlinePlatform: OnlinePlatform | null;
+  joinLink: string;
 }
 
 export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventFormProps) {
@@ -65,13 +68,16 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
   const [moodTags, setMoodTags] = useState<string[]>([]);
   const [proxyPolicy, setProxyPolicy] = useState<ProxyPolicy>("none");
   const [recurrence, setRecurrence] = useState<RecurrenceConfig | null>(null);
+  const [mode, setMode] = useState<EventMode>("in_person");
+  const [onlinePlatform, setOnlinePlatform] = useState<OnlinePlatform | null>(null);
+  const [joinLink, setJoinLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Autosave
   const formState = useMemo<BigFormState>(() => ({
     title, format, startsAt, venueId, city, minPlayers, maxPlayers,
-    feeText, description, moodTags, proxyPolicy, recurrence,
-  }), [title, format, startsAt, venueId, city, minPlayers, maxPlayers, feeText, description, moodTags, proxyPolicy, recurrence]);
+    feeText, description, moodTags, proxyPolicy, recurrence, mode, onlinePlatform, joinLink,
+  }), [title, format, startsAt, venueId, city, minPlayers, maxPlayers, feeText, description, moodTags, proxyPolicy, recurrence, mode, onlinePlatform, joinLink]);
 
   const autosaveKey = `event-draft-${user?.id ?? "anon"}-big`;
   const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
@@ -91,6 +97,9 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
       setMoodTags(savedState.moodTags ?? []);
       setProxyPolicy(savedState.proxyPolicy ?? "none");
       setRecurrence(savedState.recurrence ?? null);
+      setMode(savedState.mode ?? "in_person");
+      setOnlinePlatform(savedState.onlinePlatform ?? null);
+      setJoinLink(savedState.joinLink ?? "");
       toast({ title: t("draft_restored", "Draft restored") });
     }
   }, []);
@@ -99,8 +108,16 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
     e.preventDefault();
     if (!user || isSubmitting) return;
     setIsSubmitting(true);
-    if (!venueId) {
+    if ((mode === "in_person" || mode === "hybrid") && !venueId) {
       toast({ title: t("venue_required", "Venue is required"), variant: "destructive" });
+      return;
+    }
+    if ((mode === "online" || mode === "hybrid") && !joinLink) {
+      toast({ title: t("join_link", "Join link is required"), variant: "destructive" });
+      return;
+    }
+    if ((mode === "online" || mode === "hybrid") && !onlinePlatform) {
+      toast({ title: t("online_platform", "Platform is required"), variant: "destructive" });
       return;
     }
     if (maxPlayers != null && maxPlayers < minPlayers) {
@@ -122,9 +139,9 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         type: "big",
         title,
         format,
-        city,
+        city: mode === "online" ? "Online" : city,
         starts_at: new Date(startsAt).toISOString(),
-        venue_id: venueId || null,
+        venue_id: mode === "online" ? null : (venueId || null),
         min_players: minPlayers,
         max_players: maxPlayers,
         fee_text: feeText || null,
@@ -132,6 +149,9 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         cloned_from: clonedFrom ?? null,
         mood_tags: moodTags.length > 0 ? moodTags : [],
         proxy_policy: proxyPolicy,
+        mode,
+        online_platform: onlinePlatform || null,
+        join_link: joinLink || null,
       };
 
       const data = await createEvent(eventData);
@@ -202,6 +222,12 @@ export function BigEventForm({ defaultValues, clonedFrom, onCreated }: BigEventF
         onStartsAtChange={setStartsAt}
         minPlayers={minPlayers}
         onMinPlayersChange={setMinPlayers}
+        mode={mode}
+        onModeChange={setMode}
+        onlinePlatform={onlinePlatform}
+        onOnlinePlatformChange={setOnlinePlatform}
+        joinLink={joinLink}
+        onJoinLinkChange={setJoinLink}
       />
 
       <div className="space-y-2">

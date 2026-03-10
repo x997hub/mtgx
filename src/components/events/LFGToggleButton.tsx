@@ -39,6 +39,7 @@ export function LFGToggleButton() {
   const [selectedCity, setSelectedCity] = useState(profile?.city ?? "");
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | "">("");
   const [durationHours, setDurationHours] = useState(4);
+  const [isOnline, setIsOnline] = useState(false);
 
   const onFormatsChange = useCallback((fmts: MtgFormat[]) => setSelectedFormats(fmts), []);
   const toggleFormat = useFormatToggle(selectedFormats, onFormatsChange);
@@ -50,10 +51,11 @@ export function LFGToggleButton() {
     }
     activate(
       {
-        city: selectedCity,
+        city: isOnline ? "Online" : selectedCity,
         formats: selectedFormats,
         preferred_slot: selectedSlot || null,
         durationHours,
+        is_online: isOnline,
       },
       {
         onSuccess: () => {
@@ -127,7 +129,23 @@ export function LFGToggleButton() {
             <DialogTitle>{t("events:lfg_activate")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Online toggle */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsOnline(!isOnline)}
+                className={`rounded-full px-4 py-1.5 text-base font-medium transition-colors ${
+                  isOnline
+                    ? "bg-accent text-white"
+                    : "bg-border text-text-secondary"
+                }`}
+              >
+                {t("events:online_lfg")}
+              </button>
+            </div>
+
             {/* City */}
+            {!isOnline && (
             <div className="space-y-2">
               <Label>{t("events:city")}</Label>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -143,6 +161,7 @@ export function LFGToggleButton() {
                 </SelectContent>
               </Select>
             </div>
+            )}
 
             {/* Formats — multi-select toggles */}
             <div className="space-y-2">
@@ -215,7 +234,7 @@ export function LFGToggleButton() {
             <Button
               className="w-full min-h-[44px]"
               onClick={handleActivate}
-              disabled={isActivating || !selectedCity || selectedFormats.length === 0}
+              disabled={isActivating || (!isOnline && !selectedCity) || selectedFormats.length === 0}
             >
               <Zap className="h-4 w-4 me-2" />
               {isActivating ? t("common:loading") : t("events:lfg_activate")}

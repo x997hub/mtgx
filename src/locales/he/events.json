@@ -99,5 +99,19 @@
   "instant_meetup_suggestion": "{{count}} שחקנים פנויים! ליצור מפגש?",
   "fill_indicator": "{{current}}/{{max}} מקומות",
   "available_players_hint": "~{{count}} שחקנים בעיר שלך בדרך כלל פנויים בזמן הזה",
-  "recruitment_push": "ל-{{event}} חסרים שחקנים - להצטרף?"
+  "recruitment_push": "ל-{{event}} חסרים שחקנים - להצטרף?",
+  "in_person": "פנים אל פנים",
+  "online": "אונליין",
+  "hybrid": "היברידי",
+  "event_mode": "סוג אירוע",
+  "online_platform": "פלטפורמה",
+  "join_link": "קישור להצטרפות",
+  "join_link_placeholder": "https://spelltable.wizards.com/...",
+  "select_platform": "בחר פלטפורמה",
+  "copy_link": "העתק קישור",
+  "link_copied": "הקישור הועתק!",
+  "open_link": "פתח",
+  "online_event": "אירוע אונליין",
+  "hybrid_event": "אירוע היברידי",
+  "online_lfg": "אונליין"
 }

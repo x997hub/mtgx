@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { CityBadge } from "@/components/shared/CityBadge";
@@ -8,6 +8,8 @@ import { CircularProgress } from "@/components/shared/CircularProgress";
 import { MoodTagBadge } from "@/components/events/MoodTagBadge";
 import { ProxyPolicyBadge } from "@/components/events/ProxyPolicyBadge";
 import { RecurringBadge } from "@/components/events/RecurringBadge";
+import { PLATFORM_LABELS } from "@/lib/constants";
+import type { OnlinePlatform } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
 
 interface EventCardProps {
@@ -61,12 +63,34 @@ export function EventCard({ event }: EventCardProps) {
                   <Calendar className="h-4 w-4" />
                   {timeStr} {hourStr}
                 </span>
-                {event.venues && (
+                {event.mode === "online" ? (
+                  <span className="flex items-center gap-1.5">
+                    <Globe className="h-4 w-4" />
+                    {event.online_platform
+                      ? PLATFORM_LABELS[event.online_platform as OnlinePlatform]
+                      : t("online")}
+                  </span>
+                ) : event.mode === "hybrid" ? (
+                  <>
+                    {event.venues && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4" />
+                        {event.venues.name}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1.5">
+                      <Globe className="h-4 w-4" />
+                      {event.online_platform
+                        ? PLATFORM_LABELS[event.online_platform as OnlinePlatform]
+                        : t("online")}
+                    </span>
+                  </>
+                ) : event.venues ? (
                   <span className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4" />
                     {event.venues.name}
                   </span>
-                )}
+                ) : null}
               </div>
             </div>
             <div className="flex flex-col items-center gap-0.5">

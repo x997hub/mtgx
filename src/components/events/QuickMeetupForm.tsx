@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 import { EventFormFields } from "@/components/events/EventFormFields";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
 import { ProxyPolicySelector } from "@/components/events/ProxyPolicySelector";
-import type { MtgFormat, ProxyPolicy } from "@/types/database.types";
+import type { MtgFormat, ProxyPolicy, EventMode, OnlinePlatform } from "@/types/database.types";
 
 interface QuickMeetupFormProps {
   defaultValues?: Partial<{
@@ -27,6 +27,9 @@ interface QuickFormState {
   city: string;
   minPlayers: number;
   proxyPolicy: ProxyPolicy;
+  mode: EventMode;
+  onlinePlatform: OnlinePlatform | null;
+  joinLink: string;
 }
 
 export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormProps) {
@@ -41,11 +44,14 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
   const [city, setCity] = useState(defaultValues?.city ?? "");
   const [minPlayers, setMinPlayers] = useState(defaultValues?.min_players ?? 2);
   const [proxyPolicy, setProxyPolicy] = useState<ProxyPolicy>("none");
+  const [mode, setMode] = useState<EventMode>("in_person");
+  const [onlinePlatform, setOnlinePlatform] = useState<OnlinePlatform | null>(null);
+  const [joinLink, setJoinLink] = useState("");
 
   // Autosave
   const formState = useMemo<QuickFormState>(() => ({
-    format, startsAt, venueId, city, minPlayers, proxyPolicy,
-  }), [format, startsAt, venueId, city, minPlayers, proxyPolicy]);
+    format, startsAt, venueId, city, minPlayers, proxyPolicy, mode, onlinePlatform, joinLink,
+  }), [format, startsAt, venueId, city, minPlayers, proxyPolicy, mode, onlinePlatform, joinLink]);
 
   const autosaveKey = `event-draft-${user?.id ?? "anon"}-quick`;
   const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
@@ -59,6 +65,9 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
       setCity(savedState.city);
       setMinPlayers(savedState.minPlayers);
       setProxyPolicy(savedState.proxyPolicy ?? "none");
+      setMode(savedState.mode ?? "in_person");
+      setOnlinePlatform(savedState.onlinePlatform ?? null);
+      setJoinLink(savedState.joinLink ?? "");
       toast({ title: t("draft_restored", "Draft restored") });
     }
   }, []);
@@ -66,8 +75,16 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!venueId) {
+    if ((mode === "in_person" || mode === "hybrid") && !venueId) {
       toast({ title: t("venue_required", "Venue is required"), variant: "destructive" });
+      return;
+    }
+    if ((mode === "online" || mode === "hybrid") && !joinLink) {
+      toast({ title: t("join_link", "Join link is required"), variant: "destructive" });
+      return;
+    }
+    if ((mode === "online" || mode === "hybrid") && !onlinePlatform) {
+      toast({ title: t("online_platform", "Platform is required"), variant: "destructive" });
       return;
     }
     if (!startsAt) {
@@ -86,11 +103,14 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         organizer_id: user.id,
         type: "quick",
         format,
-        city,
-        venue_id: venueId || null,
+        city: mode === "online" ? "Online" : city,
+        venue_id: mode === "online" ? null : (venueId || null),
         starts_at: startsAtDate.toISOString(),
         min_players: minPlayers,
         proxy_policy: proxyPolicy,
+        mode,
+        online_platform: onlinePlatform || null,
+        join_link: joinLink || null,
         // Quick meetups auto-expire 24h after start (DB trigger also handles this)
         expires_at: new Date(startsAtDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       });
@@ -118,6 +138,12 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         onStartsAtChange={setStartsAt}
         minPlayers={minPlayers}
         onMinPlayersChange={setMinPlayers}
+        mode={mode}
+        onModeChange={setMode}
+        onlinePlatform={onlinePlatform}
+        onOnlinePlatformChange={setOnlinePlatform}
+        joinLink={joinLink}
+        onJoinLinkChange={setJoinLink}
         idPrefix="q_"
       />
 

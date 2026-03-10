@@ -21,10 +21,11 @@ export function useEvents() {
   const format = useFilterStore((s) => s.format);
   const city = useFilterStore((s) => s.city);
   const proxyPolicy = useFilterStore((s) => s.proxyPolicy);
+  const eventMode = useFilterStore((s) => s.eventMode);
   const queryClient = useQueryClient();
 
   const eventsQuery = useInfiniteQuery({
-    queryKey: ["events", { format, city, proxyPolicy }],
+    queryKey: ["events", { format, city, proxyPolicy, eventMode }],
     queryFn: async ({ pageParam = 0 }) => {
       let query = supabase
         .from("events")
@@ -36,7 +37,8 @@ export function useEvents() {
         .range(pageParam * PAGE_SIZE, (pageParam + 1) * PAGE_SIZE - 1);
 
       if (format) query = query.eq("format", format);
-      if (city) query = query.eq("city", city);
+      if (eventMode) query = query.eq("mode", eventMode);
+      if (city && eventMode !== "online") query = query.eq("city", city);
       if (proxyPolicy) query = query.eq("proxy_policy", proxyPolicy);
 
       const { data, error } = await query;

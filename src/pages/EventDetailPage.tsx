@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, Copy, CheckCircle } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Copy, CheckCircle, Monitor, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,8 @@ import { useWaitlist } from "@/hooks/useWaitlist";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
-import type { RsvpStatus } from "@/types/database.types";
+import { PLATFORM_LABELS } from "@/lib/constants";
+import type { RsvpStatus, OnlinePlatform } from "@/types/database.types";
 
 export default function EventDetailPage() {
   const { t } = useTranslation(["events", "common"]);
@@ -259,6 +260,43 @@ export default function EventDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Online / Hybrid join link */}
+      {(event.mode === "online" || event.mode === "hybrid") && event.join_link && (
+        <Card className="bg-surface-card border-surface-hover">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Monitor className="h-4 w-4 text-accent" />
+                <span className="font-medium">
+                  {event.online_platform
+                    ? PLATFORM_LABELS[event.online_platform as OnlinePlatform]
+                    : t("events:online_event")}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(event.join_link!);
+                    toast({ title: t("events:link_copied") });
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1" />
+                  {t("events:copy_link")}
+                </Button>
+                <Button size="sm" asChild>
+                  <a href={event.join_link} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                    {t("events:open_link")}
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2">

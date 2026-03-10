@@ -130,5 +130,18 @@
   "confirm_attendance_desc": "The event starts soon. Please confirm you are coming.",
   "confirm": "Confirm",
   "checked_in": "Checked in",
-  "unconfirmed": "Unconfirmed"
+  "unconfirmed": "Unconfirmed",
+  "in_person": "In Person",
+  "online": "Online",
+  "hybrid": "Hybrid",
+  "event_mode": "Event Mode",
+  "online_platform": "Platform",
+  "join_link": "Join Link",
+  "join_link_placeholder": "https://spelltable.wizards.com/...",
+  "select_platform": "Select platform",
+  "copy_link": "Copy Link",
+  "open_link": "Open",
+  "online_event": "Online Event",
+  "hybrid_event": "Hybrid Event",
+  "online_lfg": "Online"
 }

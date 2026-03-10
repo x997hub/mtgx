@@ -21,6 +21,7 @@ interface ActivateLFGParams {
   formats: MtgFormat[];
   preferred_slot?: TimeSlot | null;
   durationHours?: number;
+  is_online?: boolean;
 }
 
 /**
@@ -82,7 +83,7 @@ export function useLFG(city?: string) {
 
   // Activate LFG signal (upsert — one signal per user via UNIQUE constraint)
   const activateMutation = useMutation({
-    mutationFn: async ({ city: signalCity, formats, preferred_slot, durationHours = 4 }: ActivateLFGParams) => {
+    mutationFn: async ({ city: signalCity, formats, preferred_slot, durationHours = 4, is_online }: ActivateLFGParams) => {
       if (!user) throw new Error("Not authenticated");
       const expiresAt = new Date(Date.now() + durationHours * 3600000).toISOString();
       const { data, error } = await supabase
@@ -90,10 +91,11 @@ export function useLFG(city?: string) {
         .upsert(
           {
             user_id: user.id,
-            city: signalCity,
+            city: is_online ? "Online" : signalCity,
             formats,
             preferred_slot: preferred_slot ?? null,
             expires_at: expiresAt,
+            is_online: is_online ?? false,
           },
           { onConflict: "user_id" }
         )

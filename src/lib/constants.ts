@@ -1,6 +1,7 @@
 import type {
   MtgFormat, DayOfWeek, TimeSlot, CarAccess, ProxyPolicy,
   FeedbackType, FeedbackStatus, EventStatus, RsvpStatus, AvailabilityLevel,
+  EventMode, OnlinePlatform,
 } from "@/types/database.types";
 
 export const FORMATS: MtgFormat[] = ["pauper", "commander", "standard", "draft"];
@@ -41,6 +42,29 @@ export const PROXY_POLICY_COLORS: Record<ProxyPolicy, string> = {
   none: "bg-danger/60 text-white",
   partial: "bg-warning/60 text-white",
   full: "bg-success/60 text-white",
+};
+
+/** Event mode options */
+export const EVENT_MODES: EventMode[] = ["in_person", "online", "hybrid"];
+
+/** Online platform options */
+export const ONLINE_PLATFORMS: OnlinePlatform[] = ["spelltable", "mtgo", "mtga", "discord", "zoom", "other"];
+
+/** Platform display labels */
+export const PLATFORM_LABELS: Record<OnlinePlatform, string> = {
+  spelltable: "Spelltable",
+  mtgo: "MTGO",
+  mtga: "MTG Arena",
+  discord: "Discord",
+  zoom: "Zoom",
+  other: "Other",
+};
+
+/** Event mode display labels */
+export const EVENT_MODE_LABELS: Record<EventMode, string> = {
+  in_person: "In Person",
+  online: "Online",
+  hybrid: "Hybrid",
 };
 
 /** Commander power levels (1-5) */

@@ -25,8 +25,8 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/store/authStore";
 import { useFilterStore } from "@/store/filterStore";
 import { FORMATS, CITIES } from "@/lib/constants";
-import { isToday } from "@/lib/utils";
-import type { MtgFormat, ProxyPolicy } from "@/types/database.types";
+import { isToday, cn } from "@/lib/utils";
+import type { MtgFormat, ProxyPolicy, EventMode } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
 
 export default function EventFeedPage() {
@@ -39,6 +39,8 @@ export default function EventFeedPage() {
   const setFormat = useFilterStore((s) => s.setFormat);
   const setCity = useFilterStore((s) => s.setCity);
   const setProxyPolicy = useFilterStore((s) => s.setProxyPolicy);
+  const eventMode = useFilterStore((s) => s.eventMode);
+  const setEventMode = useFilterStore((s) => s.setEventMode);
   const { events, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useEvents();
   const { instantCount } = useGoingToday(profile?.city ?? undefined);
@@ -48,6 +50,25 @@ export default function EventFeedPage() {
 
   return (
     <div className="space-y-4 p-4 md:p-6 pb-24">
+      {/* Mode filter chips */}
+      <div className="flex gap-2 mb-3">
+        {([null, "in_person", "online"] as const).map((m) => (
+          <button
+            key={m ?? "all"}
+            type="button"
+            onClick={() => setEventMode(m as EventMode | null)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+              eventMode === m
+                ? "bg-accent text-white"
+                : "bg-surface-hover text-text-secondary hover:bg-surface-card"
+            )}
+          >
+            {m === null ? t("events:browse_all") : m === "in_person" ? t("events:in_person") : t("events:online")}
+          </button>
+        ))}
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select
@@ -99,7 +120,7 @@ export default function EventFeedPage() {
           </SelectContent>
         </Select>
 
-        {(format || city || proxyPolicy) && (
+        {(format || city || proxyPolicy || eventMode) && (
           <Badge
             variant="outline"
             className="cursor-pointer min-h-[44px] flex items-center border-surface-hover text-text-secondary hover:bg-surface-hover"
@@ -107,6 +128,7 @@ export default function EventFeedPage() {
               setFormat(null);
               setCity(null);
               setProxyPolicy(null);
+              setEventMode(null);
             }}
           >
             {t("events:browse_all")}

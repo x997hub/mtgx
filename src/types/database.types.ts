@@ -185,6 +185,9 @@ export type Database = {
           title: string | null
           type: Database["public"]["Enums"]["event_type"]
           venue_id: string | null
+          mode: Database["public"]["Enums"]["event_mode"]
+          online_platform: Database["public"]["Enums"]["online_platform"] | null
+          join_link: string | null
         }
         Insert: {
           checkin_enabled?: boolean
@@ -211,6 +214,9 @@ export type Database = {
           title?: string | null
           type: Database["public"]["Enums"]["event_type"]
           venue_id?: string | null
+          mode?: Database["public"]["Enums"]["event_mode"]
+          online_platform?: Database["public"]["Enums"]["online_platform"] | null
+          join_link?: string | null
         }
         Update: {
           checkin_enabled?: boolean
@@ -237,6 +243,9 @@ export type Database = {
           title?: string | null
           type?: Database["public"]["Enums"]["event_type"]
           venue_id?: string | null
+          mode?: Database["public"]["Enums"]["event_mode"]
+          online_platform?: Database["public"]["Enums"]["online_platform"] | null
+          join_link?: string | null
         }
         Relationships: [
           {
@@ -372,6 +381,7 @@ export type Database = {
           formats: Database["public"]["Enums"]["mtg_format"][]
           id: number
           is_instant: boolean | null
+          is_online: boolean
           preferred_slot: Database["public"]["Enums"]["time_slot"] | null
           user_id: string
         }
@@ -383,6 +393,7 @@ export type Database = {
           formats: Database["public"]["Enums"]["mtg_format"][]
           id?: never
           is_instant?: boolean | null
+          is_online?: boolean
           preferred_slot?: Database["public"]["Enums"]["time_slot"] | null
           user_id: string
         }
@@ -394,6 +405,7 @@ export type Database = {
           formats?: Database["public"]["Enums"]["mtg_format"][]
           id?: never
           is_instant?: boolean | null
+          is_online?: boolean
           preferred_slot?: Database["public"]["Enums"]["time_slot"] | null
           user_id?: string
         }
@@ -1103,6 +1115,8 @@ export type Database = {
       subscription_target: "organizer" | "venue" | "format_city"
       time_slot: "morning" | "day" | "evening"
       user_role: "player" | "organizer" | "club_owner" | "admin"
+      event_mode: "in_person" | "online" | "hybrid"
+      online_platform: "spelltable" | "mtgo" | "mtga" | "discord" | "zoom" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1247,6 +1261,8 @@ export const Constants = {
       subscription_target: ["organizer", "venue", "format_city"],
       time_slot: ["morning", "day", "evening"],
       user_role: ["player", "organizer", "club_owner", "admin"],
+      event_mode: ["in_person", "online", "hybrid"],
+      online_platform: ["spelltable", "mtgo", "mtga", "discord", "zoom", "other"],
     },
   },
 } as const
@@ -1265,6 +1281,8 @@ export type TimeSlot = Enums<"time_slot">;
 export type AvailabilityLevel = Enums<"availability_level">;
 export type OutboxStatus = Enums<"outbox_status">;
 export type ProxyPolicy = Enums<"proxy_policy">;
+export type EventMode = Enums<"event_mode">;
+export type OnlinePlatform = Enums<"online_platform">;
 
 // Non-DB-enum types (text columns with CHECK constraints)
 export type CarAccess = "yes" | "no" | "sometimes";

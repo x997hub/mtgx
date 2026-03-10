@@ -11,10 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FORMATS } from "@/lib/constants";
+import { FORMATS, EVENT_MODES, EVENT_MODE_LABELS, ONLINE_PLATFORMS, PLATFORM_LABELS } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import type { MtgFormat } from "@/types/database.types";
+import type { MtgFormat, EventMode, OnlinePlatform } from "@/types/database.types";
 
 const TIME_PRESETS = ["10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
 
@@ -30,6 +30,12 @@ export interface EventFormFieldsProps {
   onMinPlayersChange: (minPlayers: number) => void;
   /** HTML id prefix to avoid collisions when both forms are on the same page */
   idPrefix?: string;
+  mode: EventMode;
+  onModeChange: (mode: EventMode) => void;
+  onlinePlatform: OnlinePlatform | null;
+  onOnlinePlatformChange: (p: OnlinePlatform | null) => void;
+  joinLink: string;
+  onJoinLinkChange: (link: string) => void;
 }
 
 export function EventFormFields({
@@ -43,6 +49,12 @@ export function EventFormFields({
   minPlayers,
   onMinPlayersChange,
   idPrefix = "",
+  mode,
+  onModeChange,
+  onlinePlatform,
+  onOnlinePlatformChange,
+  joinLink,
+  onJoinLinkChange,
 }: EventFormFieldsProps) {
   const { t } = useTranslation("events");
   const id = (name: string) => `${idPrefix}${name}`;
@@ -135,27 +147,83 @@ export function EventFormFields({
       </div>
 
       <div className="space-y-2">
-        <Label>{t("venue")} *</Label>
-        <Select
-          value={venueId || "none"}
-          onValueChange={(v) => onVenueIdChange(v === "none" ? "" : v)}
-        >
-          <SelectTrigger data-invalid={!venueId || undefined}>
-            <SelectValue placeholder={t("select_venue")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">—</SelectItem>
-            {venues?.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name} — {v.city}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {!venueId && (
-          <p className="text-sm text-red-400">{t("venue_required", "Venue is required")}</p>
-        )}
+        <Label>{t("event_mode")}</Label>
+        <div className="flex gap-2">
+          {EVENT_MODES.map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => onModeChange(m)}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                mode === m
+                  ? "bg-accent text-white"
+                  : "bg-surface-hover text-text-secondary"
+              )}
+            >
+              {EVENT_MODE_LABELS[m]}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {(mode === "in_person" || mode === "hybrid") && (
+        <div className="space-y-2">
+          <Label>{t("venue")} *</Label>
+          <Select
+            value={venueId || "none"}
+            onValueChange={(v) => onVenueIdChange(v === "none" ? "" : v)}
+          >
+            <SelectTrigger data-invalid={!venueId || undefined}>
+              <SelectValue placeholder={t("select_venue")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">—</SelectItem>
+              {venues?.map((v) => (
+                <SelectItem key={v.id} value={v.id}>
+                  {v.name} — {v.city}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!venueId && (
+            <p className="text-sm text-red-400">{t("venue_required", "Venue is required")}</p>
+          )}
+        </div>
+      )}
+
+      {(mode === "online" || mode === "hybrid") && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor={`${idPrefix}platform`}>{t("online_platform")}</Label>
+            <Select
+              value={onlinePlatform || ""}
+              onValueChange={(v) => onOnlinePlatformChange(v as OnlinePlatform)}
+            >
+              <SelectTrigger id={`${idPrefix}platform`}>
+                <SelectValue placeholder={t("select_platform")} />
+              </SelectTrigger>
+              <SelectContent>
+                {ONLINE_PLATFORMS.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {PLATFORM_LABELS[p]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`${idPrefix}joinlink`}>{t("join_link")}</Label>
+            <Input
+              id={`${idPrefix}joinlink`}
+              type="url"
+              placeholder={t("join_link_placeholder")}
+              value={joinLink}
+              onChange={(e) => onJoinLinkChange(e.target.value)}
+            />
+          </div>
+        </>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor={id("date")}>{t("date", "Date")}</Label>

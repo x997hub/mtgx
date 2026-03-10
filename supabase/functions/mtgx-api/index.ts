@@ -12,6 +12,8 @@ const corsHeaders = {
 };
 
 const VALID_FORMATS = ["pauper", "commander", "standard", "draft"] as const;
+const VALID_EVENT_MODES = ["in_person", "online", "hybrid"] as const;
+const VALID_ONLINE_PLATFORMS = ["spelltable", "mtgo", "mtga", "discord", "zoom", "other"] as const;
 const VALID_EVENT_STATUSES = ["active", "confirmed", "cancelled", "expired", "completed"] as const;
 const VALID_RSVP_STATUSES = ["going", "maybe", "not_going", "waitlisted"] as const;
 const HOURS_24_MS = 24 * 60 * 60 * 1000;
@@ -214,10 +216,27 @@ async function handleCreateEvent(
   const bodyOrError = await parseRequestBody(req);
   if (bodyOrError instanceof Response) return bodyOrError;
   const body = bodyOrError;
-  const { type, title, format, city, starts_at, venue_id, duration_min, min_players, max_players, fee_text, description, cloned_from } = body as Record<string, unknown>;
+  const { type, title, format, city, starts_at, venue_id, duration_min, min_players, max_players, fee_text, description, cloned_from, mode, online_platform, join_link } = body as Record<string, unknown>;
 
-  if (!format || !city || !starts_at || !type) {
-    return jsonResponse({ error: "type, format, city, and starts_at are required" }, 400);
+  const eventMode = (mode as string) || "in_person";
+
+  if (!format || !starts_at || !type) {
+    return jsonResponse({ error: "type, format, and starts_at are required" }, 400);
+  }
+
+  // For in_person/hybrid events, city is required
+  if (eventMode !== "online" && !city) {
+    return jsonResponse({ error: "city is required for in_person and hybrid events" }, 400);
+  }
+
+  // Validate mode
+  if (!VALID_EVENT_MODES.includes(eventMode as typeof VALID_EVENT_MODES[number])) {
+    return jsonResponse({ error: `Invalid mode. Must be one of: ${VALID_EVENT_MODES.join(", ")}` }, 400);
+  }
+
+  // Validate online_platform if provided
+  if (online_platform && !VALID_ONLINE_PLATFORMS.includes(online_platform as typeof VALID_ONLINE_PLATFORMS[number])) {
+    return jsonResponse({ error: `Invalid online_platform. Must be one of: ${VALID_ONLINE_PLATFORMS.join(", ")}` }, 400);
   }
 
   // Validate field lengths
@@ -258,6 +277,9 @@ async function handleCreateEvent(
     }
   }
 
+  // For online mode, default city to "Online" if not provided
+  const eventCity = eventMode === "online" ? ((city as string) || "Online") : city;
+
   const { data: event, error } = await supabase
     .from("events")
     .insert({
@@ -265,7 +287,7 @@ async function handleCreateEvent(
       type,
       title,
       format,
-      city,
+      city: eventCity,
       starts_at,
       venue_id: venue_id || null,
       duration_min: duration_min || null,
@@ -274,6 +296,9 @@ async function handleCreateEvent(
       fee_text: fee_text || null,
       description: description || null,
       cloned_from: cloned_from || null,
+      mode: eventMode,
+      online_platform: online_platform || null,
+      join_link: join_link || null,
     })
     .select()
     .single();

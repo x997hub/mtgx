@@ -130,5 +130,18 @@
   "confirm_attendance_desc": "Событие скоро начнётся. Пожалуйста, подтвердите, что вы придёте.",
   "confirm": "Подтвердить",
   "checked_in": "Отмечен",
-  "unconfirmed": "Не подтверждён"
+  "unconfirmed": "Не подтверждён",
+  "in_person": "Вживую",
+  "online": "Онлайн",
+  "hybrid": "Гибрид",
+  "event_mode": "Формат участия",
+  "online_platform": "Платформа",
+  "join_link": "Ссылка для входа",
+  "join_link_placeholder": "https://spelltable.wizards.com/...",
+  "select_platform": "Выберите платформу",
+  "copy_link": "Копировать",
+  "open_link": "Открыть",
+  "online_event": "Онлайн-событие",
+  "hybrid_event": "Гибридное событие",
+  "online_lfg": "Онлайн"
 }

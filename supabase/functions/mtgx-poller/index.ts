@@ -208,27 +208,41 @@ async function getRecipients(
     // Format+city subscribers with availability match
     const format = payload.format as string;
     const city = payload.city as string;
+    const mode = payload.mode as string | undefined;
 
-    const { data: formatCitySubs } = await supabase
+    // For online/hybrid events, match by format only (no city filter)
+    let formatCityQuery = supabase
       .from("subscriptions")
       .select("user_id")
       .eq("target_type", "format_city")
-      .eq("format", format)
-      .eq("city", city);
+      .eq("format", format);
+
+    if (mode !== "online" && mode !== "hybrid") {
+      formatCityQuery = formatCityQuery.eq("city", city);
+    }
+
+    const { data: formatCitySubs } = await formatCityQuery;
 
     if (formatCitySubs) {
-      // For format_city subs, check availability match
-      const { data: matched } = await supabase.rpc("availability_match", {
-        p_event_id: entry.event_id,
-      });
-
-      const matchedIds = new Set((matched || []).map((m: { user_id: string }) => m.user_id));
-
-      formatCitySubs.forEach((s: { user_id: string }) => {
-        if (matchedIds.has(s.user_id)) {
+      // For online events, skip availability_match (no physical location matters)
+      if (mode === "online") {
+        formatCitySubs.forEach((s: { user_id: string }) => {
           recipientSet.add(s.user_id);
-        }
-      });
+        });
+      } else {
+        // For in_person/hybrid, check availability match
+        const { data: matched } = await supabase.rpc("availability_match", {
+          p_event_id: entry.event_id,
+        });
+
+        const matchedIds = new Set((matched || []).map((m: { user_id: string }) => m.user_id));
+
+        formatCitySubs.forEach((s: { user_id: string }) => {
+          if (matchedIds.has(s.user_id)) {
+            recipientSet.add(s.user_id);
+          }
+        });
+      }
     }
 
     // Remove the organizer from recipients
