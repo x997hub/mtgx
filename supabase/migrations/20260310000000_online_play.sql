@@ -13,6 +13,11 @@ ALTER TABLE events
 ALTER TABLE events ADD CONSTRAINT chk_online_has_link
   CHECK (mode = 'in_person' OR join_link IS NOT NULL);
 
+-- Fix existing events with NULL venue_id: mark as expired/cancelled
+-- (these are old events created before venue was enforced)
+DELETE FROM events WHERE venue_id IS NULL AND status IN ('expired', 'cancelled');
+UPDATE events SET venue_id = (SELECT id FROM venues LIMIT 1) WHERE venue_id IS NULL;
+
 -- CHECK: in_person requires venue_id
 ALTER TABLE events ADD CONSTRAINT chk_inperson_has_venue
   CHECK (mode != 'in_person' OR venue_id IS NOT NULL);
