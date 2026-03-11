@@ -27,7 +27,6 @@ interface RespondInviteParams {
 
 export function useInvites() {
   const user = useAuthStore((s) => s.user);
-  const session = useAuthStore((s) => s.session);
   const queryClient = useQueryClient();
 
   const incomingQuery = useQuery({
@@ -100,13 +99,10 @@ export function useInvites() {
 
   const sendInviteMutation = useMutation({
     mutationFn: async (params: SendInviteParams) => {
-      if (!user || !session) throw new Error("Not authenticated");
+      if (!user) throw new Error("Not authenticated");
       const res = await apiFetch("/invites", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
         signal: AbortSignal.timeout(15000),
       });
@@ -126,13 +122,9 @@ export function useInvites() {
 
   const respondInviteMutation = useMutation({
     mutationFn: async ({ invite_id, status }: RespondInviteParams) => {
-      if (!session) throw new Error("Not authenticated");
       const res = await apiFetch("/invites/respond", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ invite_id, status }),
         signal: AbortSignal.timeout(15000),
       });

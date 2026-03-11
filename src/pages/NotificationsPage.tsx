@@ -11,7 +11,6 @@ import { useInvites } from "@/hooks/useInvites";
 import { InviteNotificationCard } from "@/components/shared/InviteNotificationCard";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store/authStore";
 import { apiFetch } from "@/lib/api";
 import type { InviteStatus } from "@/types/database.types";
 
@@ -22,7 +21,6 @@ export default function NotificationsPage() {
   const { incoming, pendingCount, respondInvite, isResponding } = useInvites();
   const { toast } = useToast();
   const { t: te } = useTranslation("events");
-  const session = useAuthStore((s) => s.session);
   const [activeTab, setActiveTab] = useState<"notifications" | "invites" | "messages">("notifications");
   const [confirmingEventId, setConfirmingEventId] = useState<string | null>(null);
 
@@ -31,15 +29,11 @@ export default function NotificationsPage() {
   const otherNotifications = notifications.filter((n) => n.type !== "organizer_message");
 
   async function handleConfirmFromNotification(eventId: string, notificationId: number) {
-    if (!session?.access_token) return;
     setConfirmingEventId(eventId);
     try {
       const res = await apiFetch("/confirm-attendance", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId }),
       });
       if (!res.ok) {

@@ -32,6 +32,11 @@ vi.mock("@/lib/supabase", () => ({
       subscribe: vi.fn().mockReturnThis(),
     })),
     removeChannel: vi.fn(),
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: { access_token: "fresh-mock-token" } },
+      }),
+    },
   },
 }));
 

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { useAuthStore } from "@/store/authStore";
 import { apiFetch } from "@/lib/api";
 
 const MAX_CHARS = 500;
@@ -16,7 +15,6 @@ interface MessageComposerProps {
 
 export function MessageComposer({ eventId }: MessageComposerProps) {
   const { t } = useTranslation(["events", "common"]);
-  const session = useAuthStore((s) => s.session);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -25,16 +23,13 @@ export function MessageComposer({ eventId }: MessageComposerProps) {
   const canSend = body.trim().length > 0 && !isOverLimit && !sending;
 
   const handleSend = async () => {
-    if (!canSend || !session?.access_token) return;
+    if (!canSend) return;
 
     setSending(true);
     try {
       const res = await apiFetch("/event-message", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           event_id: eventId,
           message: body.trim(),

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useAuthStore } from "@/store/authStore";
 import { apiFetch } from "@/lib/api";
 
 interface OrganizerMessage {
@@ -13,7 +12,6 @@ interface OrganizerMessage {
 
 export function useOrganizerMessages(eventId: string) {
   const queryClient = useQueryClient();
-  const session = useAuthStore((s) => s.session);
 
   const messagesQuery = useQuery({
     queryKey: ["organizer-messages", eventId],
@@ -32,14 +30,9 @@ export function useOrganizerMessages(eventId: string) {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
-      if (!session?.access_token) throw new Error("Not authenticated");
-
       const res = await apiFetch("/event-message", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId, message }),
       });
 

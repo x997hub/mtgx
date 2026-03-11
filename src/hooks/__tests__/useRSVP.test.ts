@@ -13,6 +13,17 @@ vi.mock("@/components/ui/use-toast", () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+// Mock supabase auth for getAccessToken in apiFetch
+vi.mock("@/lib/supabase", () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: { access_token: "fresh-mock-token" } },
+      }),
+    },
+  },
+}));
+
 // Mock fetch for RSVP endpoint
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch;
@@ -103,9 +114,9 @@ describe("useRSVP", () => {
         body: JSON.stringify({ event_id: "event-1", status: "going" }),
       })
     );
-    // Verify headers via Headers instance
+    // Verify headers via Headers instance — token comes from supabase.auth.getSession()
     const callHeaders = mockFetch.mock.calls[0][1].headers;
-    expect(callHeaders.get("Authorization")).toBe("Bearer mock-token");
+    expect(callHeaders.get("Authorization")).toBe("Bearer fresh-mock-token");
     expect(callHeaders.get("Content-Type")).toBe("application/json");
     expect(callHeaders.get("apikey")).toBeTruthy();
 

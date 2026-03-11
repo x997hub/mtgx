@@ -25,11 +25,10 @@ interface RSVPResponse {
 export function useRSVP() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const session = useAuthStore((s) => s.session);
 
   return useMutation({
     mutationFn: async ({ eventId, status, powerLevel }: RSVPParams) => {
-      if (!user || !session) throw new Error("Not authenticated");
+      if (!user) throw new Error("Not authenticated");
 
       const body: Record<string, unknown> = { event_id: eventId, status };
       if (powerLevel !== undefined && powerLevel !== null) {
@@ -38,10 +37,7 @@ export function useRSVP() {
 
       const response = await apiFetch("/rsvp", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(15000),
       });

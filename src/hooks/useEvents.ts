@@ -53,15 +53,10 @@ export function useEvents() {
 
   const createEventMutation = useMutation({
     mutationFn: async (event: EventInsert) => {
-      const session = useAuthStore.getState().session;
-      if (!session) throw new Error("Not authenticated");
-
+      if (!useAuthStore.getState().user) throw new Error("Not authenticated");
       const res = await apiFetch("/events", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(event),
         signal: AbortSignal.timeout(15000),
       });

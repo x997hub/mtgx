@@ -36,7 +36,6 @@ export default function EventDetailPage() {
   const { id: eventId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const session = useAuthStore((s) => s.session);
 
   const { data: event, isLoading: eventLoading, isError: eventError, refetch: eventRefetch } = useEvent(eventId ?? "");
   const { data: rsvps, isLoading: rsvpsLoading } = useEventRsvps(eventId ?? "");
@@ -75,15 +74,12 @@ export default function EventDetailPage() {
     countdown.totalHours > 0;
 
   const handleConfirmAttendance = async () => {
-    if (!eventId || !session?.access_token) return;
+    if (!eventId) return;
     setConfirming(true);
     try {
       const res = await apiFetch("/confirm-attendance", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId }),
       });
       if (!res.ok) {
