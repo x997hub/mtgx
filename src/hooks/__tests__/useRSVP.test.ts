@@ -100,13 +100,14 @@ describe("useRSVP", () => {
       expect.stringContaining("/functions/v1/mtgx-api/rsvp"),
       expect.objectContaining({
         method: "POST",
-        headers: expect.objectContaining({
-          Authorization: "Bearer mock-token",
-          "Content-Type": "application/json",
-        }),
         body: JSON.stringify({ event_id: "event-1", status: "going" }),
       })
     );
+    // Verify headers via Headers instance
+    const callHeaders = mockFetch.mock.calls[0][1].headers;
+    expect(callHeaders.get("Authorization")).toBe("Bearer mock-token");
+    expect(callHeaders.get("Content-Type")).toBe("application/json");
+    expect(callHeaders.get("apikey")).toBeTruthy();
 
     expect(rsvpResult).toEqual(rsvpResponse.rsvp);
   });

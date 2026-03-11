@@ -67,6 +67,16 @@ export const EVENT_MODE_LABELS: Record<EventMode, string> = {
   hybrid: "Hybrid",
 };
 
+/** Platform field configuration: which fields each platform needs */
+export const PLATFORM_FIELDS: Record<OnlinePlatform, { joinLink: boolean; platformUsername: boolean; contactLink: boolean }> = {
+  spelltable: { joinLink: true, platformUsername: false, contactLink: false },
+  mtgo: { joinLink: true, platformUsername: false, contactLink: false },
+  mtga: { joinLink: false, platformUsername: true, contactLink: true },
+  discord: { joinLink: true, platformUsername: false, contactLink: false },
+  zoom: { joinLink: true, platformUsername: false, contactLink: false },
+  other: { joinLink: true, platformUsername: false, contactLink: true },
+};
+
 /** Commander power levels (1-5) */
 export const POWER_LEVELS = [1, 2, 3, 4, 5] as const;
 export type PowerLevel = (typeof POWER_LEVELS)[number];

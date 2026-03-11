@@ -162,6 +162,8 @@ function makeEvent(overrides: Partial<EventWithRelations> = {}): EventWithRelati
     mode: "in_person",
     online_platform: null,
     join_link: null,
+    platform_username: null,
+    contact_link: null,
     rsvps: [{ count: 5 }],
     venues: null,
     profiles: null,

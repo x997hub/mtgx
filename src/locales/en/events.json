@@ -143,5 +143,13 @@
   "open_link": "Open",
   "online_event": "Online Event",
   "hybrid_event": "Hybrid Event",
-  "online_lfg": "Online"
+  "online_lfg": "Online",
+  "platform_username": "Username",
+  "platform_username_placeholder": "YourName#12345",
+  "platform_username_required": "Username is required",
+  "contact_link": "Contact (WhatsApp)",
+  "contact_link_placeholder": "https://wa.me/...",
+  "contact_link_required": "Contact link is required",
+  "open_contact": "WhatsApp",
+  "join_link_required": "Join link is required"
 }

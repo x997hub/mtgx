@@ -188,6 +188,8 @@ export type Database = {
           mode: Database["public"]["Enums"]["event_mode"]
           online_platform: Database["public"]["Enums"]["online_platform"] | null
           join_link: string | null
+          platform_username: string | null
+          contact_link: string | null
         }
         Insert: {
           checkin_enabled?: boolean
@@ -217,6 +219,8 @@ export type Database = {
           mode?: Database["public"]["Enums"]["event_mode"]
           online_platform?: Database["public"]["Enums"]["online_platform"] | null
           join_link?: string | null
+          platform_username?: string | null
+          contact_link?: string | null
         }
         Update: {
           checkin_enabled?: boolean
@@ -246,6 +250,8 @@ export type Database = {
           mode?: Database["public"]["Enums"]["event_mode"]
           online_platform?: Database["public"]["Enums"]["online_platform"] | null
           join_link?: string | null
+          platform_username?: string | null
+          contact_link?: string | null
         }
         Relationships: [
           {

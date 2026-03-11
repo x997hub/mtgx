@@ -143,5 +143,13 @@
   "open_link": "Открыть",
   "online_event": "Онлайн-событие",
   "hybrid_event": "Гибридное событие",
-  "online_lfg": "Онлайн"
+  "online_lfg": "Онлайн",
+  "platform_username": "Имя пользователя",
+  "platform_username_placeholder": "YourName#12345",
+  "platform_username_required": "Укажите имя пользователя",
+  "contact_link": "Контакт (WhatsApp)",
+  "contact_link_placeholder": "https://wa.me/...",
+  "contact_link_required": "Укажите ссылку для связи",
+  "open_contact": "WhatsApp",
+  "join_link_required": "Укажите ссылку для входа"
 }

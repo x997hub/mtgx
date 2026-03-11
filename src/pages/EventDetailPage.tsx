@@ -261,39 +261,69 @@ export default function EventDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Online / Hybrid join link */}
-      {(event.mode === "online" || event.mode === "hybrid") && event.join_link && (
+      {/* Online / Hybrid connection info */}
+      {(event.mode === "online" || event.mode === "hybrid") && (event.join_link || event.platform_username || event.contact_link) && (
         <Card className="bg-surface-card border-surface-hover">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Monitor className="h-4 w-4 text-accent" />
-                <span className="font-medium">
-                  {event.online_platform
-                    ? PLATFORM_LABELS[event.online_platform as OnlinePlatform]
-                    : t("events:online_event")}
-                </span>
-              </div>
-              <div className="flex gap-2">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Monitor className="h-4 w-4 text-accent" />
+              <span className="font-medium">
+                {event.online_platform
+                  ? PLATFORM_LABELS[event.online_platform as OnlinePlatform]
+                  : t("events:online_event")}
+              </span>
+            </div>
+            {event.platform_username && (
+              <div className="flex items-center justify-between">
+                <span className="text-text-secondary">{t("events:platform_username")}: <span className="text-text-primary font-medium">{event.platform_username}</span></span>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    navigator.clipboard.writeText(event.join_link!);
+                    navigator.clipboard.writeText(event.platform_username!);
                     toast({ title: t("events:link_copied") });
                   }}
                 >
                   <Copy className="h-3.5 w-3.5 mr-1" />
                   {t("events:copy_link")}
                 </Button>
+              </div>
+            )}
+            {event.join_link && (
+              <div className="flex items-center justify-between">
+                <span className="text-text-secondary text-sm truncate max-w-[200px]">{event.join_link}</span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(event.join_link!);
+                      toast({ title: t("events:link_copied") });
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5 mr-1" />
+                    {t("events:copy_link")}
+                  </Button>
+                  <Button size="sm" asChild>
+                    <a href={event.join_link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                      {t("events:open_link")}
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            )}
+            {event.contact_link && (
+              <div className="flex items-center justify-between">
+                <span className="text-text-secondary">{t("events:contact_link")}</span>
                 <Button size="sm" asChild>
-                  <a href={event.join_link} target="_blank" rel="noopener noreferrer">
+                  <a href={event.contact_link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                    {t("events:open_link")}
+                    {t("events:open_contact")}
                   </a>
                 </Button>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       )}

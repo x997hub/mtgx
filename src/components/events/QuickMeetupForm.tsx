@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 import { EventFormFields } from "@/components/events/EventFormFields";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
 import { ProxyPolicySelector } from "@/components/events/ProxyPolicySelector";
+import { PLATFORM_FIELDS } from "@/lib/constants";
 import type { MtgFormat, ProxyPolicy, EventMode, OnlinePlatform } from "@/types/database.types";
 
 interface QuickMeetupFormProps {
@@ -30,6 +31,8 @@ interface QuickFormState {
   mode: EventMode;
   onlinePlatform: OnlinePlatform | null;
   joinLink: string;
+  platformUsername: string;
+  contactLink: string;
 }
 
 export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormProps) {
@@ -47,11 +50,14 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
   const [mode, setMode] = useState<EventMode>("in_person");
   const [onlinePlatform, setOnlinePlatform] = useState<OnlinePlatform | null>(null);
   const [joinLink, setJoinLink] = useState("");
+  const [platformUsername, setPlatformUsername] = useState("");
+  const [contactLink, setContactLink] = useState("");
 
   // Autosave
   const formState = useMemo<QuickFormState>(() => ({
     format, startsAt, venueId, city, minPlayers, proxyPolicy, mode, onlinePlatform, joinLink,
-  }), [format, startsAt, venueId, city, minPlayers, proxyPolicy, mode, onlinePlatform, joinLink]);
+    platformUsername, contactLink,
+  }), [format, startsAt, venueId, city, minPlayers, proxyPolicy, mode, onlinePlatform, joinLink, platformUsername, contactLink]);
 
   const autosaveKey = `event-draft-${user?.id ?? "anon"}-quick`;
   const { savedState, clearSaved, hasSaved } = useFormAutosave(autosaveKey, formState);
@@ -68,6 +74,8 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
       setMode(savedState.mode ?? "in_person");
       setOnlinePlatform(savedState.onlinePlatform ?? null);
       setJoinLink(savedState.joinLink ?? "");
+      setPlatformUsername(savedState.platformUsername ?? "");
+      setContactLink(savedState.contactLink ?? "");
       toast({ title: t("draft_restored", "Draft restored") });
     }
   }, []);
@@ -79,13 +87,24 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
       toast({ title: t("venue_required", "Venue is required"), variant: "destructive" });
       return;
     }
-    if ((mode === "online" || mode === "hybrid") && !joinLink) {
-      toast({ title: t("join_link", "Join link is required"), variant: "destructive" });
+    if ((mode === "online" || mode === "hybrid") && !onlinePlatform) {
+      toast({ title: t("select_platform", "Platform is required"), variant: "destructive" });
       return;
     }
-    if ((mode === "online" || mode === "hybrid") && !onlinePlatform) {
-      toast({ title: t("online_platform", "Platform is required"), variant: "destructive" });
-      return;
+    if ((mode === "online" || mode === "hybrid") && onlinePlatform) {
+      const fields = PLATFORM_FIELDS[onlinePlatform];
+      if (fields.joinLink && !joinLink) {
+        toast({ title: t("join_link_required", "Join link is required"), variant: "destructive" });
+        return;
+      }
+      if (fields.platformUsername && !platformUsername) {
+        toast({ title: t("platform_username_required", "Username is required"), variant: "destructive" });
+        return;
+      }
+      if (fields.contactLink && !contactLink) {
+        toast({ title: t("contact_link_required", "Contact link is required"), variant: "destructive" });
+        return;
+      }
     }
     if (!startsAt) {
       toast({ title: t("date_required", "Date is required"), variant: "destructive" });
@@ -111,6 +130,8 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         mode,
         online_platform: onlinePlatform || null,
         join_link: joinLink || null,
+        platform_username: platformUsername || null,
+        contact_link: contactLink || null,
         // Quick meetups auto-expire 24h after start (DB trigger also handles this)
         expires_at: new Date(startsAtDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       });
@@ -144,6 +165,10 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         onOnlinePlatformChange={setOnlinePlatform}
         joinLink={joinLink}
         onJoinLinkChange={setJoinLink}
+        platformUsername={platformUsername}
+        onPlatformUsernameChange={setPlatformUsername}
+        contactLink={contactLink}
+        onContactLinkChange={setContactLink}
         idPrefix="q_"
       />
 

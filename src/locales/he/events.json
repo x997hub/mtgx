@@ -113,5 +113,13 @@
   "open_link": "פתח",
   "online_event": "אירוע אונליין",
   "hybrid_event": "אירוע היברידי",
-  "online_lfg": "אונליין"
+  "online_lfg": "אונליין",
+  "platform_username": "שם משתמש",
+  "platform_username_placeholder": "YourName#12345",
+  "platform_username_required": "יש להזין שם משתמש",
+  "contact_link": "יצירת קשר (WhatsApp)",
+  "contact_link_placeholder": "https://wa.me/...",
+  "contact_link_required": "יש להזין קישור ליצירת קשר",
+  "open_contact": "WhatsApp",
+  "join_link_required": "יש להזין קישור להצטרפות"
 }

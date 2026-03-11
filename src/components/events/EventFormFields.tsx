@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FORMATS, EVENT_MODES, EVENT_MODE_LABELS, ONLINE_PLATFORMS, PLATFORM_LABELS } from "@/lib/constants";
+import { FORMATS, EVENT_MODES, EVENT_MODE_LABELS, ONLINE_PLATFORMS, PLATFORM_LABELS, PLATFORM_FIELDS } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { MtgFormat, EventMode, OnlinePlatform } from "@/types/database.types";
@@ -36,6 +36,10 @@ export interface EventFormFieldsProps {
   onOnlinePlatformChange: (p: OnlinePlatform | null) => void;
   joinLink: string;
   onJoinLinkChange: (link: string) => void;
+  platformUsername: string;
+  onPlatformUsernameChange: (username: string) => void;
+  contactLink: string;
+  onContactLinkChange: (link: string) => void;
 }
 
 export function EventFormFields({
@@ -55,6 +59,10 @@ export function EventFormFields({
   onOnlinePlatformChange,
   joinLink,
   onJoinLinkChange,
+  platformUsername,
+  onPlatformUsernameChange,
+  contactLink,
+  onContactLinkChange,
 }: EventFormFieldsProps) {
   const { t } = useTranslation("events");
   const id = (name: string) => `${idPrefix}${name}`;
@@ -212,16 +220,41 @@ export function EventFormFields({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}joinlink`}>{t("join_link")}</Label>
-            <Input
-              id={`${idPrefix}joinlink`}
-              type="url"
-              placeholder={t("join_link_placeholder")}
-              value={joinLink}
-              onChange={(e) => onJoinLinkChange(e.target.value)}
-            />
-          </div>
+          {onlinePlatform && PLATFORM_FIELDS[onlinePlatform]?.joinLink && (
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}joinlink`}>{t("join_link")} *</Label>
+              <Input
+                id={`${idPrefix}joinlink`}
+                type="url"
+                placeholder={t("join_link_placeholder")}
+                value={joinLink}
+                onChange={(e) => onJoinLinkChange(e.target.value)}
+              />
+            </div>
+          )}
+          {onlinePlatform && PLATFORM_FIELDS[onlinePlatform]?.platformUsername && (
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}platform_username`}>{t("platform_username")} *</Label>
+              <Input
+                id={`${idPrefix}platform_username`}
+                placeholder={t("platform_username_placeholder")}
+                value={platformUsername}
+                onChange={(e) => onPlatformUsernameChange(e.target.value)}
+              />
+            </div>
+          )}
+          {onlinePlatform && PLATFORM_FIELDS[onlinePlatform]?.contactLink && (
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}contact_link`}>{t("contact_link")} *</Label>
+              <Input
+                id={`${idPrefix}contact_link`}
+                type="url"
+                placeholder={t("contact_link_placeholder")}
+                value={contactLink}
+                onChange={(e) => onContactLinkChange(e.target.value)}
+              />
+            </div>
+          )}
         </>
       )}
 

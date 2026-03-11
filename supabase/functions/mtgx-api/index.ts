@@ -216,7 +216,7 @@ async function handleCreateEvent(
   const bodyOrError = await parseRequestBody(req);
   if (bodyOrError instanceof Response) return bodyOrError;
   const body = bodyOrError;
-  const { type, title, format, city, starts_at, venue_id, duration_min, min_players, max_players, fee_text, description, cloned_from, mode, online_platform, join_link } = body as Record<string, unknown>;
+  const { type, title, format, city, starts_at, venue_id, duration_min, min_players, max_players, fee_text, description, cloned_from, mode, online_platform, join_link, platform_username, contact_link } = body as Record<string, unknown>;
 
   const eventMode = (mode as string) || "in_person";
 
@@ -299,6 +299,8 @@ async function handleCreateEvent(
       mode: eventMode,
       online_platform: online_platform || null,
       join_link: join_link || null,
+      platform_username: platform_username || null,
+      contact_link: contact_link || null,
     })
     .select()
     .single();
