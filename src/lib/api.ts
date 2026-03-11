@@ -10,10 +10,14 @@ export function apiUrl(path: string): string {
 
 /**
  * Convenience wrapper around `fetch` that targets the mtgx-api Edge Function.
- * Automatically prepends the API base URL to the given path.
+ * Automatically prepends the API base URL and includes the Supabase apikey header.
  * @param path - route path, e.g. "/rsvp", "/events"
  * @param options - standard RequestInit options
  */
 export async function apiFetch(path: string, options?: RequestInit): Promise<Response> {
-  return fetch(apiUrl(path), options);
+  const headers = new Headers(options?.headers);
+  if (!headers.has("apikey")) {
+    headers.set("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+  }
+  return fetch(apiUrl(path), { ...options, headers });
 }
