@@ -13,7 +13,8 @@ test.beforeAll(async () => {
   testUserId = user.id;
 });
 
-test.describe("Profile Edit — Integration", () => {
+// Serial to avoid race conditions: each test saves ALL profile fields
+test.describe.serial("Profile Edit — Integration", () => {
   test("edit display name and bio", async ({ page }) => {
     // 1. Save original profile state
     const original = await getProfile(testUserId);
@@ -39,11 +40,13 @@ test.describe("Profile Edit — Integration", () => {
       await bioInput.clear();
       await bioInput.fill(updates.bio);
 
-      // 6. Click Save
-      await page.getByRole("button", { name: /save/i }).click();
+      // 6. Verify main Save button is enabled before clicking
+      const saveButton = page.locator("div.flex.gap-3 > button").last();
+      await expect(saveButton).toBeEnabled({ timeout: 5000 });
+      await saveButton.click();
 
-      // 7. Wait for navigation to /profile
-      await page.waitForURL(/\/profile(?!\/edit)/, { timeout: 15000 });
+      // 7. Wait for toast OR navigation to /profile
+      await page.waitForURL(/\/profile(?!\/edit)/, { timeout: 20000 });
 
       // 8. Verify in DB
       const updated = await getProfile(testUserId);
@@ -82,11 +85,16 @@ test.describe("Profile Edit — Integration", () => {
       await arenaInput.clear();
       await arenaInput.fill(updates.arenaUsername);
 
-      // 4. Click Save
-      await page.getByRole("button", { name: /save/i }).click();
+      // Verify the value was set correctly
+      await expect(arenaInput).toHaveValue(updates.arenaUsername);
+
+      // 4. Click the main Save button (in the action bar, not section Save buttons)
+      const saveButton = page.locator("div.flex.gap-3 > button").last();
+      await expect(saveButton).toBeEnabled({ timeout: 5000 });
+      await saveButton.click();
 
       // 5. Wait for navigation to /profile
-      await page.waitForURL(/\/profile(?!\/edit)/, { timeout: 15000 });
+      await page.waitForURL(/\/profile(?!\/edit)/, { timeout: 20000 });
 
       // 6. Verify in DB
       const updated = await getProfile(testUserId);

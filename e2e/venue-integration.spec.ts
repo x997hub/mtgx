@@ -14,7 +14,7 @@ test.beforeAll(async () => {
   testUserId = user.id;
 });
 
-test.describe("Venue Management — Integration", () => {
+test.describe.serial("Venue Management — Integration", () => {
   test("create a new venue", async ({ page }) => {
     const data = venueData();
     let createdVenueId: string | null = null;
@@ -29,16 +29,10 @@ test.describe("Venue Management — Integration", () => {
       await expect(nameInput).toBeVisible({ timeout: 15000 });
       await nameInput.fill(data.name);
 
-      // 3. Fill address — the next input after venue-name
-      const addressInput = page.locator("input#venue-name ~ input, input#venue-name + * input, input[name='address'], input[placeholder*='ddress']").first();
-      // Fallback: if no specific selector works, get the second text input in the form
-      if (await addressInput.count() === 0) {
-        const allInputs = page.locator("form input[type='text'], form input:not([type])");
-        const secondInput = allInputs.nth(1);
-        await secondInput.fill(data.address);
-      } else {
-        await addressInput.fill(data.address);
-      }
+      // 3. Fill address — it's the second text input in the card (no htmlFor on label)
+      const inputs = page.locator("input:not([type='number']):not([type='hidden'])");
+      const addressInput = inputs.nth(1); // 0=venue-name, 1=address
+      await addressInput.fill(data.address);
 
       // 4. Select city from Radix dropdown
       const cityCombobox = page.getByRole("combobox").first();
@@ -56,7 +50,7 @@ test.describe("Venue Management — Integration", () => {
       }
 
       // 6. Click Save
-      await page.getByRole("button", { name: /save/i }).click();
+      await page.getByRole("button", { name: /save/i }).last().click();
 
       // 7. Wait for navigation to /venues/:id
       await page.waitForURL(/\/venues\/[a-f0-9-]+$/i, { timeout: 15000 });
@@ -92,7 +86,7 @@ test.describe("Venue Management — Integration", () => {
           name: data.name,
           city: data.city,
           address: data.address,
-          formats: data.formats,
+          supported_formats: data.formats,
           owner_id: testUserId,
         })
         .select()
@@ -115,11 +109,32 @@ test.describe("Venue Management — Integration", () => {
       await nameInput.clear();
       await nameInput.fill(newName);
 
-      // 5. Click Save
-      await page.getByRole("button", { name: /save/i }).click();
+      // Verify value set
+      await expect(nameInput).toHaveValue(newName);
+
+      // 5. Wait for API response when clicking Save
+      const responsePromise = page.waitForResponse(
+        (resp) => resp.url().includes("rest/v1/venues") && resp.request().method() === "PATCH",
+        { timeout: 15000 }
+      ).catch(() => null);
+
+      await page.getByRole("button", { name: /save/i }).last().click();
+
+      // Wait for the PATCH response
+      const patchResponse = await responsePromise;
+      if (patchResponse) {
+        const status = patchResponse.status();
+        if (status >= 400) {
+          const body = await patchResponse.text().catch(() => "no body");
+          console.log(`Venue PATCH response: ${status} ${body}`);
+        }
+      }
 
       // 6. Wait for navigation away from edit page
       await page.waitForURL(/\/venues\/[a-f0-9-]+(?!\/edit)/i, { timeout: 15000 });
+
+      // Give DB a moment to commit
+      await page.waitForTimeout(1000);
 
       // 7. Verify updated name in DB
       const updated = await getVenue(venueId);

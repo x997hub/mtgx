@@ -5,6 +5,7 @@ import {
   deleteRsvp,
   getRsvp,
   findRecentEventsByOrganizer,
+  ensureTestUser,
 } from "./helpers/supabase-admin";
 import { bigEventData, quickMeetupData, futureDate } from "./helpers/test-data";
 
@@ -13,12 +14,8 @@ import { bigEventData, quickMeetupData, futureDate } from "./helpers/test-data";
 let testUserId: string;
 
 test.beforeAll(async () => {
-  const { data, error } = await adminClient.auth.signInWithPassword({
-    email: "e2e-test@mtgx.app",
-    password: "E2eTestPass123!",
-  });
-  if (error || !data.user) throw new Error(`Failed to get test user: ${error?.message}`);
-  testUserId = data.user.id;
+  const user = await ensureTestUser();
+  testUserId = user.id;
 });
 
 // ── Cleanup: safety net — delete any lingering test events ───────────
@@ -35,9 +32,6 @@ test.afterAll(async () => {
 // ── Tests ────────────────────────────────────────────────────────────
 
 test.describe.serial("Event Creation & RSVP Integration", () => {
-  // Use authenticated session
-  test.use({ storageState: "e2e/.auth/user.json" });
-
   // Track created event IDs for cleanup
   const createdEventIds: string[] = [];
 
@@ -70,8 +64,6 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     await page.fill("#title", data.title);
 
     // Select format — Radix Select
-    // The format select defaults to "pauper" which is what we want,
-    // but let's explicitly select it to be sure.
     const formatTrigger = page.locator("button[role='combobox']").first();
     await formatTrigger.click();
     await page.getByRole("option", { name: /Pauper/i }).click();
@@ -79,17 +71,12 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     // Click "Online" mode button
     await page.getByRole("button", { name: /Online/i }).click();
 
-    // Select SpellTable platform — Radix Select
-    // After switching to online mode, a platform select appears.
-    // Wait for it to be visible.
+    // Select SpellTable platform
     await expect(page.locator("#platform")).toBeVisible({ timeout: 3000 });
-    const platformTrigger = page.locator("#platform").locator("..");
-    // The platform select trigger is the parent button of #platform
-    // Actually the id is on the SelectTrigger itself
     await page.locator("#platform").click();
     await page.getByRole("option", { name: /Spelltable/i }).click();
 
-    // Fill join link (SpellTable requires joinLink)
+    // Fill join link
     await expect(page.locator("#joinlink")).toBeVisible({ timeout: 3000 });
     await page.fill("#joinlink", "https://spelltable.wizards.com/test-e2e-room");
 
@@ -111,14 +98,27 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     // Fill description
     await page.fill("#description", data.description);
 
+    // Wait for the API response when submitting
+    const apiResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes("/functions/v1/mtgx-api/events"),
+      { timeout: 20000 }
+    ).catch(() => null);
+
     // Submit the form
     await page.getByRole("button", { name: /Create Big Event/i }).click();
 
-    // The form has an onCreated callback that shows RecommendedPlayersPanel
-    // instead of navigating to "/". Wait for the panel or the "Done" button.
-    // After creation, the page shows RecommendedPlayersPanel with a "Done" button
-    // or similar. Let's wait for the page to update.
-    await page.waitForTimeout(3000);
+    // Wait for the API response
+    const apiResponse = await apiResponsePromise;
+    if (apiResponse) {
+      const status = apiResponse.status();
+      if (status >= 400) {
+        const body = await apiResponse.text().catch(() => "no body");
+        throw new Error(`Event creation API returned ${status}: ${body}`);
+      }
+    }
+
+    // Wait for the app to process the response
+    await page.waitForTimeout(2000);
 
     // Verify event was created in DB
     const events = await findRecentEventsByOrganizer(testUserId);
@@ -158,17 +158,13 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     await page.goto("/events/new");
     await page.waitForLoadState("networkidle");
 
-    // Default event type is "quick" for admin user in CreateEventPage
-    // (useState default is "quick"), so QuickMeetupForm should already be visible.
-    // But let's make sure — click "Quick Meetup" toggle to be safe.
+    // Click "Quick Meetup" toggle
     await page.getByRole("radio", { name: /Quick Meetup/i }).click();
 
-    // Wait for the quick form to render (it uses idPrefix "q_")
+    // Wait for the quick form to render
     await expect(page.locator("#q_date")).toBeVisible({ timeout: 5000 });
 
     // Select format — Commander
-    // The quick form also uses EventFormFields with idPrefix "q_"
-    // The format select is a Radix Select, find it by label
     const formatTrigger = page.locator("button[role='combobox']").first();
     await formatTrigger.click();
     await page.getByRole("option", { name: /Commander/i }).click();
@@ -194,19 +190,31 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     // Fill min players
     await page.fill("#q_min_players", String(data.minPlayers));
 
+    // Wait for the API response
+    const apiResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes("/functions/v1/mtgx-api/events"),
+      { timeout: 20000 }
+    ).catch(() => null);
+
     // Submit the form
     await page.getByRole("button", { name: /Create Quick Meetup/i }).click();
 
-    // Wait for creation to complete
-    await page.waitForTimeout(3000);
+    const apiResponse = await apiResponsePromise;
+    if (apiResponse) {
+      const status = apiResponse.status();
+      if (status >= 400) {
+        const body = await apiResponse.text().catch(() => "no body");
+        throw new Error(`Quick meetup creation API returned ${status}: ${body}`);
+      }
+    }
+
+    // Wait for the app to process
+    await page.waitForTimeout(2000);
 
     // Verify event was created in DB
     const events = await findRecentEventsByOrganizer(testUserId);
     // Quick meetups have no title — find by format and recent creation
-    const created = events.find((e) => {
-      // Quick meetups don't have titles, so title will be null
-      return !e.title || e.title === "";
-    });
+    const created = events.find((e) => !e.title || e.title === "");
 
     // If we can't find by empty title, pick the most recent one
     const createdEvent = created ?? events[0];
@@ -271,6 +279,12 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     const rsvpButton = page.getByRole("button", { name: /RSVP/i });
     await expect(rsvpButton).toBeVisible({ timeout: 10000 });
 
+    // Wait for the RSVP API response
+    const rsvpResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes("/functions/v1/mtgx-api/rsvp"),
+      { timeout: 15000 }
+    ).catch(() => null);
+
     // Click RSVP button to open dialog
     await rsvpButton.click();
 
@@ -278,18 +292,25 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 5000 });
 
-    // Click "Going" button in the dialog
-    const goingButton = dialog.getByRole("button", { name: /Going/i }).first();
+    // Click "Going" button in the dialog (exact match to avoid "Not Going")
+    const goingButton = dialog.getByRole("button", { name: "Going", exact: true });
     await expect(goingButton).toBeVisible({ timeout: 3000 });
     await goingButton.click();
+
+    // Wait for the RSVP API response
+    const rsvpResponse = await rsvpResponsePromise;
+    if (rsvpResponse) {
+      const status = rsvpResponse.status();
+      if (status >= 400) {
+        const body = await rsvpResponse.text().catch(() => "no body");
+        throw new Error(`RSVP API returned ${status}: ${body}`);
+      }
+    }
 
     // Wait for the dialog to close (indicates RSVP was submitted)
     await expect(dialog).not.toBeVisible({ timeout: 10000 });
 
     // Verify RSVP in DB
-    // Allow some time for the API call to complete
-    await page.waitForTimeout(2000);
-
     const rsvp = await getRsvp(event.id, testUserId);
     expect(rsvp).not.toBeNull();
     expect(rsvp!.status).toBe("going");
