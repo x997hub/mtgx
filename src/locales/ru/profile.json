@@ -5,6 +5,8 @@
   "formats": "Предпочитаемые форматы",
   "whatsapp": "WhatsApp",
   "whatsapp_placeholder": "+972...",
+  "arena_username": "Имя в MTG Arena",
+  "arena_username_placeholder": "YourName#12345",
   "availability": "Доступность",
   "availability_description": "Когда вы обычно свободны для игры?",
   "day_slot": "День",

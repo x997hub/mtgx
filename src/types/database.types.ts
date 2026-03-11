@@ -694,6 +694,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           social_level: string | null
           whatsapp: string | null
+          arena_username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -711,6 +712,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           social_level?: string | null
           whatsapp?: string | null
+          arena_username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -728,6 +730,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           social_level?: string | null
           whatsapp?: string | null
+          arena_username?: string | null
         }
         Relationships: []
       }

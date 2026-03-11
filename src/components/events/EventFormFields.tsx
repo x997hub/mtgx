@@ -82,13 +82,18 @@ export function EventFormFields({
     },
   });
 
-  // Auto-fill contact_link from profile WhatsApp when platform needs it
+  // Auto-fill from profile when platform changes
   useEffect(() => {
-    if (onlinePlatform && PLATFORM_FIELDS[onlinePlatform]?.contactLink && !contactLink && profile?.whatsapp) {
+    if (!onlinePlatform) return;
+    const fields = PLATFORM_FIELDS[onlinePlatform];
+    if (fields?.contactLink && !contactLink && profile?.whatsapp) {
       onContactLinkChange(profile.whatsapp);
     }
+    if (fields?.platformUsername && !platformUsername && profile?.arena_username) {
+      onPlatformUsernameChange(profile.arena_username);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onlinePlatform, profile?.whatsapp]);
+  }, [onlinePlatform, profile?.whatsapp, profile?.arena_username]);
 
   // Auto-fill city when venue changes
   const selectedVenue = venues?.find((v) => v.id === venueId);

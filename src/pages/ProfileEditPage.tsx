@@ -47,6 +47,7 @@ export default function ProfileEditPage() {
   const [city, setCity] = useState("");
   const [formats, setFormats] = useState<MtgFormat[]>([]);
   const [whatsapp, setWhatsapp] = useState("");
+  const [arenaUsername, setArenaUsername] = useState("");
   const [bio, setBio] = useState("");
   const [carAccess, setCarAccess] = useState<CarAccess | "">("");
   const [interestedInTrading, setInterestedInTrading] = useState(false);
@@ -61,6 +62,7 @@ export default function ProfileEditPage() {
       setCity(profile.city);
       setFormats(profile.formats);
       setWhatsapp(profile.whatsapp ?? "");
+      setArenaUsername(profile.arena_username ?? "");
       setBio(profile.bio ?? "");
       setCarAccess((profile.car_access as CarAccess) ?? "");
       setInterestedInTrading(profile.interested_in_trading ?? false);
@@ -106,6 +108,7 @@ export default function ProfileEditPage() {
         city,
         formats,
         whatsapp: whatsapp || null,
+        arena_username: arenaUsername.trim() || null,
         bio: bio.trim() || null,
         car_access: carAccess || null,
         interested_in_trading: interestedInTrading,
@@ -183,6 +186,17 @@ export default function ProfileEditPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder={t("whatsapp_placeholder")}
+              />
+            </div>
+
+            {/* Arena Username */}
+            <div className="space-y-1.5">
+              <Label htmlFor="arena_username">{t("arena_username")}</Label>
+              <Input
+                id="arena_username"
+                value={arenaUsername}
+                onChange={(e) => setArenaUsername(e.target.value)}
+                placeholder={t("arena_username_placeholder")}
               />
             </div>
 
