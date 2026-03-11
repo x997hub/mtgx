@@ -70,7 +70,7 @@ export function FeedbackModal() {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{t("feedback_title", "Send feedback")}</DialogTitle>
           </DialogHeader>

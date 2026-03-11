@@ -124,7 +124,7 @@ export function LFGToggleButton() {
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-sm" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{t("events:lfg_activate")}</DialogTitle>
           </DialogHeader>

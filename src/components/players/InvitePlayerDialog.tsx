@@ -87,7 +87,7 @@ export function InvitePlayerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
             {t("invite_to_play")} — {targetDisplayName}
