@@ -6,10 +6,10 @@ ALTER TABLE events
   ADD COLUMN platform_username TEXT,
   ADD COLUMN contact_link TEXT;
 
--- Relax: online events need join_link OR contact_link (not always join_link)
+-- Relax: online events need join_link OR contact_link OR platform_username
 ALTER TABLE events DROP CONSTRAINT chk_online_has_link;
 ALTER TABLE events ADD CONSTRAINT chk_online_has_link
-  CHECK (mode = 'in_person' OR join_link IS NOT NULL OR contact_link IS NOT NULL);
+  CHECK (mode = 'in_person' OR join_link IS NOT NULL OR contact_link IS NOT NULL OR platform_username IS NOT NULL);
 
 -- Length constraints
 ALTER TABLE events ADD CONSTRAINT chk_contact_link_length

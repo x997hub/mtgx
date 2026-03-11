@@ -14,6 +14,7 @@ import {
 import { FORMATS, EVENT_MODES, EVENT_MODE_LABELS, ONLINE_PLATFORMS, PLATFORM_LABELS, PLATFORM_FIELDS } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 import type { MtgFormat, EventMode, OnlinePlatform } from "@/types/database.types";
 
 const TIME_PRESETS = ["10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
@@ -65,6 +66,7 @@ export function EventFormFields({
   onContactLinkChange,
 }: EventFormFieldsProps) {
   const { t } = useTranslation("events");
+  const profile = useAuthStore((s) => s.profile);
   const id = (name: string) => `${idPrefix}${name}`;
 
   // Fetch all venues
@@ -79,6 +81,14 @@ export function EventFormFields({
       return data;
     },
   });
+
+  // Auto-fill contact_link from profile WhatsApp when platform needs it
+  useEffect(() => {
+    if (onlinePlatform && PLATFORM_FIELDS[onlinePlatform]?.contactLink && !contactLink && profile?.whatsapp) {
+      onContactLinkChange(profile.whatsapp);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onlinePlatform, profile?.whatsapp]);
 
   // Auto-fill city when venue changes
   const selectedVenue = venues?.find((v) => v.id === venueId);
@@ -245,7 +255,7 @@ export function EventFormFields({
           )}
           {onlinePlatform && PLATFORM_FIELDS[onlinePlatform]?.contactLink && (
             <div className="space-y-2">
-              <Label htmlFor={`${idPrefix}contact_link`}>{t("contact_link")} *</Label>
+              <Label htmlFor={`${idPrefix}contact_link`}>{t("contact_link")}</Label>
               <Input
                 id={`${idPrefix}contact_link`}
                 type="url"

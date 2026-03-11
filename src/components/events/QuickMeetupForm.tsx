@@ -101,10 +101,7 @@ export function QuickMeetupForm({ defaultValues, onCreated }: QuickMeetupFormPro
         toast({ title: t("platform_username_required", "Username is required"), variant: "destructive" });
         return;
       }
-      if (fields.contactLink && !contactLink) {
-        toast({ title: t("contact_link_required", "Contact link is required"), variant: "destructive" });
-        return;
-      }
+      // contactLink is optional — auto-filled from profile WhatsApp if available
     }
     if (!startsAt) {
       toast({ title: t("date_required", "Date is required"), variant: "destructive" });
