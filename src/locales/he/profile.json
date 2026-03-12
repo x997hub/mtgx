@@ -119,5 +119,7 @@
   "events_organized": "אירועים שאורגנו",
   "cancel_rate": "אחוז ביטולים",
   "avg_attendance": "ממוצע משתתפים",
-  "no_stats": "אין אירועים עדיין"
+  "no_stats": "אין אירועים עדיין",
+  "change_photo": "לחץ לשינוי תמונה",
+  "photo_uploaded": "התמונה הועלתה"
 }

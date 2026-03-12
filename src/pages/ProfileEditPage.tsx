@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FORMATS, CITIES, DAYS, SLOTS, CAR_ACCESS_OPTIONS } from "@/lib/constants";
 import type {
   MtgFormat,
@@ -23,11 +25,13 @@ import type {
   GameSpeed,
   SocialLevel,
 } from "@/types/database.types";
-import { Car, Gamepad2, Loader2, Repeat, Save } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Camera, Car, Gamepad2, Loader2, Repeat, Save } from "lucide-react";
+import { cn, getInitials } from "@/lib/utils";
 import { useFormatToggle } from "@/hooks/useFormatToggle";
 import { AutoMatchSettings } from "@/components/profile/AutoMatchSettings";
 import { InvitePreferencesSettings } from "@/components/profile/InvitePreferencesSettings";
+
+const AVATARS_BUCKET = "avatars";
 
 const LEVELS: AvailabilityLevel[] = ["available", "sometimes", "unavailable"];
 
@@ -55,6 +59,9 @@ export default function ProfileEditPage() {
   const [gameSpeed, setGameSpeed] = useState<GameSpeed>("medium");
   const [socialLevel, setSocialLevel] = useState<SocialLevel>("moderate");
   const [grid, setGrid] = useState<Record<string, AvailabilityLevel>>({});
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -69,6 +76,7 @@ export default function ProfileEditPage() {
       setPlaystyle((profile.playstyle as Playstyle) ?? "mixed");
       setGameSpeed((profile.game_speed as GameSpeed) ?? "medium");
       setSocialLevel((profile.social_level as SocialLevel) ?? "moderate");
+      setAvatarUrl(profile.avatar_url ?? null);
     }
   }, [profile]);
 
@@ -84,6 +92,39 @@ export default function ProfileEditPage() {
 
   const onFormatsChange = useCallback((fmts: MtgFormat[]) => setFormats(fmts), []);
   const toggleFormat = useFormatToggle(formats, onFormatsChange);
+
+  async function handleAvatarUpload(file: File) {
+    if (!user || isUploading) return;
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+
+      // Delete old avatar from storage if it's ours (not a Google URL)
+      if (avatarUrl && avatarUrl.includes(`/storage/v1/object/public/${AVATARS_BUCKET}/`)) {
+        const oldPath = avatarUrl.split(`/storage/v1/object/public/${AVATARS_BUCKET}/`)[1];
+        if (oldPath) {
+          await supabase.storage.from(AVATARS_BUCKET).remove([oldPath]);
+        }
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from(AVATARS_BUCKET)
+        .upload(path, file);
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from(AVATARS_BUCKET)
+        .getPublicUrl(path);
+
+      setAvatarUrl(urlData.publicUrl);
+      toast({ title: t("photo_uploaded") });
+    } catch {
+      toast({ title: tc("error"), variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   function cycleLevel(day: DayOfWeek, slot: TimeSlot) {
     const key = `${day}-${slot}`;
@@ -115,6 +156,7 @@ export default function ProfileEditPage() {
         playstyle,
         game_speed: gameSpeed,
         social_level: socialLevel,
+        avatar_url: avatarUrl,
       });
 
       const slots: AvailabilityInsert[] = [];
@@ -148,9 +190,47 @@ export default function ProfileEditPage() {
       <div className="mx-auto max-w-lg space-y-4 p-4">
         <h1 className="text-2xl font-bold text-text-primary">{t("edit_profile")}</h1>
 
-        {/* Display Name */}
+        {/* Avatar & Display Name */}
         <Card>
           <CardContent className="space-y-3 p-4">
+            {/* Avatar */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar className="h-16 w-16">
+                  {avatarUrl ? (
+                    <AvatarImage src={avatarUrl} alt={displayName} />
+                  ) : null}
+                  <AvatarFallback className="text-lg">
+                    {getInitials(displayName || "?")}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="absolute -bottom-1 -end-1 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white shadow-md transition-colors hover:bg-accent/90 disabled:opacity-50"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Camera className="h-3.5 w-3.5" />
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleAvatarUpload(file);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <p className="text-sm text-text-muted">{t("change_photo")}</p>
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="displayName">{t("display_name")}</Label>
               <Input

@@ -133,5 +133,7 @@
   "fast": "Fast",
   "quiet": "Quiet",
   "moderate": "Moderate",
-  "talkative": "Talkative"
+  "talkative": "Talkative",
+  "change_photo": "Tap to change photo",
+  "photo_uploaded": "Photo uploaded"
 }
