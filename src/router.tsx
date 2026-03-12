@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
@@ -13,7 +13,12 @@ const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
 const ProfileEditPage = lazy(() => import("@/pages/ProfileEditPage"));
 const VenuePage = lazy(() => import("@/pages/VenuePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
-const AdminPage = lazy(() => import("@/pages/AdminPage"));
+const AdminLayout = lazy(() => import("@/layouts/AdminLayout"));
+const AdminDashboardPage = lazy(() => import("@/pages/admin/DashboardPage"));
+const AdminUsersPage = lazy(() => import("@/pages/admin/UsersPage"));
+const AdminEventsPage = lazy(() => import("@/pages/admin/EventsPage"));
+const AdminFeedbackPage = lazy(() => import("@/pages/admin/FeedbackPage"));
+const AdminMoodTagsPage = lazy(() => import("@/pages/admin/MoodTagsPage"));
 const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
 const PlayersDirectoryPage = lazy(() => import("@/pages/PlayersDirectoryPage"));
 const ClubsPage = lazy(() => import("@/pages/ClubsPage"));
@@ -179,9 +184,52 @@ export const router = createBrowserRouter([
         path: "/admin",
         element: (
           <LazyPage>
-            <AdminPage />
+            <AdminLayout />
           </LazyPage>
         ),
+        children: [
+          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+          {
+            path: "dashboard",
+            element: (
+              <LazyPage>
+                <AdminDashboardPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: "users",
+            element: (
+              <LazyPage>
+                <AdminUsersPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: "events",
+            element: (
+              <LazyPage>
+                <AdminEventsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: "feedback",
+            element: (
+              <LazyPage>
+                <AdminFeedbackPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: "mood-tags",
+            element: (
+              <LazyPage>
+                <AdminMoodTagsPage />
+              </LazyPage>
+            ),
+          },
+        ],
       },
       {
         path: "*",

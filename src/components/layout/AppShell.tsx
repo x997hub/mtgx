@@ -55,7 +55,7 @@ export function AppShell() {
               to="/admin"
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary mt-auto",
-                location.pathname === "/admin"
+                location.pathname.startsWith("/admin")
                   ? "bg-primary text-accent"
                   : "text-text-secondary"
               )}

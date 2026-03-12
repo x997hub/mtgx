@@ -1,41 +1,33 @@
-import { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Calendar, BarChart3, ShieldAlert, MessageSquare, Tags, type LucideIcon } from "lucide-react";
+import {
+  BarChart3, Users, Calendar, MessageSquare, Tags, ShieldAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ReportTab } from "@/components/admin/ReportTab";
-import { UsersTab } from "@/components/admin/UsersTab";
-import { EventsTab } from "@/components/admin/EventsTab";
-import { FeedbackTab } from "@/components/admin/FeedbackTab";
-import { MoodTagsTab } from "@/components/admin/MoodTagsTab";
 
 interface NavItem {
   id: string;
+  path: string;
   icon: LucideIcon;
   labelKey: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: "report", icon: BarChart3, labelKey: "report" },
-  { id: "users", icon: Users, labelKey: "users" },
-  { id: "events", icon: Calendar, labelKey: "events" },
-  { id: "feedback", icon: MessageSquare, labelKey: "feedback" },
-  { id: "mood-tags", icon: Tags, labelKey: "mood_tags" },
+  { id: "dashboard", path: "/admin/dashboard", icon: BarChart3, labelKey: "dashboard" },
+  { id: "users", path: "/admin/users", icon: Users, labelKey: "users" },
+  { id: "events", path: "/admin/events", icon: Calendar, labelKey: "events" },
+  { id: "feedback", path: "/admin/feedback", icon: MessageSquare, labelKey: "feedback" },
+  { id: "mood-tags", path: "/admin/mood-tags", icon: Tags, labelKey: "mood_tags" },
 ];
 
-const PANELS: Record<string, React.FC> = {
-  report: ReportTab,
-  users: UsersTab,
-  events: EventsTab,
-  feedback: FeedbackTab,
-  "mood-tags": MoodTagsTab,
-};
-
-export default function AdminPage() {
+export default function AdminLayout() {
   const { t } = useTranslation(["common"]);
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState("report");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   if (profile?.role !== "admin") {
     return (
@@ -51,19 +43,19 @@ export default function AdminPage() {
     );
   }
 
-  const ActivePanel = PANELS[activeTab];
+  const activeTab = NAV_ITEMS.find(item => location.pathname === item.path)?.id || "dashboard";
 
   return (
-    <div className="mx-auto max-w-5xl p-4">
+    <div className="mx-auto max-w-6xl p-4">
       <h1 className="text-2xl font-bold text-text-primary mb-4">{t("common:admin")}</h1>
 
-      <div className="flex gap-6">
-        {/* Left sidebar nav */}
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Desktop sidebar */}
         <nav className="hidden md:flex flex-col gap-1 w-44 shrink-0">
-          {NAV_ITEMS.map(({ id, icon: Icon, labelKey }) => (
+          {NAV_ITEMS.map(({ id, path, icon: Icon, labelKey }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id)}
+              onClick={() => navigate(path)}
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-base font-medium transition-colors text-start",
                 activeTab === id
@@ -79,10 +71,10 @@ export default function AdminPage() {
 
         {/* Mobile horizontal scroll nav */}
         <div className="flex gap-2 overflow-x-auto pb-2 md:hidden -mx-4 px-4">
-          {NAV_ITEMS.map(({ id, icon: Icon, labelKey }) => (
+          {NAV_ITEMS.map(({ id, path, icon: Icon, labelKey }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id)}
+              onClick={() => navigate(path)}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors shrink-0",
                 activeTab === id
@@ -98,7 +90,7 @@ export default function AdminPage() {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <ActivePanel />
+          <Outlet />
         </div>
       </div>
     </div>
