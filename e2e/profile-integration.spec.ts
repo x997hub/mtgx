@@ -1,10 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { join, dirname } from "path";
+import { writeFileSync, existsSync, unlinkSync } from "fs";
+import { fileURLToPath } from "url";
 import {
   adminClient,
   getProfile,
   ensureTestUser,
 } from "./helpers/supabase-admin";
 import { profileUpdateData } from "./helpers/test-data";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 let testUserId: string;
 
@@ -107,6 +113,71 @@ test.describe.serial("Profile Edit — Integration", () => {
           arena_username: original!.arena_username,
         })
         .eq("id", testUserId);
+    }
+  });
+
+  test("upload avatar photo", async ({ page }) => {
+    // 1. Save original profile state
+    const original = await getProfile(testUserId);
+    expect(original).toBeTruthy();
+
+    // 2. Create a minimal test PNG file (1x1 red pixel)
+    const testImagePath = join(__dirname, "test-avatar.png");
+    const pngBuffer = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "base64"
+    );
+    writeFileSync(testImagePath, pngBuffer);
+
+    try {
+      // 3. Navigate to profile edit
+      await page.goto("/profile/edit");
+      await page.waitForLoadState("networkidle");
+
+      // 4. Wait for form to load
+      const displayNameInput = page.locator("input#displayName");
+      await expect(displayNameInput).toHaveValue(/.+/, { timeout: 15000 });
+
+      // 5. Upload avatar via hidden file input
+      const fileInput = page.locator('input[type="file"][accept="image/*"]');
+      await fileInput.setInputFiles(testImagePath);
+
+      // 6. Wait for upload to complete
+      await page.waitForTimeout(3000);
+
+      // 7. Click Save
+      const saveButton = page.locator("div.flex.gap-3 > button").last();
+      await expect(saveButton).toBeEnabled({ timeout: 5000 });
+      await saveButton.click();
+
+      // 8. Wait for navigation to /profile
+      await page.waitForURL(/\/profile(?!\/edit)/, { timeout: 20000 });
+
+      // 9. Verify avatar_url in DB
+      const updated = await getProfile(testUserId);
+      expect(updated?.avatar_url).toBeTruthy();
+      expect(updated!.avatar_url).toContain("/storage/v1/object/public/avatars/");
+      expect(updated!.avatar_url).toContain(testUserId);
+    } finally {
+      // 10. Cleanup: delete uploaded file from storage + revert avatar_url
+      const updated = await getProfile(testUserId);
+      if (updated?.avatar_url?.includes("/storage/v1/object/public/avatars/")) {
+        const storagePath = updated.avatar_url.split("/storage/v1/object/public/avatars/")[1];
+        if (storagePath) {
+          await adminClient.storage.from("avatars").remove([storagePath]);
+        }
+      }
+
+      // Revert avatar_url to original
+      await adminClient
+        .from("profiles")
+        .update({ avatar_url: original!.avatar_url })
+        .eq("id", testUserId);
+
+      // Remove test file
+      if (existsSync(testImagePath)) {
+        unlinkSync(testImagePath);
+      }
     }
   });
 });
