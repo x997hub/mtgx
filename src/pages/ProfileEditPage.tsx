@@ -91,6 +91,13 @@ export default function ProfileEditPage() {
     }
   }, [availability]);
 
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
+
   const onFormatsChange = useCallback((fmts: MtgFormat[]) => setFormats(fmts), []);
   const toggleFormat = useFormatToggle(formats, onFormatsChange);
 
@@ -120,6 +127,7 @@ export default function ProfileEditPage() {
 
       setAvatarUrl(urlData.publicUrl);
       // Use local blob URL for preview to avoid CSP issues with cached headers
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(URL.createObjectURL(file));
       toast({ title: t("photo_uploaded") });
     } catch {
