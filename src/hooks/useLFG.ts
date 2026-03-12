@@ -13,7 +13,7 @@ interface LFGSignal {
   preferred_slot: TimeSlot | null;
   expires_at: string;
   created_at: string;
-  profiles?: { display_name: string } | null;
+  profiles?: { display_name: string; avatar_url?: string | null } | null;
 }
 
 interface ActivateLFGParams {
@@ -59,7 +59,7 @@ export function useLFG(city?: string) {
       if (!city) return [];
       const { data, error } = await supabase
         .from("looking_for_game")
-        .select("*, profiles(display_name)" as "*")
+        .select("*, profiles(display_name, avatar_url)" as "*")
         .eq("city", city)
         .gt("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false });

@@ -15,7 +15,7 @@ export default defineConfig({
         clientsClaim: true,
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api/],
-        globPatterns: ["**/*.{js,css,ico,png,svg,webp,woff2,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2,webmanifest}"],
         runtimeCaching: [
           {
             // Local app images (not from external domains)

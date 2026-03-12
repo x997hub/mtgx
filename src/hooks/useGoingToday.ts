@@ -14,7 +14,7 @@ interface InstantLFGSignal {
   is_instant: boolean;
   expires_at: string;
   created_at: string;
-  profiles?: { display_name: string } | null;
+  profiles?: { display_name: string; avatar_url?: string | null } | null;
 }
 
 interface ActivateInstantParams {
@@ -57,7 +57,7 @@ export function useGoingToday(city?: string) {
       if (!city) return [];
       const { data, error } = await supabase
         .from("looking_for_game")
-        .select("*, profiles(display_name)" as "*")
+        .select("*, profiles(display_name, avatar_url)" as "*")
         .eq("city", city)
         .eq("is_instant", true)
         .gt("expires_at", new Date().toISOString())
