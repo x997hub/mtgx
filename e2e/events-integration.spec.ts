@@ -4,18 +4,23 @@ import {
   deleteEvent,
   deleteRsvp,
   getRsvp,
+  getEvent,
   findRecentEventsByOrganizer,
   ensureTestUser,
+  SUPABASE_URL,
+  ANON_KEY,
 } from "./helpers/supabase-admin";
 import { bigEventData, quickMeetupData, futureDate } from "./helpers/test-data";
 
 // ── Get test user ID ─────────────────────────────────────────────────
 
 let testUserId: string;
+let testAccessToken: string;
 
 test.beforeAll(async () => {
   const user = await ensureTestUser();
   testUserId = user.id;
+  testAccessToken = user.accessToken;
 });
 
 // ── Cleanup: safety net — delete any lingering test events ───────────
@@ -319,5 +324,80 @@ test.describe.serial("Event Creation & RSVP Integration", () => {
 
     // Cleanup: delete RSVP first, then event (handled by afterEach via deleteEvent)
     await deleteRsvp(event.id, testUserId);
+  });
+
+  // ── Test 4: Cancel an event via API ──────────────────────────────
+
+  test("cancel an event via API", async () => {
+    // Get fresh token (the one from beforeAll may have expired)
+    const freshUser = await ensureTestUser();
+
+    // Create a test event via admin client
+    const startsAt = new Date();
+    startsAt.setDate(startsAt.getDate() + 5);
+    startsAt.setHours(18, 0, 0, 0);
+
+    const { data: event, error: createError } = await adminClient
+      .from("events")
+      .insert({
+        organizer_id: freshUser.id,
+        type: "big",
+        title: "E2E Cancel Test Event",
+        format: "pauper",
+        city: "Online",
+        starts_at: startsAt.toISOString(),
+        min_players: 2,
+        max_players: 8,
+        status: "active",
+        mode: "online",
+        online_platform: "spelltable",
+        join_link: "https://spelltable.wizards.com/cancel-test",
+      })
+      .select("id")
+      .single();
+
+    if (createError || !event) {
+      throw new Error(`Failed to create test event: ${createError?.message}`);
+    }
+    createdEventIds.push(event.id);
+
+    // Call cancel API with fresh JWT
+    const cancelRes = await fetch(
+      `${SUPABASE_URL}/functions/v1/mtgx-api/events/cancel`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${freshUser.accessToken}`,
+          apikey: ANON_KEY,
+        },
+        body: JSON.stringify({ event_id: event.id }),
+      },
+    );
+
+    expect(cancelRes.status).toBe(200);
+    const cancelBody = await cancelRes.json();
+    expect(cancelBody.event).toBeDefined();
+    expect(cancelBody.event.status).toBe("cancelled");
+
+    // Verify in DB
+    const dbEvent = await getEvent(event.id);
+    expect(dbEvent).not.toBeNull();
+    expect(dbEvent!.status).toBe("cancelled");
+
+    // Verify double-cancel returns error
+    const doubleRes = await fetch(
+      `${SUPABASE_URL}/functions/v1/mtgx-api/events/cancel`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${freshUser.accessToken}`,
+          apikey: ANON_KEY,
+        },
+        body: JSON.stringify({ event_id: event.id }),
+      },
+    );
+    expect(doubleRes.status).toBe(400);
   });
 });
