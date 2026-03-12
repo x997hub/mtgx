@@ -84,6 +84,8 @@ Deno.serve(async (req: Request) => {
         return await handleRsvp(req, supabaseAdmin, user.id);
       case "/events":
         return await handleCreateEvent(req, supabaseAdmin, user.id);
+      case "/events/cancel":
+        return await handleCancelEvent(req, supabaseAdmin, user.id);
       case "/lfg":
         return await handleLfg(req, supabaseAdmin, user.id);
       case "/admin/assign-role":
@@ -313,6 +315,81 @@ async function handleCreateEvent(
 
   // Trigger handles outbox entry automatically
   return jsonResponse({ event }, 201);
+}
+
+// Cancel event handler
+async function handleCancelEvent(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  if (req.method !== "PATCH") {
+    return jsonResponse({ error: "Method not allowed" }, 405);
+  }
+
+  const bodyOrError = await parseRequestBody(req);
+  if (bodyOrError instanceof Response) return bodyOrError;
+  const body = bodyOrError;
+  const { event_id } = body as { event_id?: string };
+
+  if (!event_id) {
+    return jsonResponse({ error: "event_id is required" }, 400);
+  }
+
+  // Get event and verify ownership
+  const { data: event, error: fetchError } = await supabase
+    .from("events")
+    .select("id, organizer_id, status, title")
+    .eq("id", event_id)
+    .single();
+
+  if (fetchError || !event) {
+    return jsonResponse({ error: "Event not found" }, 404);
+  }
+
+  if (event.organizer_id !== userId) {
+    return jsonResponse({ error: "Only the organizer can cancel this event" }, 403);
+  }
+
+  if (event.status === "cancelled") {
+    return jsonResponse({ error: "Event is already cancelled" }, 400);
+  }
+
+  // Update status to cancelled
+  const { data: updated, error: updateError } = await supabase
+    .from("events")
+    .update({ status: "cancelled" })
+    .eq("id", event_id)
+    .select()
+    .single();
+
+  if (updateError) {
+    console.error("[mtgx-api] Error:", updateError.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
+  }
+
+  // Notify all going/maybe participants
+  const { data: rsvps } = await supabase
+    .from("rsvps")
+    .select("user_id")
+    .eq("event_id", event_id)
+    .in("status", ["going", "maybe", "waitlisted"]);
+
+  if (rsvps && rsvps.length > 0) {
+    const recipientIds = rsvps.map((r: { user_id: string }) => r.user_id);
+
+    await supabase.from("notification_outbox").insert({
+      event_id,
+      type: "event_cancelled",
+      payload: {
+        event_id,
+        title: event.title,
+        recipients: recipientIds,
+      },
+    });
+  }
+
+  return jsonResponse({ event: updated });
 }
 
 // LFG signal handler

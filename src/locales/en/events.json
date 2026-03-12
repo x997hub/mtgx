@@ -151,5 +151,9 @@
   "contact_link_placeholder": "https://wa.me/...",
   "contact_link_required": "Contact link is required",
   "open_contact": "WhatsApp",
-  "join_link_required": "Join link is required"
+  "join_link_required": "Join link is required",
+  "cancel_event": "Cancel Event",
+  "cancel_event_title": "Cancel Event?",
+  "cancel_event_confirm": "All participants will be notified. This action cannot be undone.",
+  "event_cancelled_success": "Event cancelled"
 }

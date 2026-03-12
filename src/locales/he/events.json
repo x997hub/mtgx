@@ -121,5 +121,9 @@
   "contact_link_placeholder": "https://wa.me/...",
   "contact_link_required": "יש להזין קישור ליצירת קשר",
   "open_contact": "WhatsApp",
-  "join_link_required": "יש להזין קישור להצטרפות"
+  "join_link_required": "יש להזין קישור להצטרפות",
+  "cancel_event": "בטל אירוע",
+  "cancel_event_title": "לבטל את האירוע?",
+  "cancel_event_confirm": "כל המשתתפים יקבלו הודעה. לא ניתן לבטל פעולה זו.",
+  "event_cancelled_success": "האירוע בוטל"
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, Copy, CheckCircle, Monitor, ExternalLink } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Copy, CheckCircle, Monitor, ExternalLink, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ import { PowerLevelSelector } from "@/components/events/PowerLevelSelector";
 import { PowerLevelDistribution } from "@/components/events/PowerLevelDistribution";
 import { ShowQRButton } from "@/components/events/ShowQRButton";
 import { CheckInButton } from "@/components/events/CheckInButton";
-import { useEvent, useEventRsvps } from "@/hooks/useEvents";
+import { useEvent, useEventRsvps, useCancelEvent } from "@/hooks/useEvents";
 import { useWaitlist } from "@/hooks/useWaitlist";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/components/ui/use-toast";
@@ -41,6 +41,8 @@ export default function EventDetailPage() {
   const { data: rsvps, isLoading: rsvpsLoading } = useEventRsvps(eventId ?? "");
   const { position: waitlistPosition } = useWaitlist(eventId ?? "");
   const [confirming, setConfirming] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const cancelEvent = useCancelEvent();
 
   const currentUserRsvpData = useMemo(() => {
     if (!rsvps || !user) return null;
@@ -352,6 +354,17 @@ export default function EventDetailPage() {
             {t("events:clone_event")}
           </Button>
         )}
+        {isOrganizer && event.status === "active" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 text-red-400 border-red-400/30 hover:bg-red-400/10"
+            onClick={() => setShowCancelConfirm(true)}
+          >
+            <XCircle className="h-4 w-4" />
+            {t("events:cancel_event")}
+          </Button>
+        )}
         {isOrganizer && event.checkin_enabled && event.qr_token && (
           <ShowQRButton qrToken={event.qr_token} />
         )}
@@ -435,6 +448,49 @@ export default function EventDetailPage() {
       {/* Show messages to organizer too (they should see what they sent) */}
       {isOrganizer && eventId && (
         <OrganizerMessagesList eventId={eventId} />
+      )}
+
+      {/* Cancel event confirmation */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <Card className="w-full max-w-sm bg-surface-card border-surface-hover">
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-lg font-bold text-text-primary">
+                {t("events:cancel_event_title")}
+              </h3>
+              <p className="text-base text-text-secondary">
+                {t("events:cancel_event_confirm")}
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 min-h-[44px]"
+                  onClick={() => setShowCancelConfirm(false)}
+                  disabled={cancelEvent.isPending}
+                >
+                  {t("common:back")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1 min-h-[44px]"
+                  disabled={cancelEvent.isPending}
+                  onClick={async () => {
+                    await cancelEvent.mutateAsync(eventId!);
+                    setShowCancelConfirm(false);
+                    toast({ title: t("events:event_cancelled_success") });
+                  }}
+                >
+                  {cancelEvent.isPending ? (
+                    <Clock className="h-4 w-4 animate-spin me-2" />
+                  ) : (
+                    <XCircle className="h-4 w-4 me-2" />
+                  )}
+                  {t("events:cancel_event")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

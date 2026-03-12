@@ -151,5 +151,9 @@
   "contact_link_placeholder": "https://wa.me/...",
   "contact_link_required": "Укажите ссылку для связи",
   "open_contact": "WhatsApp",
-  "join_link_required": "Укажите ссылку для входа"
+  "join_link_required": "Укажите ссылку для входа",
+  "cancel_event": "Отменить событие",
+  "cancel_event_title": "Отменить событие?",
+  "cancel_event_confirm": "Все участники получат уведомление. Это действие нельзя отменить.",
+  "event_cancelled_success": "Событие отменено"
 }

@@ -107,6 +107,32 @@ export function useEvent(eventId: string) {
   });
 }
 
+export function useCancelEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (eventId: string) => {
+      if (!useAuthStore.getState().user) throw new Error("Not authenticated");
+      const res = await apiFetch("/events/cancel", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to cancel event");
+      return data.event;
+    },
+    onError: () => {
+      toast({ title: "Something went wrong", variant: "destructive" });
+    },
+    onSettled: (_data, _error, eventId) => {
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
 export function useEventRsvps(eventId: string) {
   const queryClient = useQueryClient();
 
@@ -126,11 +152,11 @@ export function useEventRsvps(eventId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rsvps")
-        .select("*, profiles(display_name, playstyle)" as "*")
+        .select("*, profiles(display_name, playstyle, avatar_url)" as "*")
         .eq("event_id", eventId);
       if (error) throw error;
       return data as unknown as (Database["public"]["Tables"]["rsvps"]["Row"] & {
-        profiles?: { display_name: string; playstyle?: string | null } | null;
+        profiles?: { display_name: string; playstyle?: string | null; avatar_url?: string | null } | null;
       })[];
     },
     enabled: !!eventId,
