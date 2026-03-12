@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 import type { UserRole, MtgFormat } from "@/types/database.types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
+import { MessageCircle } from "lucide-react";
 
 const ROLES: UserRole[] = ["player", "organizer", "club_owner", "admin"];
 
@@ -35,10 +37,12 @@ const ROLE_VARIANT: Record<string, "neutral" | "info" | "soft" | "warning"> = {
 type UserRow = {
   id: string;
   display_name: string | null;
+  email: string | null;
   city: string | null;
   role: string;
   reliability_score: number | null;
   formats: string[] | null;
+  whatsapp: string | null;
   created_at: string;
 };
 
@@ -50,13 +54,10 @@ export function UsersTab() {
   const { data: profiles, isLoading, isError } = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, display_name, city, role, reliability_score, formats, created_at")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return data as UserRow[];
+      const res = await apiFetch("/admin/users", { method: "GET" });
+      if (!res.ok) throw new Error("Failed to fetch users");
+      const json = await res.json();
+      return json.users as UserRow[];
     },
   });
 
@@ -85,6 +86,36 @@ export function UsersTab() {
   const columns = useMemo<ColumnDef<UserRow, unknown>[]>(
     () => [
       { accessorKey: "display_name", header: "Name" },
+      {
+        accessorKey: "email",
+        header: "Email",
+        cell: ({ getValue }) => {
+          const email = getValue<string | null>();
+          if (!email) return null;
+          return <span className="text-xs text-text-secondary">{email}</span>;
+        },
+      },
+      {
+        accessorKey: "whatsapp",
+        header: "WhatsApp",
+        enableSorting: false,
+        cell: ({ getValue }) => {
+          const wa = getValue<string | null>();
+          if (!wa) return null;
+          const digits = wa.replace(/\D/g, "");
+          return (
+            <a
+              href={`https://wa.me/${digits}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-500"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              {wa}
+            </a>
+          );
+        },
+      },
       { accessorKey: "city", header: "City" },
       {
         accessorKey: "role",

@@ -92,6 +92,8 @@ Deno.serve(async (req: Request) => {
         return await handleAssignRole(req, supabaseAdmin, user.id);
       case "/admin/stats":
         return await handleAdminStats(req, supabaseAdmin, user.id);
+      case "/admin/users":
+        return await handleAdminUsers(req, supabaseAdmin, user.id);
       case "/invites":
         if (req.method === "GET") return await handleGetInvites(req, supabaseAdmin, user.id);
         if (req.method === "POST") return await handleSendInvite(req, supabaseAdmin, user.id);
@@ -680,6 +682,61 @@ async function handleAdminStats(
   };
 
   return jsonResponse(response);
+}
+
+// Admin users list with emails
+async function handleAdminUsers(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  if (req.method !== "GET") {
+    return jsonResponse({ error: "Method not allowed" }, 405);
+  }
+
+  const { data: adminProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (!adminProfile || adminProfile.role !== "admin") {
+    return jsonResponse({ error: "Admin access required" }, 403);
+  }
+
+  // Get profiles with whatsapp
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, display_name, city, role, reliability_score, formats, whatsapp, created_at")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (profilesError) {
+    console.error("[mtgx-api] Error:", profilesError.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
+  }
+
+  // Get auth users to extract emails
+  const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
+    perPage: 1000,
+  });
+
+  if (authError) {
+    console.error("[mtgx-api] Auth error:", authError.message);
+    return jsonResponse({ error: "Internal server error" }, 500);
+  }
+
+  const emailMap = new Map<string, string>();
+  for (const u of authData.users) {
+    if (u.email) emailMap.set(u.id, u.email);
+  }
+
+  const users = (profiles || []).map((p: Record<string, unknown>) => ({
+    ...p,
+    email: emailMap.get(p.id as string) || null,
+  }));
+
+  return jsonResponse({ users });
 }
 
 // Send invite to a player
