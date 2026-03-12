@@ -56,6 +56,17 @@
       window.addEventListener('load', function() {
         sessionStorage.removeItem('chunk_reload');
       });
+      // One-time SW cache purge (v2: CSP fix)
+      if (!localStorage.getItem('sw_purge_v2') && 'serviceWorker' in navigator) {
+        localStorage.setItem('sw_purge_v2', '1');
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+          caches.keys().then(function(names) {
+            names.forEach(function(name) { caches.delete(name); });
+            location.reload();
+          });
+        });
+      }
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
