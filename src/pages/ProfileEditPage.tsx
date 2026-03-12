@@ -60,6 +60,7 @@ export default function ProfileEditPage() {
   const [socialLevel, setSocialLevel] = useState<SocialLevel>("moderate");
   const [grid, setGrid] = useState<Record<string, AvailabilityLevel>>({});
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -118,6 +119,8 @@ export default function ProfileEditPage() {
         .getPublicUrl(path);
 
       setAvatarUrl(urlData.publicUrl);
+      // Use local blob URL for preview to avoid CSP issues with cached headers
+      setAvatarPreview(URL.createObjectURL(file));
       toast({ title: t("photo_uploaded") });
     } catch {
       toast({ title: tc("error"), variant: "destructive" });
@@ -197,8 +200,8 @@ export default function ProfileEditPage() {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="h-16 w-16">
-                  {avatarUrl ? (
-                    <AvatarImage src={avatarUrl} alt={displayName} />
+                  {(avatarPreview || avatarUrl) ? (
+                    <AvatarImage src={avatarPreview ?? avatarUrl!} alt={displayName} />
                   ) : null}
                   <AvatarFallback className="text-lg">
                     {getInitials(displayName || "?")}
