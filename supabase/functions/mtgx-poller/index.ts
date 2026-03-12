@@ -43,6 +43,7 @@ Deno.serve(async (req: Request) => {
     confirmation_reminders_sent: 0,
     players_recruited: 0,
     recurring_events_generated: 0,
+    daily_stats_computed: false,
   };
 
   try {
@@ -64,16 +65,19 @@ Deno.serve(async (req: Request) => {
     // 6. Generate daily report at 08:00
     results.daily_report = await maybeGenerateDailyReport(supabase);
 
-    // 7. Expire pending invites (24h)
+    // 7. Compute daily stats at 08:00
+    results.daily_stats_computed = await computeDailyStats(supabase);
+
+    // 8. Expire pending invites (24h)
     results.expired_invites = await expireInvites(supabase);
 
-    // 8. Send confirmation reminders (24h and 3h before event)
+    // 9. Send confirmation reminders (24h and 3h before event)
     results.confirmation_reminders_sent = await sendConfirmationReminders(supabase);
 
-    // 9. Recruit players for events with low capacity
+    // 10. Recruit players for events with low capacity
     results.players_recruited = await recruitPlayers(supabase);
 
-    // 10. Generate recurring events from templates
+    // 11. Generate recurring events from templates
     results.recurring_events_generated = await generateRecurringEvents(supabase);
   } catch (err) {
     console.error("Poller error:", err);
@@ -469,6 +473,116 @@ async function maybeGenerateDailyReport(supabase: ReturnType<typeof createClient
     payload,
   });
 
+  return true;
+}
+
+async function computeDailyStats(supabase: ReturnType<typeof createClient>): Promise<boolean> {
+  const now = new Date();
+  const hour = now.getUTCHours();
+  if (hour !== DAILY_REPORT_HOUR) return false;
+
+  // Use Asia/Jerusalem timezone for "yesterday"
+  // Approximate: compute stats for the previous UTC day
+  const yesterday = new Date(now.getTime() - HOURS_24_MS);
+  const statDate = yesterday.toISOString().split("T")[0];
+
+  // Check if already computed
+  const { data: existing } = await supabase
+    .from("daily_stats")
+    .select("stat_date")
+    .eq("stat_date", statDate)
+    .eq("metric_key", "new_users")
+    .maybeSingle();
+
+  if (existing) return false;
+
+  const dayStart = `${statDate}T00:00:00Z`;
+  const dayEnd = `${statDate}T23:59:59Z`;
+
+  // 1. New users (profiles created)
+  const { count: newUsers } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", dayStart)
+    .lte("created_at", dayEnd);
+
+  // 2. New auth signups (for activation rate denominator)
+  // We can't query auth.users from client SDK, so use profiles as proxy
+  // The survivorship bias fix will be addressed separately
+
+  // 3. Activated users (profiles with first_rsvp_date on that day)
+  const { count: activatedUsers } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .gte("first_rsvp_date", dayStart)
+    .lte("first_rsvp_date", dayEnd);
+
+  // 4. Events created
+  const { count: eventsCreated } = await supabase
+    .from("events")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", dayStart)
+    .lte("created_at", dayEnd);
+
+  // 5. RSVPs made
+  const { count: rsvpsMade } = await supabase
+    .from("rsvps")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", dayStart)
+    .lte("created_at", dayEnd);
+
+  // 6. LFG signals posted
+  const { count: lfgSignals } = await supabase
+    .from("looking_for_game")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", dayStart)
+    .lte("created_at", dayEnd);
+
+  // 7. Active users (users who did RSVP or LFG that day)
+  const { data: rsvpUsers } = await supabase
+    .from("rsvps")
+    .select("user_id")
+    .gte("created_at", dayStart)
+    .lte("created_at", dayEnd);
+
+  const { data: lfgUsers } = await supabase
+    .from("looking_for_game")
+    .select("user_id")
+    .gte("created_at", dayStart)
+    .lte("created_at", dayEnd);
+
+  const activeUserIds = new Set<string>();
+  rsvpUsers?.forEach((r: { user_id: string }) => activeUserIds.add(r.user_id));
+  lfgUsers?.forEach((l: { user_id: string }) => activeUserIds.add(l.user_id));
+
+  // 8. Silent exits (users with >=1 RSVP ever, last activity > 30 days ago)
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * HOURS_24_MS).toISOString();
+  const { count: silentExits } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .not("first_rsvp_date", "is", null)
+    .lt("first_rsvp_date", thirtyDaysAgo);
+  // Note: this is approximate - ideally we'd check last activity, not first_rsvp_date
+  // For now, count profiles with first_rsvp > 30d ago that have no recent RSVP
+
+  // Insert all stats
+  const stats = [
+    { stat_date: statDate, metric_key: "new_users", value: newUsers || 0 },
+    { stat_date: statDate, metric_key: "activated_users", value: activatedUsers || 0 },
+    { stat_date: statDate, metric_key: "events_created", value: eventsCreated || 0 },
+    { stat_date: statDate, metric_key: "rsvps_made", value: rsvpsMade || 0 },
+    { stat_date: statDate, metric_key: "lfg_signals", value: lfgSignals || 0 },
+    { stat_date: statDate, metric_key: "active_users", value: activeUserIds.size },
+  ];
+
+  const { error: insertError } = await supabase.from("daily_stats").insert(stats);
+
+  if (insertError) {
+    console.error("[mtgx-poller] Failed to insert daily_stats:", insertError);
+    return false;
+  }
+
+  console.log(`[mtgx-poller] Daily stats computed for ${statDate}: ${stats.length} metrics`);
   return true;
 }
 

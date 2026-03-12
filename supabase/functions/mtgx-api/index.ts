@@ -90,6 +90,8 @@ Deno.serve(async (req: Request) => {
         return await handleLfg(req, supabaseAdmin, user.id);
       case "/admin/assign-role":
         return await handleAssignRole(req, supabaseAdmin, user.id);
+      case "/admin/stats":
+        return await handleAdminStats(req, supabaseAdmin, user.id);
       case "/invites":
         if (req.method === "GET") return await handleGetInvites(req, supabaseAdmin, user.id);
         if (req.method === "POST") return await handleSendInvite(req, supabaseAdmin, user.id);
@@ -481,6 +483,203 @@ async function handleAssignRole(
   }
 
   return jsonResponse({ profile });
+}
+
+// Admin stats dashboard
+async function handleAdminStats(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  if (req.method !== "GET") {
+    return jsonResponse({ error: "Method not allowed" }, 405);
+  }
+
+  // Verify admin
+  const { data: adminProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (!adminProfile || adminProfile.role !== "admin") {
+    return jsonResponse({ error: "Admin access required" }, 403);
+  }
+
+  const now = new Date().toISOString();
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  // --- TODAY zone: alerts ---
+
+  // Inactive organizers (had events in past 90d, none in last 14d)
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: activeOrganizers } = await supabase
+    .from("events")
+    .select("organizer_id")
+    .gte("created_at", ninetyDaysAgo)
+    .lte("created_at", fourteenDaysAgo);
+
+  const { data: recentOrganizers } = await supabase
+    .from("events")
+    .select("organizer_id")
+    .gte("created_at", fourteenDaysAgo);
+
+  const recentOrgIds = new Set((recentOrganizers || []).map((e: { organizer_id: string }) => e.organizer_id));
+  const inactiveOrgIds = [...new Set((activeOrganizers || []).map((e: { organizer_id: string }) => e.organizer_id))]
+    .filter(id => !recentOrgIds.has(id));
+
+  // Get inactive organizer profiles
+  let inactiveOrganizers: { id: string; display_name: string }[] = [];
+  if (inactiveOrgIds.length > 0) {
+    const { data: orgProfiles } = await supabase
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", inactiveOrgIds.slice(0, 10));
+    inactiveOrganizers = orgProfiles || [];
+  }
+
+  // Stale LFG signals (posted > 48h ago, still active)
+  const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const { count: staleLfg } = await supabase
+    .from("looking_for_game")
+    .select("*", { count: "exact", head: true })
+    .lt("created_at", fortyEightHoursAgo)
+    .gt("expires_at", now);
+
+  // --- THIS WEEK zone: core metrics ---
+
+  // Total users
+  const { count: totalUsers } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true });
+
+  // New users this week
+  const { count: newUsersThisWeek } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", sevenDaysAgo);
+
+  // New users previous week (for delta)
+  const { count: newUsersPrevWeek } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", fourteenDaysAgo)
+    .lt("created_at", sevenDaysAgo);
+
+  // Activation rate this week (users with first_rsvp_date within 7d of created_at)
+  const { data: recentProfiles } = await supabase
+    .from("profiles")
+    .select("id, created_at, first_rsvp_date")
+    .gte("created_at", thirtyDaysAgo);
+
+  let activatedCount = 0;
+  let eligibleCount = 0;
+  if (recentProfiles) {
+    for (const p of recentProfiles) {
+      const createdAt = new Date(p.created_at).getTime();
+      const sevenDaysAfter = createdAt + 7 * 24 * 60 * 60 * 1000;
+      if (sevenDaysAfter < Date.now()) {
+        eligibleCount++;
+        if (p.first_rsvp_date) {
+          const firstRsvp = new Date(p.first_rsvp_date).getTime();
+          if (firstRsvp <= sevenDaysAfter) {
+            activatedCount++;
+          }
+        }
+      }
+    }
+  }
+  const activationRate = eligibleCount > 0 ? Math.round((activatedCount / eligibleCount) * 100) : 0;
+
+  // Events this week
+  const { count: eventsThisWeek } = await supabase
+    .from("events")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", sevenDaysAgo);
+
+  // RSVPs this week
+  const { count: rsvpsThisWeek } = await supabase
+    .from("rsvps")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", sevenDaysAgo);
+
+  // LFG conversion (LFG posted this month -> had RSVP within 72h)
+  const { data: recentLfg } = await supabase
+    .from("looking_for_game")
+    .select("user_id, created_at")
+    .gte("created_at", thirtyDaysAgo);
+
+  let lfgWithRsvp = 0;
+  if (recentLfg && recentLfg.length > 0) {
+    for (const lfg of recentLfg) {
+      const lfgTime = new Date(lfg.created_at).getTime();
+      const { count: rsvpAfter } = await supabase
+        .from("rsvps")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", lfg.user_id)
+        .gte("created_at", lfg.created_at)
+        .lte("created_at", new Date(lfgTime + 72 * 60 * 60 * 1000).toISOString());
+      if (rsvpAfter && rsvpAfter > 0) lfgWithRsvp++;
+    }
+  }
+  const lfgConversionRate = recentLfg && recentLfg.length > 0
+    ? Math.round((lfgWithRsvp / recentLfg.length) * 100)
+    : 0;
+
+  // Silent exit count
+  // Users with >=1 RSVP ever but no RSVP in last 30 days
+  const { data: allRsvpUsers } = await supabase
+    .from("rsvps")
+    .select("user_id")
+    .in("status", ["going", "maybe"]);
+
+  const allRsvpUserIds = [...new Set((allRsvpUsers || []).map((r: { user_id: string }) => r.user_id))];
+
+  const { data: recentRsvpUsers } = await supabase
+    .from("rsvps")
+    .select("user_id")
+    .gte("created_at", thirtyDaysAgo)
+    .in("status", ["going", "maybe"]);
+
+  const recentRsvpUserIds = new Set((recentRsvpUsers || []).map((r: { user_id: string }) => r.user_id));
+  const silentExitCount = allRsvpUserIds.filter(id => !recentRsvpUserIds.has(id)).length;
+
+  // Active LFG right now
+  const { count: activeLfg } = await supabase
+    .from("looking_for_game")
+    .select("*", { count: "exact", head: true })
+    .gt("expires_at", now);
+
+  // --- TRENDS zone: daily_stats for sparklines ---
+  const { data: dailyStats } = await supabase
+    .from("daily_stats")
+    .select("*")
+    .gte("stat_date", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+    .order("stat_date", { ascending: true });
+
+  const response = {
+    computed_at: now,
+    today: {
+      inactive_organizers: inactiveOrganizers,
+      stale_lfg_count: staleLfg || 0,
+      active_lfg: activeLfg || 0,
+    },
+    this_week: {
+      total_users: totalUsers || 0,
+      new_users: newUsersThisWeek || 0,
+      new_users_prev_week: newUsersPrevWeek || 0,
+      activation_rate: activationRate,
+      events_created: eventsThisWeek || 0,
+      rsvps: rsvpsThisWeek || 0,
+      lfg_conversion_rate: lfgConversionRate,
+      silent_exit_count: silentExitCount,
+    },
+    trends: dailyStats || [],
+  };
+
+  return jsonResponse(response);
 }
 
 // Send invite to a player
