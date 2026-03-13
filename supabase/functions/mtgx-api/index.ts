@@ -671,6 +671,56 @@ async function handleAdminStats(
     .select("*", { count: "exact", head: true })
     .gt("expires_at", now);
 
+  // --- ACTIVITY zone: today & calendar week (Sunday = first day) ---
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const todayIso = todayStart.toISOString();
+
+  const weekStartDate = new Date();
+  weekStartDate.setUTCDate(weekStartDate.getUTCDate() - weekStartDate.getUTCDay());
+  weekStartDate.setUTCHours(0, 0, 0, 0);
+  const weekIso = weekStartDate.toISOString();
+
+  const [
+    { count: todayRegs },
+    { count: todayEventsCreated },
+    { count: todayJoins },
+    { data: todayRsvpU },
+    { data: todayLfgU },
+    { data: todayOrgU },
+    { count: weekRegs },
+    { count: weekEventsCreated },
+    { count: weekJoins },
+    { data: weekRsvpU },
+    { data: weekLfgU },
+    { data: weekOrgU },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", todayIso),
+    supabase.from("events").select("*", { count: "exact", head: true }).gte("created_at", todayIso),
+    supabase.from("rsvps").select("*", { count: "exact", head: true }).gte("created_at", todayIso).in("status", ["going", "maybe"]),
+    supabase.from("rsvps").select("user_id").gte("created_at", todayIso),
+    supabase.from("looking_for_game").select("user_id").gte("created_at", todayIso),
+    supabase.from("events").select("organizer_id").gte("created_at", todayIso),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", weekIso),
+    supabase.from("events").select("*", { count: "exact", head: true }).gte("created_at", weekIso),
+    supabase.from("rsvps").select("*", { count: "exact", head: true }).gte("created_at", weekIso).in("status", ["going", "maybe"]),
+    supabase.from("rsvps").select("user_id").gte("created_at", weekIso),
+    supabase.from("looking_for_game").select("user_id").gte("created_at", weekIso),
+    supabase.from("events").select("organizer_id").gte("created_at", weekIso),
+  ]);
+
+  const todayActiveUsers = new Set([
+    ...(todayRsvpU || []).map((r: { user_id: string }) => r.user_id),
+    ...(todayLfgU || []).map((r: { user_id: string }) => r.user_id),
+    ...(todayOrgU || []).map((r: { organizer_id: string }) => r.organizer_id),
+  ]).size;
+
+  const weekActiveUsers = new Set([
+    ...(weekRsvpU || []).map((r: { user_id: string }) => r.user_id),
+    ...(weekLfgU || []).map((r: { user_id: string }) => r.user_id),
+    ...(weekOrgU || []).map((r: { organizer_id: string }) => r.organizer_id),
+  ]).size;
+
   // --- TRENDS zone: daily_stats for sparklines ---
   const { data: dailyStats } = await supabase
     .from("daily_stats")
@@ -684,6 +734,20 @@ async function handleAdminStats(
       inactive_organizers: inactiveOrganizers,
       stale_lfg_count: staleLfg || 0,
       active_lfg: activeLfg || 0,
+    },
+    activity: {
+      today: {
+        registrations: todayRegs || 0,
+        active_users: todayActiveUsers,
+        events_created: todayEventsCreated || 0,
+        event_joins: todayJoins || 0,
+      },
+      week: {
+        registrations: weekRegs || 0,
+        active_users: weekActiveUsers,
+        events_created: weekEventsCreated || 0,
+        event_joins: weekJoins || 0,
+      },
     },
     this_week: {
       total_users: totalUsers || 0,

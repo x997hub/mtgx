@@ -41,6 +41,13 @@ export default function DashboardPage() {
 
   const hasAlerts = stats.today.inactive_organizers.length > 0 || stats.today.stale_lfg_count > 0;
 
+  const activityRows = [
+    { label: t("common:registrations"), key: "registrations" as const },
+    { label: t("common:active_users_count"), key: "active_users" as const },
+    { label: t("common:events_created"), key: "events_created" as const },
+    { label: t("common:event_joins"), key: "event_joins" as const },
+  ];
+
   return (
     <div className="space-y-6 mt-2">
       {/* Header with refresh */}
@@ -56,6 +63,39 @@ export default function DashboardPage() {
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* ACTIVITY — Today & This Week */}
+      {stats.activity && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{t("common:activity")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-text-secondary border-b border-surface-hover">
+                  <th className="text-left font-medium pb-2" />
+                  <th className="text-right font-medium pb-2 w-24">{t("common:today")}</th>
+                  <th className="text-right font-medium pb-2 w-24">{t("common:this_week")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activityRows.map(({ label, key }) => (
+                  <tr key={key} className="border-b border-surface-hover last:border-0">
+                    <td className="py-2.5 text-text-secondary">{label}</td>
+                    <td className="py-2.5 text-right font-mono font-bold text-text-primary">
+                      {stats.activity.today[key]}
+                    </td>
+                    <td className="py-2.5 text-right font-mono font-bold text-text-primary">
+                      {stats.activity.week[key]}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ZONE 1: TODAY — Alerts */}
       <Card className={hasAlerts ? "border-warning/40" : "border-success/40"}>

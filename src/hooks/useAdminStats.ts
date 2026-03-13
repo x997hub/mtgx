@@ -1,12 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 
+interface ActivityPeriod {
+  registrations: number;
+  active_users: number;
+  events_created: number;
+  event_joins: number;
+}
+
 export interface AdminStats {
   computed_at: string;
   today: {
     inactive_organizers: { id: string; display_name: string }[];
     stale_lfg_count: number;
     active_lfg: number;
+  };
+  activity: {
+    today: ActivityPeriod;
+    week: ActivityPeriod;
   };
   this_week: {
     total_users: number;
