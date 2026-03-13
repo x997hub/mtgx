@@ -20,9 +20,18 @@ export function VenueCard({ venue }: VenueCardProps) {
         <CardContent className="p-4 space-y-2.5">
           {/* Name + City */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-lg font-semibold text-text-primary truncate">
-              {venue.name}
-            </h3>
+            <div className="flex items-center gap-3">
+              {venue.logo_url ? (
+                <img src={venue.logo_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent text-sm font-bold">
+                  {venue.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <h3 className="text-lg font-semibold text-text-primary truncate">
+                {venue.name}
+              </h3>
+            </div>
             <CityBadge city={venue.city} className="shrink-0" />
           </div>
 
