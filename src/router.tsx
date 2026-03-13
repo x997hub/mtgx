@@ -24,6 +24,7 @@ const PlayersDirectoryPage = lazy(() => import("@/pages/PlayersDirectoryPage"));
 const ClubsPage = lazy(() => import("@/pages/ClubsPage"));
 const VenueManagePage = lazy(() => import("@/pages/VenueManagePage"));
 const FAQPage = lazy(() => import("@/pages/FAQPage"));
+const InfoPage = lazy(() => import("@/pages/InfoPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 const DesignSystemPage = lazy(() => import("@/pages/DesignSystemPage"));
 
@@ -178,6 +179,14 @@ export const router = createBrowserRouter([
         element: (
           <LazyPage>
             <FAQPage />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "/about",
+        element: (
+          <LazyPage>
+            <InfoPage />
           </LazyPage>
         ),
       },

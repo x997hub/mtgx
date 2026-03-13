@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Bell, BellOff, LogOut, Trash2, User, MapPin, Layers, HelpCircle } from "lucide-react";
+import { Globe, Bell, BellOff, LogOut, Trash2, User, MapPin, Layers, HelpCircle, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { SubscriptionTarget } from "@/types/database.types";
 
@@ -154,15 +154,25 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* FAQ */}
-      <Link to="/faq">
-        <Card className="bg-surface-card border-surface-hover hover:bg-surface-hover transition-colors cursor-pointer">
-          <CardContent className="flex items-center gap-3 py-4">
-            <HelpCircle className="h-5 w-5 text-text-secondary" />
-            <span className="text-base font-medium text-text-primary">{t("common:faq")}</span>
-          </CardContent>
-        </Card>
-      </Link>
+      {/* FAQ & About */}
+      <div className="space-y-2">
+        <Link to="/faq">
+          <Card className="bg-surface-card border-surface-hover hover:bg-surface-hover transition-colors cursor-pointer">
+            <CardContent className="flex items-center gap-3 py-4">
+              <HelpCircle className="h-5 w-5 text-text-secondary" />
+              <span className="text-base font-medium text-text-primary">{t("common:faq")}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/about">
+          <Card className="bg-surface-card border-surface-hover hover:bg-surface-hover transition-colors cursor-pointer">
+            <CardContent className="flex items-center gap-3 py-4">
+              <Info className="h-5 w-5 text-text-secondary" />
+              <span className="text-base font-medium text-text-primary">{t("common:about")}</span>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
 
       <Separator className="bg-surface-hover" />
 
