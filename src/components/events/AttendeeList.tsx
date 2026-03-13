@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { PowerLevelBadge } from "@/components/events/PowerLevelPicker";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ interface Attendee {
   power_level?: number | null;
   confirmed_at?: string | null;
   checked_in_at?: string | null;
-  profiles?: { display_name: string; playstyle?: string | null } | null;
+  profiles?: { display_name: string; playstyle?: string | null; avatar_url?: string | null } | null;
 }
 
 interface AttendeeListProps {
@@ -75,6 +75,9 @@ export function AttendeeList({ attendees, isOrganizer }: AttendeeListProps) {
                       "h-10 w-10",
                       isOrganizer && attendee.status === "going" && !isConfirmed && !isCheckedIn && "opacity-40",
                     )}>
+                      {attendee.profiles?.avatar_url && (
+                        <AvatarImage src={attendee.profiles.avatar_url} alt={attendee.profiles.display_name ?? ""} />
+                      )}
                       <AvatarFallback className={cn(
                         "text-sm",
                         isOrganizer && isCheckedIn && "bg-emerald-600 text-white",

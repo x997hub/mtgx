@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { DAYS, SLOTS } from "@/lib/constants";
@@ -45,6 +45,9 @@ export function PlayerCard({ player, availability, showReliability }: PlayerCard
           {/* Header: Avatar + Name + City + Role */}
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 shrink-0">
+              {player.avatar_url && (
+                <AvatarImage src={player.avatar_url} alt={player.display_name} />
+              )}
               <AvatarFallback className="bg-primary text-accent text-sm font-bold">
                 {initials || "?"}
               </AvatarFallback>

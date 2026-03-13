@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Zap } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { FormatBadge } from "@/components/shared/FormatBadge";
 import { useLFG } from "@/hooks/useLFG";
@@ -39,6 +39,9 @@ export function LFGSignalList({ city }: LFGSignalListProps) {
               className="flex items-center gap-3 rounded-lg bg-accent/5 border border-accent/20 px-3 py-2"
             >
               <Avatar className="h-9 w-9">
+                {signal.profiles?.avatar_url && (
+                  <AvatarImage src={signal.profiles.avatar_url} alt={signal.profiles.display_name ?? ""} />
+                )}
                 <AvatarFallback className="text-sm bg-accent/20 text-accent">
                   {signal.profiles?.display_name?.charAt(0)?.toUpperCase() || "?"}
                 </AvatarFallback>

@@ -13,13 +13,25 @@ export default defineConfig({
                 skipWaiting: true,
                 clientsClaim: true,
                 navigateFallback: "index.html",
+                navigateFallbackDenylist: [/^\/api/],
+                globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2,webmanifest}"],
                 runtimeCaching: [
                     {
+                        // Local app images (not from external domains)
                         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
                         handler: "CacheFirst",
                         options: {
                             cacheName: "image-cache",
                             expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                        },
+                    },
+                    {
+                        // Supabase Storage images: network-first so they're always fresh
+                        urlPattern: /supabase\.co\/storage\//,
+                        handler: "NetworkFirst",
+                        options: {
+                            cacheName: "supabase-images",
+                            expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
                         },
                     },
                 ],
