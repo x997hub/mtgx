@@ -6,14 +6,17 @@ import enCommon from "@/locales/en/common.json";
 import enEvents from "@/locales/en/events.json";
 import enProfile from "@/locales/en/profile.json";
 import enVenue from "@/locales/en/venue.json";
+import enFaq from "@/locales/en/faq.json";
 import ruCommon from "@/locales/ru/common.json";
 import ruEvents from "@/locales/ru/events.json";
 import ruProfile from "@/locales/ru/profile.json";
 import ruVenue from "@/locales/ru/venue.json";
+import ruFaq from "@/locales/ru/faq.json";
 import heCommon from "@/locales/he/common.json";
 import heEvents from "@/locales/he/events.json";
 import heProfile from "@/locales/he/profile.json";
 import heVenue from "@/locales/he/venue.json";
+import heFaq from "@/locales/he/faq.json";
 
 i18n
   .use(LanguageDetector)
@@ -25,25 +28,28 @@ i18n
         events: enEvents,
         profile: enProfile,
         venue: enVenue,
+        faq: enFaq,
       },
       ru: {
         common: ruCommon,
         events: ruEvents,
         profile: ruProfile,
         venue: ruVenue,
+        faq: ruFaq,
       },
       he: {
         common: heCommon,
         events: heEvents,
         profile: heProfile,
         venue: heVenue,
+        faq: heFaq,
       },
     },
     lng: "en",
     fallbackLng: "en",
     defaultNS: "common",
     fallbackNS: "common",
-    ns: ["common", "events", "profile", "venue"],
+    ns: ["common", "events", "profile", "venue", "faq"],
     interpolation: {
       escapeValue: false,
     },

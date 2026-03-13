@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Bell, BellOff, LogOut, Trash2, User, MapPin, Layers } from "lucide-react";
+import { Globe, Bell, BellOff, LogOut, Trash2, User, MapPin, Layers, HelpCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { SubscriptionTarget } from "@/types/database.types";
 
 const TARGET_TYPE_ICONS: Record<SubscriptionTarget, typeof User> = {
@@ -152,6 +153,16 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* FAQ */}
+      <Link to="/faq">
+        <Card className="bg-surface-card border-surface-hover hover:bg-surface-hover transition-colors cursor-pointer">
+          <CardContent className="flex items-center gap-3 py-4">
+            <HelpCircle className="h-5 w-5 text-text-secondary" />
+            <span className="text-base font-medium text-text-primary">{t("common:faq")}</span>
+          </CardContent>
+        </Card>
+      </Link>
 
       <Separator className="bg-surface-hover" />
 

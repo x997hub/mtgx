@@ -41,7 +41,7 @@
   "events_q2": "The events feed is empty — is the platform down?",
   "events_a2": "Most likely there is not much activity in your city yet. Try expanding the filters or selecting \"All cities\". Subscribe to a format and you will get a notification when a matching event appears.",
   "events_q3": "How do I register for an event?",
-  "events_a3": "Open the event card and press the RSVP button. Three options are available: \"Going\", \"Maybe\", and \"Not going\". If there are no seats left, a \"Join waitlist\" button will appear.",
+  "events_a3": "Open the event card and press the \"Sign Up\" button. Three options are available: \"Going\", \"Maybe\", and \"Not going\". If there are no seats left, a \"Join waitlist\" button will appear.",
   "events_q4": "I RSVPed but my plans changed. How do I cancel?",
   "events_a4": "Open the event and change your RSVP to \"Not going\". The first person on the waitlist will automatically receive the seat and a push notification.",
   "events_q5": "I am on the waitlist — how will I know when a spot opens up?",
