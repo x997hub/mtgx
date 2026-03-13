@@ -922,18 +922,21 @@ export type Database = {
           is_primary: boolean | null
           storage_path: string
           venue_id: string
+          category: string
         }
         Insert: {
           id?: string
           is_primary?: boolean | null
           storage_path: string
           venue_id: string
+          category?: string
         }
         Update: {
           id?: string
           is_primary?: boolean | null
           storage_path?: string
           venue_id?: string
+          category?: string
         }
         Relationships: [
           {
@@ -952,14 +955,24 @@ export type Database = {
           city: string
           contacts: Json | null
           created_at: string
+          description: string | null
+          directions_description: string | null
+          facebook_url: string | null
+          google_business_url: string | null
           hours: Json | null
           id: string
+          instagram_url: string | null
           latitude: number | null
+          logo_url: string | null
           longitude: number | null
           name: string
+          nearby_landmarks: string | null
           owner_id: string
+          phone: string | null
           supported_formats: Database["public"]["Enums"]["mtg_format"][]
           venue_qr_token: string
+          website: string | null
+          whatsapp_url: string | null
         }
         Insert: {
           address: string
@@ -967,14 +980,24 @@ export type Database = {
           city: string
           contacts?: Json | null
           created_at?: string
+          description?: string | null
+          directions_description?: string | null
+          facebook_url?: string | null
+          google_business_url?: string | null
           hours?: Json | null
           id?: string
+          instagram_url?: string | null
           latitude?: number | null
+          logo_url?: string | null
           longitude?: number | null
           name: string
+          nearby_landmarks?: string | null
           owner_id: string
+          phone?: string | null
           supported_formats?: Database["public"]["Enums"]["mtg_format"][]
           venue_qr_token?: string
+          website?: string | null
+          whatsapp_url?: string | null
         }
         Update: {
           address?: string
@@ -982,14 +1005,24 @@ export type Database = {
           city?: string
           contacts?: Json | null
           created_at?: string
+          description?: string | null
+          directions_description?: string | null
+          facebook_url?: string | null
+          google_business_url?: string | null
           hours?: Json | null
           id?: string
+          instagram_url?: string | null
           latitude?: number | null
+          logo_url?: string | null
           longitude?: number | null
           name?: string
+          nearby_landmarks?: string | null
           owner_id?: string
+          phone?: string | null
           supported_formats?: Database["public"]["Enums"]["mtg_format"][]
           venue_qr_token?: string
+          website?: string | null
+          whatsapp_url?: string | null
         }
         Relationships: [
           {

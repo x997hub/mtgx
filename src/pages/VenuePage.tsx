@@ -21,8 +21,6 @@ import { useAuthStore } from "@/store/authStore";
 import { VenueAnalytics } from "@/components/venue/VenueAnalytics";
 import { MapPin, Clock, Users, Calendar, Pencil } from "lucide-react";
 
-const VENUE_IMAGES_BUCKET = "venue-images";
-
 export default function VenuePage() {
   const { t } = useTranslation("venue");
   const { t: tc } = useTranslation("common");
@@ -109,10 +107,7 @@ export default function VenuePage() {
     );
   }
 
-  const logoUrl = venue.logo_url
-    ? supabase.storage.from(VENUE_IMAGES_BUCKET).getPublicUrl(venue.logo_url)
-        .data.publicUrl
-    : null;
+  const logoUrl = venue.logo_url || null;
 
   return (
     <div className="min-h-screen bg-surface text-text-primary">
