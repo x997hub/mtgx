@@ -125,6 +125,7 @@ export function UsersTab() {
       {
         accessorKey: "email",
         header: "Email",
+        meta: { className: "hidden lg:table-cell" },
         cell: ({ getValue }) => {
           const email = getValue<string | null>();
           if (!email) return null;
@@ -135,6 +136,7 @@ export function UsersTab() {
         accessorKey: "whatsapp",
         header: "WhatsApp",
         enableSorting: false,
+        meta: { className: "hidden xl:table-cell" },
         cell: ({ getValue }) => {
           const wa = getValue<string | null>();
           if (!wa) return null;
@@ -152,7 +154,11 @@ export function UsersTab() {
           );
         },
       },
-      { accessorKey: "city", header: "City" },
+      {
+        accessorKey: "city",
+        header: "City",
+        meta: { className: "hidden sm:table-cell" },
+      },
       {
         accessorKey: "role",
         header: "Role",
@@ -164,6 +170,7 @@ export function UsersTab() {
       {
         accessorKey: "reliability_score",
         header: "Reliability",
+        meta: { className: "hidden lg:table-cell" },
         cell: ({ getValue }) => {
           const score = getValue<number | null>();
           if (score == null || score >= 1) return null;
@@ -175,11 +182,12 @@ export function UsersTab() {
         accessorKey: "formats",
         header: "Formats",
         enableSorting: false,
+        meta: { className: "hidden xl:table-cell" },
         cell: ({ getValue }) => {
           const formats = getValue<string[] | null>();
           if (!formats || formats.length === 0) return null;
           return (
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {formats.map((f) => (
                 <FormatBadge key={f} format={f as MtgFormat} className="text-xs px-2 py-0" />
               ))}
@@ -237,7 +245,7 @@ export function UsersTab() {
   }
 
   return (
-    <div className="space-y-3 mt-4">
+    <div className="space-y-3 mt-2">
       {/* Role filter */}
       <div className="flex gap-3">
         <Select

@@ -18,12 +18,15 @@ interface DataTableProps<T> {
   data: T[];
   columns: ColumnDef<T, unknown>[];
   pageSize?: number;
+  /** CSS class for <table> element, e.g. to override min-width */
+  tableClassName?: string;
 }
 
 export function DataTable<T>({
   data,
   columns,
   pageSize = 10,
+  tableClassName,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -69,7 +72,7 @@ export function DataTable<T>({
 
       {/* Table wrapper — horizontal scroll on mobile */}
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full min-w-[600px] border-collapse text-left text-base">
+        <table className={cn("w-full min-w-[600px] border-collapse text-left text-base", tableClassName)}>
           {/* Header */}
           <thead className="bg-surface text-text-secondary">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -82,9 +85,10 @@ export function DataTable<T>({
                     <th
                       key={header.id}
                       className={cn(
-                        "px-4 py-3 font-semibold text-sm tracking-wide whitespace-nowrap",
+                        "px-3 py-2.5 font-semibold text-sm tracking-wide whitespace-nowrap",
                         "border-b border-border",
                         canSort && "cursor-pointer select-none",
+                        (header.column.columnDef.meta as Record<string, string>)?.className,
                       )}
                       onClick={header.column.getToggleSortingHandler()}
                     >
@@ -139,7 +143,10 @@ export function DataTable<T>({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-4 py-3 text-text-primary"
+                      className={cn(
+                        "px-3 py-2.5 text-text-primary",
+                        (cell.column.columnDef.meta as Record<string, string>)?.className,
+                      )}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

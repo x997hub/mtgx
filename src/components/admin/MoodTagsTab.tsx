@@ -151,7 +151,7 @@ export function MoodTagsTab() {
   }
 
   return (
-    <div className="space-y-3 mt-4">
+    <div className="space-y-3 mt-2">
       <div className="flex justify-end">
         <Button size="sm" onClick={startNew} disabled={editingId !== null}>
           <Plus className="h-4 w-4 me-1" />

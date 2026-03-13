@@ -70,7 +70,7 @@ export function FeedbackTab() {
   }
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4 mt-2">
       {/* Filters */}
       <div className="flex gap-3">
         <Select

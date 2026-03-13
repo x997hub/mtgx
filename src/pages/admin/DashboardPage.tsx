@@ -19,7 +19,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 mt-4">
+      <div className="space-y-4 mt-2">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-32 rounded-lg" />
         ))}

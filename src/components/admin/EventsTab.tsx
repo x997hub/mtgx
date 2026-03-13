@@ -76,10 +76,15 @@ export function EventsTab() {
           return <span>{new Date(date).toLocaleDateString()}</span>;
         },
       },
-      { accessorKey: "city", header: "City" },
+      {
+        accessorKey: "city",
+        header: "City",
+        meta: { className: "hidden sm:table-cell" },
+      },
       {
         id: "organizer",
         header: "Organizer",
+        meta: { className: "hidden lg:table-cell" },
         accessorFn: (row) => row.profiles?.display_name ?? "",
         cell: ({ getValue }) => {
           const name = getValue<string>();
@@ -133,7 +138,7 @@ export function EventsTab() {
   }
 
   return (
-    <div className="space-y-3 mt-4">
+    <div className="space-y-3 mt-2">
       {/* Status filter chips */}
       <div className="flex flex-wrap gap-2">
         <button
