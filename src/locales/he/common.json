@@ -96,6 +96,10 @@
   "trends_30d": "מגמות (30 יום)",
   "trends_no_data": "אין נתונים עדיין. הנתונים נאספים מדי יום.",
   "total": "סה״כ",
+  "select_venue_for_owner": "בחר מקום לבעל המועדון",
+  "select_venue_for_owner_desc": "איזה מקום ינהל {{name}}?",
+  "no_venues": "אין מקומות זמינים",
+  "venue_assigned": "המקום הוקצה לבעל המועדון",
   "feedback": {
     "report_problem": "דווח על בעיה",
     "type_bug": "באג",

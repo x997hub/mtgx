@@ -462,7 +462,7 @@ async function handleAssignRole(
   const bodyOrError = await parseRequestBody(req);
   if (bodyOrError instanceof Response) return bodyOrError;
   const body = bodyOrError;
-  const { user_id, role } = body as { user_id?: string; role?: string };
+  const { user_id, role, venue_id } = body as { user_id?: string; role?: string; venue_id?: string };
 
   if (!user_id || !role) {
     return jsonResponse({ error: "user_id and role are required" }, 400);
@@ -470,6 +470,10 @@ async function handleAssignRole(
 
   if (!["player", "organizer", "club_owner", "admin"].includes(role)) {
     return jsonResponse({ error: "Invalid role" }, 400);
+  }
+
+  if (role === "club_owner" && !venue_id) {
+    return jsonResponse({ error: "venue_id is required for club_owner role" }, 400);
   }
 
   const { data: profile, error } = await supabase
@@ -482,6 +486,19 @@ async function handleAssignRole(
   if (error) {
     console.error("[mtgx-api] Error:", error.message);
     return jsonResponse({ error: "Internal server error" }, 500);
+  }
+
+  // Assign venue ownership when setting club_owner role
+  if (role === "club_owner" && venue_id) {
+    const { error: venueError } = await supabase
+      .from("venues")
+      .update({ owner_id: user_id })
+      .eq("id", venue_id);
+
+    if (venueError) {
+      console.error("[mtgx-api] Error assigning venue:", venueError.message);
+      return jsonResponse({ error: "Role updated but venue assignment failed" }, 500);
+    }
   }
 
   return jsonResponse({ profile });

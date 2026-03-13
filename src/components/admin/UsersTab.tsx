@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/api";
-import type { UserRole, MtgFormat } from "@/types/database.types";
+import type { UserRole, MtgFormat, Venue } from "@/types/database.types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormatBadge } from "@/components/shared/FormatBadge";
@@ -15,6 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import { MessageCircle } from "lucide-react";
 
@@ -50,6 +57,8 @@ export function UsersTab() {
   const { t } = useTranslation(["common", "profile"]);
   const queryClient = useQueryClient();
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
+  const [pendingClubOwner, setPendingClubOwner] = useState<{ userId: string; userName: string | null } | null>(null);
+  const [selectedVenueId, setSelectedVenueId] = useState<string>("");
 
   const { data: profiles, isLoading, isError } = useQuery({
     queryKey: ["admin-profiles"],
@@ -61,19 +70,46 @@ export function UsersTab() {
     },
   });
 
-  const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ role })
-        .eq("id", userId);
+  const { data: venues } = useQuery({
+    queryKey: ["admin-venues"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("venues")
+        .select("id, name, city")
+        .order("name");
       if (error) throw error;
+      return data as Pick<Venue, "id" | "name" | "city">[];
     },
-    onSettled: () => {
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ userId, role, venueId }: { userId: string; role: UserRole; venueId?: string }) => {
+      if (role === "club_owner") {
+        const res = await apiFetch("/admin/assign-role", {
+          method: "POST",
+          body: JSON.stringify({ user_id: userId, role, venue_id: venueId }),
+        });
+        if (!res.ok) {
+          const json = await res.json();
+          throw new Error(json.error || "Failed to assign role");
+        }
+      } else {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ role })
+          .eq("id", userId);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
     },
-    onError: () => {
-      toast({ title: t("common:error_occurred"), variant: "destructive" });
+    onSettled: () => {
+      setPendingClubOwner(null);
+      setSelectedVenueId("");
+    },
+    onError: (err) => {
+      toast({ title: err instanceof Error ? err.message : t("common:error_occurred"), variant: "destructive" });
     },
   });
 
@@ -160,9 +196,13 @@ export function UsersTab() {
           return (
             <Select
               value={user.role}
-              onValueChange={(role) =>
-                updateRoleMutation.mutate({ userId: user.id, role: role as UserRole })
-              }
+              onValueChange={(role) => {
+                if (role === "club_owner") {
+                  setPendingClubOwner({ userId: user.id, userName: user.display_name });
+                } else {
+                  updateRoleMutation.mutate({ userId: user.id, role: role as UserRole });
+                }
+              }}
             >
               <SelectTrigger className="w-[130px]">
                 <SelectValue />
@@ -224,6 +264,59 @@ export function UsersTab() {
       </p>
 
       <DataTable data={filtered} columns={columns} />
+
+      {/* Venue selection dialog for club_owner role */}
+      <Dialog
+        open={!!pendingClubOwner}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingClubOwner(null);
+            setSelectedVenueId("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("common:select_venue_for_owner")}</DialogTitle>
+            <DialogDescription>
+              {t("common:select_venue_for_owner_desc", { name: pendingClubOwner?.userName || "" })}
+            </DialogDescription>
+          </DialogHeader>
+          {venues && venues.length > 0 ? (
+            <div className="space-y-3">
+              <Select value={selectedVenueId} onValueChange={setSelectedVenueId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("common:select_venue_for_owner")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {venues.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.name} — {v.city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button
+                className="w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                disabled={!selectedVenueId || updateRoleMutation.isPending}
+                onClick={() => {
+                  if (pendingClubOwner && selectedVenueId) {
+                    updateRoleMutation.mutate({
+                      userId: pendingClubOwner.userId,
+                      role: "club_owner",
+                      venueId: selectedVenueId,
+                    });
+                  }
+                }}
+              >
+                {t("common:confirm")}
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-text-secondary">{t("common:no_venues")}</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

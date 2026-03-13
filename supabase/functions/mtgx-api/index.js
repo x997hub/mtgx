@@ -181,12 +181,15 @@ async function handleAssignRole(req, supabase, adminId) {
     if (!adminProfile || adminProfile.role !== "admin") {
         return jsonResponse({ error: "Admin access required" }, 403);
     }
-    const { user_id, role } = await req.json();
+    const { user_id, role, venue_id } = await req.json();
     if (!user_id || !role) {
         return jsonResponse({ error: "user_id and role are required" }, 400);
     }
     if (!["player", "organizer", "club_owner", "admin"].includes(role)) {
         return jsonResponse({ error: "Invalid role" }, 400);
+    }
+    if (role === "club_owner" && !venue_id) {
+        return jsonResponse({ error: "venue_id is required for club_owner role" }, 400);
     }
     const { data: profile, error } = await supabase
         .from("profiles")
@@ -196,6 +199,15 @@ async function handleAssignRole(req, supabase, adminId) {
         .single();
     if (error) {
         return jsonResponse({ error: error.message }, 500);
+    }
+    if (role === "club_owner" && venue_id) {
+        const { error: venueError } = await supabase
+            .from("venues")
+            .update({ owner_id: user_id })
+            .eq("id", venue_id);
+        if (venueError) {
+            return jsonResponse({ error: "Role updated but venue assignment failed" }, 500);
+        }
     }
     return jsonResponse({ profile });
 }

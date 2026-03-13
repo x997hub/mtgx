@@ -106,6 +106,10 @@
   "trends_30d": "Тренды (30 дней)",
   "trends_no_data": "Данных пока нет. Статистика собирается ежедневно.",
   "total": "Всего",
+  "select_venue_for_owner": "Выберите клуб для владельца",
+  "select_venue_for_owner_desc": "Каким клубом будет управлять {{name}}?",
+  "no_venues": "Нет доступных клубов",
+  "venue_assigned": "Клуб назначен владельцу",
   "feedback": {
     "report_problem": "Сообщить о проблеме",
     "type_bug": "Баг",

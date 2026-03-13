@@ -106,6 +106,10 @@
   "trends_30d": "Trends (30 days)",
   "trends_no_data": "No trend data yet. Stats are collected daily.",
   "total": "Total",
+  "select_venue_for_owner": "Select venue for club owner",
+  "select_venue_for_owner_desc": "Which venue will {{name}} manage?",
+  "no_venues": "No venues available",
+  "venue_assigned": "Venue assigned to club owner",
   "feedback": {
     "report_problem": "Report a problem",
     "type_bug": "Bug",
