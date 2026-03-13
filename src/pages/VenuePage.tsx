@@ -12,11 +12,14 @@ import { SubscribeButton } from "@/components/shared/SubscribeButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { QueryErrorState } from "@/components/shared/QueryErrorState";
 import { EventCard } from "@/components/events/EventCard";
+import { VenuePhotoGallery } from "@/components/venue/VenuePhotoGallery";
+import { VenueContacts } from "@/components/venue/VenueContacts";
+import { VenueDirections } from "@/components/venue/VenueDirections";
 import type { Venue, VenuePhoto } from "@/types/database.types";
 import type { EventWithRelations } from "@/hooks/useEvents";
 import { useAuthStore } from "@/store/authStore";
 import { VenueAnalytics } from "@/components/venue/VenueAnalytics";
-import { MapPin, Clock, Users, Phone, Calendar, Pencil } from "lucide-react";
+import { MapPin, Clock, Users, Calendar, Pencil } from "lucide-react";
 
 const VENUE_IMAGES_BUCKET = "venue-images";
 
@@ -48,7 +51,9 @@ export default function VenuePage() {
       if (!venueId) return [];
       const { data, error } = await supabase
         .from("events")
-        .select("*, venues(name, city), profiles!events_organizer_id_fkey(display_name), rsvps(count)" as "*")
+        .select(
+          "*, venues(name, city), profiles!events_organizer_id_fkey(display_name), rsvps(count)" as "*",
+        )
         .eq("venue_id", venueId)
         .eq("status", "active")
         .gte("starts_at", new Date().toISOString())
@@ -75,10 +80,10 @@ export default function VenuePage() {
     enabled: !!venueId,
   });
 
-  const primaryPhoto = photosQuery.data?.find((p) => p.is_primary) ?? photosQuery.data?.[0];
-  const primaryPhotoUrl = primaryPhoto
-    ? supabase.storage.from(VENUE_IMAGES_BUCKET).getPublicUrl(primaryPhoto.storage_path).data.publicUrl
-    : null;
+  const galleryPhotos =
+    photosQuery.data?.filter((p) => p.category === "gallery") ?? [];
+  const locationPhotos =
+    photosQuery.data?.filter((p) => p.category === "location") ?? [];
 
   if (venueQuery.isLoading) {
     return (
@@ -104,46 +109,82 @@ export default function VenuePage() {
     );
   }
 
+  const logoUrl = venue.logo_url
+    ? supabase.storage.from(VENUE_IMAGES_BUCKET).getPublicUrl(venue.logo_url)
+        .data.publicUrl
+    : null;
+
   return (
     <div className="min-h-screen bg-surface text-text-primary">
       <div className="mx-auto max-w-lg space-y-4 p-4">
-        {/* Photo */}
-        {primaryPhotoUrl && (
-          <div className="aspect-video w-full overflow-hidden rounded-xl bg-secondary">
-            <img
-              src={primaryPhotoUrl}
-              alt={venue.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        )}
-
-        {/* Header */}
+        {/* Hero */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-start justify-between gap-3">
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-text-primary">{venue.name}</h1>
-                <CityBadge city={venue.city} />
+              <div className="flex items-center gap-4">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={venue.name}
+                    className="h-16 w-16 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent text-2xl font-bold text-white">
+                    {venue.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <h1 className="text-2xl font-bold text-text-primary">
+                    {venue.name}
+                  </h1>
+                  <CityBadge city={venue.city} />
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                {user && (venue.owner_id === user.id || profile?.role === "admin") && (
-                  <Link to={`/venues/${venue.id}/edit`}>
-                    <Button variant="outline" size="sm">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                )}
+                {user &&
+                  (venue.owner_id === user.id ||
+                    profile?.role === "admin") && (
+                    <Link to={`/venues/${venue.id}/edit`}>
+                      <Button variant="outline" size="sm">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
                 <SubscribeButton targetType="venue" targetId={venue.id} />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Description */}
+        {venue.description && (
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-sm text-text-primary whitespace-pre-line">
+                {venue.description}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Gallery */}
+        {galleryPhotos.length > 0 && (
+          <Card>
+            <CardContent className="p-6">
+              <VenuePhotoGallery
+                photos={galleryPhotos}
+                title={t("gallery")}
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Venue Info */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-text-secondary">{t("venue_info")}</CardTitle>
+            <CardTitle className="text-base text-text-secondary">
+              {t("venue_info")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Address */}
@@ -165,7 +206,10 @@ export default function VenuePage() {
                     <p className="text-sm text-text-secondary">{t("hours")}</p>
                     <div className="space-y-1">
                       {Object.entries(venue.hours).map(([day, time]) => (
-                        <div key={day} className="flex justify-between text-base">
+                        <div
+                          key={day}
+                          className="flex justify-between text-base"
+                        >
                           <span className="text-text-secondary">{day}</span>
                           <span className="text-text-primary">{time}</span>
                         </div>
@@ -183,31 +227,12 @@ export default function VenuePage() {
                 <div className="flex items-start gap-3">
                   <Users className="mt-0.5 h-5 w-5 shrink-0 text-text-secondary" />
                   <div>
-                    <p className="text-sm text-text-secondary">{t("capacity")}</p>
+                    <p className="text-sm text-text-secondary">
+                      {t("capacity")}
+                    </p>
                     <p className="text-base text-text-primary">
                       {t("players_capacity", { count: venue.capacity })}
                     </p>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Contacts */}
-            {venue.contacts && Object.keys(venue.contacts).length > 0 && (
-              <>
-                <Separator />
-                <div className="flex items-start gap-3">
-                  <Phone className="mt-0.5 h-5 w-5 shrink-0 text-text-secondary" />
-                  <div className="flex-1">
-                    <p className="text-sm text-text-secondary">{t("contacts")}</p>
-                    <div className="space-y-1">
-                      {Object.entries(venue.contacts).map(([label, value]) => (
-                        <div key={label} className="flex justify-between text-base">
-                          <span className="text-text-secondary">{label}</span>
-                          <span className="text-text-primary">{value}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </>
@@ -218,7 +243,9 @@ export default function VenuePage() {
               <>
                 <Separator />
                 <div>
-                  <p className="mb-2 text-sm text-text-secondary">{t("supported_formats")}</p>
+                  <p className="mb-2 text-sm text-text-secondary">
+                    {t("supported_formats")}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {venue.supported_formats.map((format) => (
                       <FormatBadge key={format} format={format} />
@@ -229,6 +256,12 @@ export default function VenuePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Contacts */}
+        <VenueContacts venue={venue} />
+
+        {/* How to find */}
+        <VenueDirections venue={venue} locationPhotos={locationPhotos} />
 
         {/* Analytics — owner only */}
         {user && venue.owner_id === user.id && venueId && (
