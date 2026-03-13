@@ -1,6 +1,9 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Building2, Home, Plus, Settings, Shield, User, Users } from "lucide-react";
+import {
+  BarChart3, Building2, Calendar, Home, MessageSquare,
+  Plus, Settings, Shield, Tags, User, Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
@@ -17,11 +20,20 @@ const NAV_ITEMS = [
   { to: "/settings", icon: Settings, labelKey: "settings" },
 ] as const;
 
+const ADMIN_SUB_ITEMS = [
+  { to: "/admin/dashboard", icon: BarChart3, labelKey: "dashboard" },
+  { to: "/admin/users", icon: Users, labelKey: "users" },
+  { to: "/admin/events", icon: Calendar, labelKey: "events" },
+  { to: "/admin/feedback", icon: MessageSquare, labelKey: "feedback" },
+  { to: "/admin/mood-tags", icon: Tags, labelKey: "mood_tags" },
+] as const;
+
 export function AppShell() {
   const { t } = useTranslation();
   const location = useLocation();
   const role = useAuthStore((s) => s.profile?.role);
   const isAdmin = role === "admin";
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div className="flex min-h-screen flex-col bg-primary text-text-primary">
@@ -51,18 +63,39 @@ export function AppShell() {
             </Link>
           ))}
           {isAdmin && (
-            <Link
-              to="/admin"
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary mt-auto",
-                location.pathname.startsWith("/admin")
-                  ? "bg-primary text-accent"
-                  : "text-text-secondary"
+            <>
+              <Link
+                to="/admin/dashboard"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-primary mt-auto",
+                  isAdminRoute
+                    ? "bg-primary text-accent"
+                    : "text-text-secondary"
+                )}
+              >
+                <Shield className="h-6 w-6" />
+                {t("admin")}
+              </Link>
+              {isAdminRoute && (
+                <div className="flex flex-col gap-0.5 ps-4 pb-2">
+                  {ADMIN_SUB_ITEMS.map(({ to, icon: Icon, labelKey }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      className={cn(
+                        "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary",
+                        location.pathname === to
+                          ? "text-accent bg-primary"
+                          : "text-text-secondary"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {t(labelKey)}
+                    </Link>
+                  ))}
+                </div>
               )}
-            >
-              <Shield className="h-6 w-6" />
-              {t("admin")}
-            </Link>
+            </>
           )}
         </nav>
       </aside>
