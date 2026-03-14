@@ -46,11 +46,11 @@ export default function AdminLayout() {
   const activeTab = NAV_ITEMS.find(item => location.pathname === item.path)?.id || "dashboard";
 
   return (
-    <div className="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
-      <h1 className="text-xl font-bold text-text-primary mb-3 sm:text-2xl sm:mb-4 md:hidden">{t("common:admin")}</h1>
+    <div className="w-full px-3 py-2 sm:px-4 sm:py-3 lg:px-6">
+      <h1 className="text-xl font-bold text-text-primary mb-2 sm:text-2xl sm:mb-3 md:hidden">{t("common:admin")}</h1>
 
       {/* Mobile horizontal scroll nav (desktop uses AppShell sidebar) */}
-      <div className="flex gap-2 overflow-x-auto pb-2 md:hidden -mx-3 px-3 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-1.5 md:hidden -mx-3 px-3 scrollbar-none">
         {NAV_ITEMS.map(({ id, path, icon: Icon, labelKey }) => (
           <button
             key={id}

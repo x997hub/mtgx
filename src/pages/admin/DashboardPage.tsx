@@ -49,7 +49,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6 mt-2">
+    <div className="space-y-4 mt-1">
       {/* Header with refresh */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">
